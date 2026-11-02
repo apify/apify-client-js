@@ -372,6 +372,15 @@ describe('ActorServerClient', () => {
         expect(serverRequests()).toHaveLength(3);
     });
 
+    test("request() leaves a 429 from the server out of the client's rate-limit statistics", async () => {
+        flakyStatuses = [429];
+        client = new ApifyClient({ baseUrl, token: 'test-token', maxRetries: 1, minDelayBetweenRetriesMillis: 1 });
+
+        await client.actor(ACTOR_ID).server().request('/flaky');
+
+        expect(client.stats.rateLimitErrors).toEqual([]);
+    });
+
     test('request() returns the last retried response once the retries run out', async () => {
         flakyStatuses = [503, 503, 503];
         client = new ApifyClient({ baseUrl, token: 'test-token', maxRetries: 1, minDelayBetweenRetriesMillis: 1 });

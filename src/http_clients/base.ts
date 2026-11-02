@@ -148,7 +148,8 @@ export interface ApifyRequestConfig {
     authorizationHeader?: string;
     /**
      * Whether an error status throws {@link ApifyApiError}. With `false`, the call resolves to the error response
-     * once no retry follows.
+     * once no retry follows, and a rate limit (429) doesn't count toward the client's statistics, which track the
+     * API's rate limits.
      * @default true
      */
     throwOnErrorStatus?: boolean;
@@ -676,7 +677,8 @@ export abstract class HttpClient {
         };
         if (!isError) return apifyResponse;
 
-        if (response.status === RATE_LIMIT_EXCEEDED_STATUS_CODE) {
+        // The statistics track the API's rate limits, and only API calls throw on an error status.
+        if (response.status === RATE_LIMIT_EXCEEDED_STATUS_CODE && config.throwOnErrorStatus !== false) {
             this.stats.addRateLimitError(attempt);
         }
         if (returnsError) return apifyResponse;
