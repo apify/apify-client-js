@@ -54,7 +54,8 @@ const requestOptionsSchema = z.strictObject({
  * @see https://docs.apify.com/platform/actors/running/standby
  */
 export class ActorServerClient extends ResourceClient {
-    #url?: string;
+    /** The server URL, pending while the first lookup runs, so concurrent first calls share one API request. */
+    #url?: Promise<string>;
 
     /**
      * @hidden
@@ -83,11 +84,14 @@ export class ActorServerClient extends ResourceClient {
     async getUrl(options: TimeoutOptions = {}): Promise<string> {
         const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        if (this.#url === undefined) {
-            const actor = await this.#getServerActor(timeoutSecs, signal);
-            this.#url = actor.standbyUrl!;
+        const url = (this.#url ??= this.#getServerActor(timeoutSecs, signal).then((actor) => actor.standbyUrl!));
+        try {
+            return await url;
+        } catch (err) {
+            // A failed lookup is not kept, so the next call tries again.
+            if (this.#url === url) this.#url = undefined;
+            throw err;
         }
-        return this.#url;
     }
 
     /**
@@ -110,7 +114,7 @@ export class ActorServerClient extends ResourceClient {
         const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         const actor = await this.#getServerActor(timeoutSecs, signal);
-        this.#url = actor.standbyUrl!;
+        this.#url = Promise.resolve(actor.standbyUrl!);
         const buildRef = actor.actorStandby?.build || 'latest';
 
         let buildId = actor.taggedBuilds?.[buildRef]?.buildId ?? undefined;

@@ -203,6 +203,26 @@ describe('ActorServerClient', () => {
         expect(actorGets()).toHaveLength(1);
     });
 
+    test('getUrl() fetches the Actor once for concurrent first calls', async () => {
+        const actorServerClient = client.actor(ACTOR_ID).server();
+
+        const [url] = await Promise.all([actorServerClient.getUrl(), actorServerClient.request()]);
+
+        expect(url).toBe(serverUrl());
+        expect(actorGets()).toHaveLength(1);
+    });
+
+    test('getUrl() fetches the Actor again after a failed lookup', async () => {
+        const actorServerClient = client.actor(ACTOR_ID).server();
+        actor = 404;
+
+        await expect(actorServerClient.getUrl()).rejects.toThrow(NotFoundError);
+        actor = serverActor();
+
+        await expect(actorServerClient.getUrl()).resolves.toBe(serverUrl());
+        expect(actorGets()).toHaveLength(2);
+    });
+
     test('request() reuses the server URL fetched by getOpenApiSpec()', async () => {
         const actorServerClient = client.actor(ACTOR_ID).server();
 
