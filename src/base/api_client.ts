@@ -1,7 +1,7 @@
 import type { ApifyClient } from '../apify_client.js';
 import type { HttpClient } from '../http_clients/index.js';
 import type { PaginatedResponse, PaginationOptions } from '../utils.js';
-import { minForLimitParam, SCANNED_COUNT, toPath, toPathSegment } from '../utils.js';
+import { minForLimitParam, toPath, toPathSegment } from '../utils.js';
 
 /** @private */
 export interface ApiClientOptions {
@@ -102,14 +102,14 @@ export abstract class ApiClient {
         const firstPageLimit = minForLimitParam(options.limit, chunkSize);
         const paginatedListPromise = getPaginatedList({ ...listOptions, limit: firstPageLimit } as T);
 
-        // A page can return more or fewer items than the rows it scanned (see `SCANNED_COUNT`). The next offset and
-        // the stop condition follow the scanned rows: advancing by `items.length` would re-scan rows after a filter
-        // dropped some and skip rows after `unwind` multiplied them, and stopping at an empty page would end the
-        // iteration in front of rows a filter hid. The scanned number is derived from a dataset's item count, which
-        // lags a fresh push, so the larger of it and `items.length` is taken, capped at the rows the request asked for
-        // so that an unwound page does not advance past rows the next request would then never read.
+        // A page of dataset items can return more or fewer items than the rows it scanned (see `PaginatedList.count`).
+        // The next offset and the stop condition follow the scanned rows: advancing by `items.length` would re-scan
+        // rows after a filter dropped some and skip rows after `unwind` multiplied them, and stopping at an empty page
+        // would end the iteration in front of rows a filter hid. The step is the larger of `count` and `items.length`,
+        // capped at the rows the request asked for, which keeps an unwound page from advancing past rows the next
+        // request would then never read.
         const scannedRows = (page: R, requestedLimit: number | undefined): number => {
-            const scanned = Math.max((page as { [SCANNED_COUNT]?: number })[SCANNED_COUNT] ?? 0, page.items.length);
+            const scanned = Math.max((page as { count?: number }).count ?? 0, page.items.length);
             return requestedLimit ? Math.min(scanned, requestedLimit) : scanned;
         };
 

@@ -17,7 +17,7 @@ Most methods named `list()` or `listSomething()` in the Apify client resolve to 
 - `items` - The main results you're looking for.
 - `total` - The total number of items available.
 - `offset` - The starting point of the current page.
-- `count` - The number of items in the current page.
+- `count` - The number of items in the current page. On a page of dataset items, the number of dataset rows the API scanned for it, which filters can leave above the items returned.
 - `limit` - The maximum number of items per page.
 - `desc` - Whether the items are sorted in descending order.
 
