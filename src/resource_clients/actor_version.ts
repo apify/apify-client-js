@@ -132,26 +132,6 @@ export class ActorVersionClient extends ResourceClient {
 }
 
 /**
- * One version variant with every field optional. Where the variant carries `actorPath`, the update
- * also accepts `null` for it. A version read back never has that `null`, so the read model keeps
- * `actorPath?: string`.
- */
-type ActorVersionUpdateVariant<V> = V extends unknown
-    ? 'actorPath' extends keyof V
-        ? Partial<Omit<V, 'actorPath'>> & {
-              /**
-               * The Actor's folder inside the uploaded source, such as `actors/typescript-actor`: 1 to 255
-               * characters, with no leading, trailing, or repeated `/` and no `.` or `..` segment. The API
-               * rejects it on a `GIT_REPO` or `GITHUB_GIST` version, also when the update leaves out
-               * `sourceType`, because it then checks the stored source type. `null` removes the stored path,
-               * and so does an update that sends `sourceType`, `sourceFiles`, or `tarballUrl` without it.
-               */
-              actorPath?: string | null;
-          }
-        : Partial<V>
-    : never;
-
-/**
  * Fields that can be changed on an existing Actor version.
  *
  * All of them are optional, because the endpoint leaves untouched whatever the payload does not
@@ -160,6 +140,7 @@ type ActorVersionUpdateVariant<V> = V extends unknown
  *
  * On a `SOURCE_FILES` or `TARBALL` version, `actorPath: null` removes the stored path. So does an
  * update that sends `sourceType`, `sourceFiles`, or `tarballUrl` without `actorPath`, so send it
- * again with every upload.
+ * again with every upload. The API rejects an `actorPath` on a `GIT_REPO` or `GITHUB_GIST` version,
+ * also when the update leaves out `sourceType`, because it then checks the stored source type.
  */
-export type ActorVersionUpdateData = ActorVersionUpdateVariant<Version>;
+export type ActorVersionUpdateData = Partial<Version>;

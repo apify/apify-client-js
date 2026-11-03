@@ -739,8 +739,8 @@ describe('Actor methods', () => {
             });
 
             test('`actorPath` is typed on the multi-file and tarball variants only', () => {
-                expectTypeOf<VersionSourceFiles['actorPath']>().toEqualTypeOf<string | undefined>();
-                expectTypeOf<VersionTarball['actorPath']>().toEqualTypeOf<string | undefined>();
+                expectTypeOf<VersionSourceFiles['actorPath']>().toEqualTypeOf<string | null | undefined>();
+                expectTypeOf<VersionTarball['actorPath']>().toEqualTypeOf<string | null | undefined>();
                 expectTypeOf<VersionGitRepo>().not.toHaveProperty('actorPath');
                 expectTypeOf<VersionGitHubGist>().not.toHaveProperty('actorPath');
                 expectTypeOf<VersionSourceCode>().not.toHaveProperty('actorPath');

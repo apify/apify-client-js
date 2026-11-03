@@ -294,13 +294,7 @@ export class ActorVersionCollectionClient extends ResourceCollectionClient {
 export type ActorVersionListResult = Pick<PaginatedList<FinalVersion>, 'total' | 'items'>;
 
 // @public
-export type ActorVersionUpdateData = ActorVersionUpdateVariant<Version>;
-
-// Not exported by the entry point; reachable only as a referenced type.
-// @public
-type ActorVersionUpdateVariant<V> = V extends unknown ? 'actorPath' extends keyof V ? Partial<Omit<V, 'actorPath'>> & {
-    actorPath?: string | null;
-} : Partial<V> : never;
+export type ActorVersionUpdateData = Partial<Version>;
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
@@ -4431,7 +4425,7 @@ export type Version = VersionSourceFiles | VersionGitRepo | VersionTarball | Ver
 // @public (undocumented)
 interface VersionClientNarrowings {
     // (undocumented)
-    actorPath?: NonNullable<GeneratedVersion['actorPath']>;
+    actorPath?: GeneratedVersion['actorPath'];
     // (undocumented)
     sourceType: `${ActorSourceType}`;
 }
@@ -4461,7 +4455,7 @@ export interface VersionSourceCode extends BaseVersion<`${ActorSourceType.Source
 
 // @public
 export interface VersionSourceFiles extends BaseVersion<`${ActorSourceType.SourceFiles}`> {
-    actorPath?: NonNullable<GeneratedVersion['actorPath']>;
+    actorPath?: GeneratedVersion['actorPath'];
     // (undocumented)
     sourceFiles: (SourceCodeFile | SourceCodeFolder)[];
 }
@@ -4472,7 +4466,7 @@ type VersionSourceLocation = 'sourceFiles' | 'gitRepoUrl' | 'tarballUrl' | 'gitH
 
 // @public
 export interface VersionTarball extends BaseVersion<`${ActorSourceType.Tarball}`> {
-    actorPath?: NonNullable<GeneratedVersion['actorPath']>;
+    actorPath?: GeneratedVersion['actorPath'];
     // (undocumented)
     tarballUrl: NonNullable<GeneratedVersion['tarballUrl']>;
 }
