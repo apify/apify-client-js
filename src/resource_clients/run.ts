@@ -12,7 +12,7 @@ import * as schemas from '../schemas.js';
 import { optionalSignalSchema, optionalTimeoutSchema, timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
 import { runtime } from '#runtime';
 import type { PaginatedList, PaginationOptions } from '../utils.js';
-import { anyObjectSchema, paginationOptionsShape, parseArgument, parseResponse, SCANNED_COUNT } from '../utils.js';
+import { anyObjectSchema, paginationOptionsShape, parseArgument, parseResponse } from '../utils.js';
 import type { ActorInput, Run } from './actor.js';
 import { DatasetClient } from './dataset.js';
 import { KeyValueStoreClient } from './key_value_store.js';
@@ -628,7 +628,7 @@ export class RunClient extends ResourceClient {
             yield* page.items;
             // Only an empty page marks the end, as filters can shorten a full one. A page that `clean`, `skipEmpty` or
             // `unwind` emptied past a lagging `itemCount` reports no scanned rows either, so a plain read checks.
-            const isEmpty = page.items.length === 0 && !(page as { [SCANNED_COUNT]?: number })[SCANNED_COUNT];
+            const isEmpty = page.count === 0;
             if (
                 isEmpty &&
                 (!(clean || skipEmpty || unwind?.length) ||

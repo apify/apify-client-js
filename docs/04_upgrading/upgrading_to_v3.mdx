@@ -486,11 +486,15 @@ for await (const item of client.dataset('dataset-id').listItems({ clean: true, c
 }
 ```
 
-`PaginatedList.count` keeps reporting the items returned on the page. The cursor-based iterators, `listKeys()`, `listRequests()` and `paginateRequests()`, are unchanged.
+`PaginatedList.count` on a page from `listItems()` follows the same header. It is the number of rows the API scanned for the page, or the number of items returned when that is larger. In v2 it was always `items.length`. To page through a filtered dataset by hand, advance `offset` by `count`. With `unwind`, cap the step at `limit`, since an unwound page can return more items than the rows it scanned.
+
+The cursor-based iterators, `listKeys()`, `listRequests()` and `paginateRequests()`, are unchanged.
 
 ## Offset iterators page until they find no rows
 
 Iterating a `list()` method or `listItems()` with `for await` no longer stops at the `total` reported by the first page. v2 never requested rows past it, so a dataset that a running Actor kept pushing to was cut off at the size it had when the loop started. v3 keeps requesting pages until one scans no rows, or until your `limit` is reached. The loop yields the rows added while it runs, and it sends one more request at the end to find the empty page.
+
+Each page advances `offset` by the page's `count` or by the number of items it returned, whichever is larger, capped at the page's `limit`. On a `list()` page, `count` is usually the number of items returned. When the API drops entries after counting them, as `store().list()` can, the next page starts after the dropped entries and does not read the same ones again. A page whose `count` is above zero continues the loop even when it returned no items.
 
 ## The last deprecated options are gone
 
