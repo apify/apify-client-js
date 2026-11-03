@@ -916,6 +916,7 @@ interface components {
             gitRepoUrl?: string;
             tarballUrl?: string;
             gitHubGistUrl?: string;
+            actorPath?: string;
         };
         DefaultRunOptions: {
             build?: string;
@@ -977,6 +978,7 @@ interface components {
             gitRepoUrl?: string | null;
             tarballUrl?: string | null;
             gitHubGistUrl?: string | null;
+            actorPath?: string | null;
             githubWebhookId?: number | null;
             gitlabWebhookId?: number | null;
             bitbucketWebhookId?: string | null;
@@ -1134,6 +1136,7 @@ interface components {
             gitRepoUrl?: string;
             tarballUrl?: string;
             gitHubGistUrl?: string;
+            actorPath?: string | null;
         };
         UpdateBuildOnPushRequest: {
             providerId: string;
@@ -4428,6 +4431,8 @@ export type Version = VersionSourceFiles | VersionGitRepo | VersionTarball | Ver
 // @public (undocumented)
 interface VersionClientNarrowings {
     // (undocumented)
+    actorPath?: NonNullable<GeneratedVersion['actorPath']>;
+    // (undocumented)
     sourceType: `${ActorSourceType}`;
 }
 
@@ -4455,7 +4460,8 @@ export interface VersionSourceCode extends BaseVersion<`${ActorSourceType.Source
 }
 
 // @public
-export interface VersionSourceFiles extends BaseVersion<`${ActorSourceType.SourceFiles}`>, VersionSpecGaps {
+export interface VersionSourceFiles extends BaseVersion<`${ActorSourceType.SourceFiles}`> {
+    actorPath?: NonNullable<GeneratedVersion['actorPath']>;
     // (undocumented)
     sourceFiles: (SourceCodeFile | SourceCodeFolder)[];
 }
@@ -4464,14 +4470,9 @@ export interface VersionSourceFiles extends BaseVersion<`${ActorSourceType.Sourc
 // @public
 type VersionSourceLocation = 'sourceFiles' | 'gitRepoUrl' | 'tarballUrl' | 'gitHubGistUrl';
 
-// Not exported by the entry point; reachable only as a referenced type.
 // @public
-interface VersionSpecGaps {
-    actorPath?: string;
-}
-
-// @public
-export interface VersionTarball extends BaseVersion<`${ActorSourceType.Tarball}`>, VersionSpecGaps {
+export interface VersionTarball extends BaseVersion<`${ActorSourceType.Tarball}`> {
+    actorPath?: NonNullable<GeneratedVersion['actorPath']>;
     // (undocumented)
     tarballUrl: NonNullable<GeneratedVersion['tarballUrl']>;
 }
