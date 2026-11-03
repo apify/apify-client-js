@@ -691,7 +691,8 @@ export abstract class HttpClient {
         };
         if (!isError) return apifyResponse;
 
-        // The statistics track the API's rate limits, and only API calls throw on an error status.
+        // The statistics track the API's rate limits. Only API calls throw on an error status, so a call with
+        // `throwOnErrorStatus: false` is taken for a non-API one and its 429s stay out of the statistics.
         if (response.status === RATE_LIMIT_EXCEEDED_STATUS_CODE && config.throwOnErrorStatus !== false) {
             this.stats.addRateLimitError(attempt);
         }
