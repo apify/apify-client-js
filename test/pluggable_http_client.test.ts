@@ -384,7 +384,7 @@ describe('pluggable HTTP client', () => {
             expect(sendRequest).toHaveBeenCalledTimes(4);
         });
 
-        test('sends the client authorization in the header named by authorizationHeader', async () => {
+        test('sends the client authorization in the header chosen by authorizationHeader', async () => {
             const httpClient = new NodeHttpClient({ token: 'hook_token' });
             const request = {
                 url: `${baseUrl}/echo`,

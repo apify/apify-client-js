@@ -141,13 +141,13 @@ export interface ApifyRequestConfig {
      */
     compression?: HttpCompressor | false;
     /**
-     * Name of the header that carries the client's `Authorization` value for this request, which then goes out
-     * without the `Authorization` header. A per-request header of either name still wins.
-     * {@link ActorServerClient.request} sets it to `X-Apify-Authorization`, which the platform consumes, so the
-     * `Authorization` header stays free for the Actor's own authentication.
+     * Header that carries the client's API token for this request. The Apify API reads `Authorization`. Actor
+     * servers also accept `X-Apify-Authorization`, which the platform removes before the request reaches the Actor,
+     * so the `Authorization` header stays free for the Actor's own authentication. {@link ActorServerClient.request}
+     * uses `X-Apify-Authorization`. A per-request header of either name still wins.
      * @default 'Authorization'
      */
-    authorizationHeader?: string;
+    authorizationHeader?: 'Authorization' | 'X-Apify-Authorization';
     /**
      * Whether an error status throws {@link ApifyApiError}. With `false`, the call resolves to the error response
      * once no retry follows, and a rate limit (429) doesn't count toward the client's statistics, which track the
@@ -484,8 +484,8 @@ export abstract class HttpClient {
      * Prepares the headers and the body of a request.
      *
      * Merges the client's default headers with the per-request ones, header names compared case-insensitively and
-     * the per-request values winning, after moving the default `Authorization` header to the header named in
-     * `config.authorizationHeader`. Serializes an object body to JSON, setting `Content-Type: application/json`
+     * the per-request values winning, after moving the default `Authorization` header to `X-Apify-Authorization`
+     * when `config.authorizationHeader` asks for it. Serializes an object body to JSON, setting `Content-Type: application/json`
      * unless the caller supplied a content type. Runs the body through {@link httpCompressor}, or the compressor in
      * `config.compression`, unless `config.compression` is `false`, a `Content-Encoding` header is already set, the
      * body is too small, or its content type says the payload is already compressed. A caller-supplied
@@ -800,12 +800,15 @@ function mergeHeaders(base: Record<string, string>, override?: Record<string, st
 }
 
 /**
- * Moves the `Authorization` header of `headers` to the header named `name`, or returns `headers` unchanged without
- * a name.
+ * Moves the `Authorization` header of `headers` to the header named `name`, or returns `headers` unchanged when
+ * `name` is `Authorization`.
  */
-function withAuthorizationHeader(headers: Record<string, string>, name?: string): Record<string, string> {
+function withAuthorizationHeader(
+    headers: Record<string, string>,
+    name: ApifyRequestConfig['authorizationHeader'] = 'Authorization',
+): Record<string, string> {
     const authorization = getHeader(headers, 'authorization');
-    if (name === undefined || authorization === undefined) return headers;
+    if (name === 'Authorization' || authorization === undefined) return headers;
     const moved = { ...headers };
     deleteHeader(moved, 'authorization');
     return mergeHeaders(moved, { [name]: authorization });

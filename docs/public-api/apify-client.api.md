@@ -481,7 +481,7 @@ export interface ApifyClientOptions {
 
 // @public
 export interface ApifyRequestConfig {
-    authorizationHeader?: string;
+    authorizationHeader?: 'Authorization' | 'X-Apify-Authorization';
     compression?: HttpCompressor | false;
     data?: unknown;
     doNotRetryTimeouts?: boolean;
