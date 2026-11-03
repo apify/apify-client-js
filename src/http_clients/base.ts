@@ -143,8 +143,8 @@ export interface ApifyRequestConfig {
     /**
      * Header that carries the client's API token for this request. The Apify API reads `Authorization`. Actor
      * servers also accept `X-Apify-Authorization`, which the platform removes before the request reaches the Actor,
-     * so the `Authorization` header stays free for the Actor's own authentication. {@link ActorServerClient.request}
-     * uses `X-Apify-Authorization`. A per-request header of either name still wins.
+     * so the `Authorization` header stays free for the Actor's own authentication. A per-request header of either
+     * name still wins.
      * @default 'Authorization'
      */
     authorizationHeader?: 'Authorization' | 'X-Apify-Authorization';
@@ -483,14 +483,14 @@ export abstract class HttpClient {
     /**
      * Prepares the headers and the body of a request.
      *
-     * Merges the client's default headers with the per-request ones, header names compared case-insensitively and
-     * the per-request values winning, after moving the default `Authorization` header to `X-Apify-Authorization`
-     * when `config.authorizationHeader` asks for it. Serializes an object body to JSON, setting `Content-Type: application/json`
-     * unless the caller supplied a content type. Runs the body through {@link httpCompressor}, or the compressor in
-     * `config.compression`, unless `config.compression` is `false`, a `Content-Encoding` header is already set, the
-     * body is too small, or its content type says the payload is already compressed. A caller-supplied
-     * `Content-Encoding` is forwarded as it is, which is how a pre-encoded body is uploaded, and
-     * `Content-Encoding: identity` opts a single request out of compression.
+     * Merges the client's default headers with the per-request ones, header names compared case-insensitively and the
+     * per-request values winning, after moving the default `Authorization` header to `X-Apify-Authorization` when
+     * `config.authorizationHeader` asks for it. Serializes an object body to JSON, setting
+     * `Content-Type: application/json` unless the caller supplied a content type. Runs the body through
+     * {@link httpCompressor}, or the compressor in `config.compression`, unless `config.compression` is `false`, a
+     * `Content-Encoding` header is already set, the body is too small, or its content type says the payload is already
+     * compressed. A caller-supplied `Content-Encoding` is forwarded as it is, which is how a pre-encoded body is
+     * uploaded, and `Content-Encoding: identity` opts a single request out of compression.
      */
     protected async prepareRequest(
         config: ApifyRequestConfig,
