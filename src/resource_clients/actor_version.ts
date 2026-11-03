@@ -139,7 +139,13 @@ export class ActorVersionClient extends ResourceClient {
 type ActorVersionUpdateVariant<V> = V extends unknown
     ? 'actorPath' extends keyof V
         ? Partial<Omit<V, 'actorPath'>> & {
-              /** The Actor's folder inside the uploaded source. `null` removes the stored path. */
+              /**
+               * The Actor's folder inside the uploaded source, such as `actors/typescript-actor`: 1 to 255
+               * characters, with no leading, trailing, or repeated `/` and no `.` or `..` segment. The API
+               * rejects it on a `GIT_REPO` or `GITHUB_GIST` version, also when the update leaves out
+               * `sourceType`, because it then checks the stored source type. `null` removes the stored path,
+               * and so does an update that sends `sourceType`, `sourceFiles`, or `tarballUrl` without it.
+               */
               actorPath?: string | null;
           }
         : Partial<V>
