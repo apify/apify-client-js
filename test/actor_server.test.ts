@@ -162,6 +162,16 @@ describe('ActorServerClient', () => {
         expect(request.headers['x-apify-authorization']).toBe('Bearer test-token');
     });
 
+    test('request() sends parentRequestId as the X-Actor-Request-ID header, over one passed in headers', async () => {
+        await client
+            .actor(ACTOR_ID)
+            .server()
+            .request('/', { headers: { 'x-actor-request-id': 'stale' }, parentRequestId: 'parent-id' });
+
+        const [request] = serverRequests();
+        expect(request.headers['x-actor-request-id']).toBe('parent-id');
+    });
+
     test('request() returns a redirect of the server as it is, so the token never reaches its target', async () => {
         let redirected = false;
         const otherServer = http.createServer((_req, res) => {

@@ -257,6 +257,7 @@ export interface ActorServerRequestOptions extends TimeoutOptions {
     headers?: Record<string, string>;
     method?: HttpMethod;
     params?: Record<string, unknown>;
+    parentRequestId?: string;
     responseType?: ApifyResponseType;
 }
 
