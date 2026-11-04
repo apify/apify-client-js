@@ -111,12 +111,13 @@ export class AxiosHttpClient extends HttpClient {
 
     /**
      * Sends the request through axios and hands the raw response back. A stream body is sent without following
-     * redirects, since the part of it already sent could not be replayed.
+     * redirects, since the part of it already sent could not be replayed, and so is a request with
+     * `followRedirects: false`. In the browser, the browser follows redirects itself.
      */
     override async sendRequest(request: HttpRequest): Promise<HttpResponse> {
         await this.#ensureHttpAgents();
 
-        const { method, url, headers, body, timeoutMillis, stream, signal } = request;
+        const { method, url, headers, body, timeoutMillis, stream, followRedirects, signal } = request;
         const response = await this.axios.request({
             method,
             url,
@@ -126,8 +127,9 @@ export class AxiosHttpClient extends HttpClient {
             timeout: timeoutMillis ?? 0,
             signal,
             responseType: stream ? 'stream' : 'arraybuffer',
-            // See axios/axios#1045 for why axios must not buffer a stream body to follow redirects.
-            ...(isStream(body) ? { maxRedirects: 0 } : {}),
+            // See axios/axios#1045 for why axios must not buffer a stream body to follow redirects. The XHR adapter
+            // ignores `maxRedirects`, since the browser follows redirects itself.
+            ...(isStream(body) || !followRedirects ? { maxRedirects: 0 } : {}),
         });
 
         return {

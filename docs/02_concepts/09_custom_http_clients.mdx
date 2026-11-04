@@ -77,6 +77,7 @@ Mark your implementations with the `override` keyword, as the built-in axios cli
 | `body?: string \| Buffer \| ArrayBuffer \| ArrayBufferView \| Readable \| Blob` | Serialized and compressed body, or `undefined`. A `Blob` body arrives in Node.js as a new `Readable` for every attempt |
 | `timeoutMillis?: number` | Timeout of this attempt, or `undefined` for a request that runs without one |
 | `stream: boolean` | Whether to return the body unread, as a `Readable` |
+| `followRedirects: boolean` | Whether to follow redirects. When it's `false`, return a redirect response as it is, since the request carries the API token |
 | `signal?: AbortSignal` | The caller's abort signal, to end the request in flight with. The pipeline stops retrying once it aborts |
 
 It returns an <ApiLink to="interface/HttpResponse">`HttpResponse`</ApiLink>. It is an interface, not a class, so any object of this shape will do:
@@ -100,7 +101,7 @@ Use <ApiLink to="class/ApifyClient#withCustomHttpClient">`ApifyClient.withCustom
 After that, all API calls made through the client go through your HTTP client.
 
 :::warning
-If you override `call()` itself, your implementation becomes responsible for request preparation, retries, timeouts, API error conversion and statistics. It also has to send the client's default headers with every request, otherwise the `Authorization` header never reaches the API. Implementing the transport hooks and inheriting `call()` keeps the shared behavior.
+If you override `call()` itself, your implementation becomes responsible for request preparation, retries, timeouts, API error conversion and statistics. It also has to send the client's default headers with every request, otherwise the `Authorization` header never reaches the API, and to honor the per-request `compression`, `authorizationHeader`, `throwOnErrorStatus`, `retryStatusCodes`, `retryTransportErrors` and `followRedirects` options of <ApiLink to="interface/ApifyRequestConfig">`ApifyRequestConfig`</ApiLink>. <ApiLink to="class/ActorServerClient#request">`ActorServerClient.request()`</ApiLink> relies on them to keep the API token away from the Actor's code, to return the server's error responses and to avoid sending a request to the Actor twice. Implementing the transport hooks and inheriting `call()` keeps the shared behavior.
 :::
 
 ## Use cases

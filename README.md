@@ -15,6 +15,7 @@ automatic retries and convenience functions that improve the experience of using
 - [Features](#features)
     - [Automatic parsing and error handling](#automatic-parsing-and-error-handling)
     - [Retries with exponential backoff](#retries-with-exponential-backoff)
+    - [Server Actors](#server-actors)
     - [Convenience functions and options](#convenience-functions-and-options)
 - [Usage concepts](#usage-concepts)
     - [Nested clients](#nested-clients)
@@ -64,6 +65,11 @@ options of the `ApifyClient` constructor.
 The client ships with an axios-based HTTP client and accepts a custom one. Extend `HttpClient`, implement
 `sendRequest()` over the HTTP library of your choice and plug it in with `ApifyClient.withCustomHttpClient()`. The
 custom client inherits the retries, timeouts, compression and error handling of the built-in one.
+
+### Server Actors
+
+`client.actor(id).server()` returns a client for a Server Actor (formerly Actor Standby). It sends HTTP requests to
+the Actor's web server with your token, and returns the server's URL and OpenAPI specification.
 
 ### Convenience functions and options
 
