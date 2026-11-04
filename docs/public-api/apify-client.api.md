@@ -969,7 +969,7 @@ interface components {
             memoryMbytes?: number | null;
             disableStandbyFieldsOverride?: boolean | null;
             shouldPassActorInput?: boolean | null;
-            tenancy?: string | null;
+            tenancy?: "SINGLE_TENANT" | "MULTI_TENANT" | null;
             isConsoleAuthEnabled?: boolean | null;
             isTokenlessEnabled?: boolean | null;
         };

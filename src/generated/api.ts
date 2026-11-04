@@ -5173,13 +5173,20 @@ export interface components {
             /** @description Whether to pass the Actor's input to the standby run. If `false`, the standby runs start with no input. */
             shouldPassActorInput?: boolean | null;
             /**
-             * @description Whether each user gets their own standby runs (`SINGLE_TENANT`) or runs are shared across users (`MULTI_TENANT`). Set by Apify.
+             * @description Whether each user gets their own standby runs (`SINGLE_TENANT`) or runs are shared across users (`MULTI_TENANT`).
              * @example SINGLE_TENANT
+             * @enum {string|null}
              */
-            tenancy?: string | null;
-            /** @description Whether standby requests can be authenticated with an Apify Console session. Set by Apify. */
+            tenancy?: "SINGLE_TENANT" | "MULTI_TENANT" | null;
+            /**
+             * @description Whether standby requests can be authenticated with an Apify Console session.
+             *     When creating an Actor, omit this field or set it to `false`. When updating an Actor, only Apify administrators can change it; other users can only send the current value, or `false` if it's not set yet.
+             */
             isConsoleAuthEnabled?: boolean | null;
-            /** @description Whether standby requests can be made without an API token. Set by Apify. */
+            /**
+             * @description Whether standby requests can be made without an API token.
+             *     When creating an Actor, omit this field or set it to `false`. When updating an Actor, only Apify administrators can change it; other users can only send the current value, or `false` if it's not set yet.
+             */
             isTokenlessEnabled?: boolean | null;
         };
         /** ExampleRunInput */
