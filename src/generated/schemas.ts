@@ -134,7 +134,7 @@ export const ActorStandby = lazySchema(() => z.looseObject({
     memoryMbytes: z.int().nullable().optional(),
     disableStandbyFieldsOverride: z.boolean().nullable().optional(),
     shouldPassActorInput: z.boolean().nullable().optional(),
-    tenancy: z.string().nullable().optional(),
+    tenancy: z.enum(["SINGLE_TENANT", "MULTI_TENANT"]).or(z.string()).nullable().optional(),
     isConsoleAuthEnabled: z.boolean().nullable().optional(),
     isTokenlessEnabled: z.boolean().nullable().optional(),
 }));
