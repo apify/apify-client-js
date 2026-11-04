@@ -1,0 +1,447 @@
+import http from 'node:http';
+import type { AddressInfo } from 'node:net';
+import { Readable } from 'node:stream';
+
+import type { ActorServerRequestOptions } from 'apify-client';
+import { ApifyClient } from 'apify-client';
+import { afterAll, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
+
+const ACTOR_ID = 'test-actor-id';
+const ACTOR_PATH = `/v2/actors/${ACTOR_ID}`;
+const SERVER_PREFIX = '/server';
+const OPENAPI_SPEC = { openapi: '3.0.0', info: { title: 'Test server', version: '1.0.0' }, paths: {} };
+const TAGGED_BUILDS = {
+    latest: { buildId: 'latest-build-id', buildNumber: '0.0.2' },
+    beta: { buildId: 'beta-build-id', buildNumber: '0.0.3' },
+};
+
+interface ReceivedRequest {
+    method: string;
+    path: string;
+    query: Record<string, string>;
+    headers: http.IncomingHttpHeaders;
+    body: Buffer;
+}
+
+describe('ActorServerClient', () => {
+    let server: http.Server;
+    let baseUrl: string;
+    let client: ApifyClient;
+    /** Requests the test server received, oldest first. */
+    let received: ReceivedRequest[];
+    /** The Actor the API returns, or 404 for an Actor that does not exist. */
+    let actor: Record<string, unknown> | 404;
+    /** Build numbers of the Actor's builds, keyed by build ID, as the builds list returns them. */
+    let builds: Record<string, string>;
+    /** How many builds the builds list returns per page, or all of them when undefined. */
+    let buildsPerPage: number | undefined;
+    /** The `actorDefinition` of every build the API returns. */
+    let actorDefinition: Record<string, unknown> | null;
+    /** Statuses the server answers `/flaky` with, one per request, before it answers 200. */
+    let flakyStatuses: number[];
+
+    const serverUrl = () => `${baseUrl}${SERVER_PREFIX}`;
+    const serverRequests = () => received.filter((request) => request.path.startsWith(`${SERVER_PREFIX}/`));
+    const actorGets = () => received.filter((request) => request.path === ACTOR_PATH);
+
+    const serverActor = (fields: Record<string, unknown> = {}) => ({
+        id: ACTOR_ID,
+        name: 'test-actor',
+        actorStandby: { isEnabled: true },
+        taggedBuilds: TAGGED_BUILDS,
+        standbyUrl: serverUrl(),
+        ...fields,
+    });
+
+    beforeAll(async () => {
+        server = http.createServer((req, res) => {
+            const chunks: Buffer[] = [];
+            req.on('data', (chunk: Buffer) => chunks.push(chunk));
+            req.on('end', () => {
+                const url = new URL(req.url!, 'http://localhost');
+                received.push({
+                    method: req.method!,
+                    path: url.pathname,
+                    query: Object.fromEntries(url.searchParams),
+                    headers: req.headers,
+                    body: Buffer.concat(chunks),
+                });
+                const json = (status: number, payload: unknown) => {
+                    res.writeHead(status, { 'content-type': 'application/json' });
+                    res.end(JSON.stringify(payload));
+                };
+
+                if (url.pathname === ACTOR_PATH) {
+                    if (actor === 404) {
+                        json(404, { error: { type: 'record-not-found', message: 'Actor was not found' } });
+                    } else {
+                        json(200, { data: actor });
+                    }
+                } else if (url.pathname === `${ACTOR_PATH}/builds`) {
+                    const items = Object.entries(builds).map(([id, buildNumber]) => ({ id, buildNumber }));
+                    const offset = Number(url.searchParams.get('offset') ?? 0);
+                    const page = items.slice(offset, buildsPerPage === undefined ? undefined : offset + buildsPerPage);
+                    json(200, {
+                        data: { total: items.length, offset, limit: 1000, count: page.length, desc: true, items: page },
+                    });
+                } else if (url.pathname.startsWith('/v2/actor-builds/')) {
+                    const id = url.pathname.split('/').pop();
+                    json(200, { data: { id, actorDefinition } });
+                } else if (url.pathname === `${SERVER_PREFIX}/flaky` && flakyStatuses.length > 0) {
+                    json(flakyStatuses.shift()!, { error: 'flaky' });
+                } else if (url.pathname === `${SERVER_PREFIX}/hang-up`) {
+                    req.socket.destroy();
+                } else if (url.pathname === `${SERVER_PREFIX}/missing`) {
+                    res.writeHead(404, { 'content-type': 'text/plain' });
+                    res.end('Not here');
+                } else if (url.pathname === `${SERVER_PREFIX}/broken`) {
+                    res.writeHead(500, { 'content-type': 'application/json' });
+                    res.end('{not json');
+                } else {
+                    json(200, { ok: true });
+                }
+            });
+        });
+        await new Promise<void>((done) => {
+            server.listen(0, '127.0.0.1', done);
+        });
+        baseUrl = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+    });
+
+    afterAll(async () => {
+        server.closeAllConnections();
+        await new Promise((done) => {
+            server.close(done);
+        });
+    });
+
+    beforeEach(() => {
+        received = [];
+        actor = serverActor();
+        builds = {};
+        buildsPerPage = undefined;
+        actorDefinition = { webServerSchema: OPENAPI_SPEC };
+        flakyStatuses = [];
+        client = new ApifyClient({ baseUrl, token: 'test-token', maxRetries: 0 });
+    });
+
+    test('request() sends the request to the server URL with the method, path, query, body and token', async () => {
+        const response = await client
+            .actor(ACTOR_ID)
+            .server()
+            .request('/search', { method: 'POST', params: { q: 'apify' }, data: { limit: 5 } });
+
+        expect(response.status).toBe(200);
+        expect(response.data).toEqual({ ok: true });
+        expect(serverRequests()).toHaveLength(1);
+        const [request] = serverRequests();
+        expect(request.method).toBe('POST');
+        expect(request.path).toBe(`${SERVER_PREFIX}/search`);
+        expect(request.query).toEqual({ q: 'apify' });
+        expect(JSON.parse(request.body.toString())).toEqual({ limit: 5 });
+        expect(request.headers['x-apify-authorization']).toBe('Bearer test-token');
+        expect(request.headers.authorization).toBeUndefined();
+    });
+
+    test('request() sends an Authorization header passed by the caller as it is', async () => {
+        await client
+            .actor(ACTOR_ID)
+            .server()
+            .request('/', { headers: { authorization: 'Bearer actor-token' } });
+
+        const [request] = serverRequests();
+        expect(request.headers.authorization).toBe('Bearer actor-token');
+        expect(request.headers['x-apify-authorization']).toBe('Bearer test-token');
+    });
+
+    test('request() returns a redirect of the server as it is, so the token never reaches its target', async () => {
+        let redirected = false;
+        const otherServer = http.createServer((_req, res) => {
+            redirected = true;
+            res.end();
+        });
+        await new Promise<void>((done) => {
+            otherServer.listen(0, '127.0.0.1', done);
+        });
+        const location = `http://127.0.0.1:${(otherServer.address() as AddressInfo).port}/`;
+        const redirectServer = http.createServer((_req, res) => {
+            res.writeHead(302, { location });
+            res.end();
+        });
+        await new Promise<void>((done) => {
+            redirectServer.listen(0, '127.0.0.1', done);
+        });
+        actor = serverActor({ standbyUrl: `http://127.0.0.1:${(redirectServer.address() as AddressInfo).port}` });
+
+        try {
+            const response = await client.actor(ACTOR_ID).server().request('/');
+            expect(response.status).toBe(302);
+            expect(response.headers.location).toBe(location);
+        } finally {
+            await new Promise((done) => {
+                otherServer.close(done);
+            });
+            await new Promise((done) => {
+                redirectServer.close(done);
+            });
+        }
+
+        expect(redirected).toBe(false);
+    });
+
+    test('request() reuses the server URL fetched by the first call on the same Actor client', async () => {
+        const actorClient = client.actor(ACTOR_ID);
+
+        await actorClient.server().request();
+        await actorClient.server().request();
+
+        expect(actorGets()).toHaveLength(1);
+        expect(serverRequests().map((request) => request.path)).toEqual([`${SERVER_PREFIX}/`, `${SERVER_PREFIX}/`]);
+    });
+
+    test('getUrl() returns the standbyUrl of the Actor and fetches it only once', async () => {
+        const actorClient = client.actor(ACTOR_ID);
+
+        await expect(actorClient.server().getUrl()).resolves.toBe(serverUrl());
+        await expect(actorClient.server().getUrl()).resolves.toBe(serverUrl());
+
+        expect(actorGets()).toHaveLength(1);
+    });
+
+    test('getUrl() fetches the Actor once for concurrent first calls', async () => {
+        const actorServerClient = client.actor(ACTOR_ID).server();
+
+        const [url] = await Promise.all([actorServerClient.getUrl(), actorServerClient.request()]);
+
+        expect(url).toBe(serverUrl());
+        expect(actorGets()).toHaveLength(1);
+    });
+
+    test('getUrl() fetches the Actor again after a failed lookup', async () => {
+        const actorServerClient = client.actor(ACTOR_ID).server();
+        actor = 404;
+
+        await expect(actorServerClient.getUrl()).rejects.toThrow('does not exist');
+        actor = serverActor();
+
+        await expect(actorServerClient.getUrl()).resolves.toBe(serverUrl());
+        expect(actorGets()).toHaveLength(2);
+    });
+
+    test('request() reuses the server URL fetched by getOpenApiSpec()', async () => {
+        const actorServerClient = client.actor(ACTOR_ID).server();
+
+        await actorServerClient.getOpenApiSpec();
+        await actorServerClient.request();
+
+        expect(actorGets()).toHaveLength(1);
+    });
+
+    test.each([
+        { name: 'getUrl()', call: (c: ApifyClient) => c.actor(ACTOR_ID).server().getUrl() },
+        { name: 'getOpenApiSpec()', call: (c: ApifyClient) => c.actor(ACTOR_ID).server().getOpenApiSpec() },
+        { name: 'request()', call: (c: ApifyClient) => c.actor(ACTOR_ID).server().request() },
+    ])('$name throws for an Actor that is not a Server Actor', async ({ call }) => {
+        actor = serverActor({ standbyUrl: null });
+
+        await expect(call(client)).rejects.toThrow('is not a Server Actor');
+        expect(serverRequests()).toHaveLength(0);
+    });
+
+    test.each([
+        { name: 'a protocol-relative URL', path: '//evil.example/steal' },
+        { name: 'userinfo', path: '@evil.example/steal' },
+        { name: 'an absolute URL', path: 'https://evil.example/steal' },
+    ])('request() sends a path that looks like $name to the server, as a path on it', async ({ path }) => {
+        const response = await client.actor(ACTOR_ID).server().request(path);
+
+        expect(response.status).toBe(200);
+        expect(serverRequests()).toHaveLength(1);
+    });
+
+    test('request() drops a fragment in the path, so the params still reach the server', async () => {
+        await client
+            .actor(ACTOR_ID)
+            .server()
+            .request('/search#results', { params: { q: 'apify' } });
+
+        const [request] = serverRequests();
+        expect(request.path).toBe(`${SERVER_PREFIX}/search`);
+        expect(request.query).toEqual({ q: 'apify' });
+    });
+
+    test('request() sends a body large enough to compress uncompressed', async () => {
+        const payload = { items: Array.from({ length: 100 }, () => 'x'.repeat(100)) };
+
+        await client.actor(ACTOR_ID).server().request('/items', { method: 'POST', data: payload });
+
+        const [request] = serverRequests();
+        expect(request.headers['content-encoding']).toBeUndefined();
+        expect(JSON.parse(request.body.toString())).toEqual(payload);
+    });
+
+    test('request() returns the body as raw bytes with the buffer response type', async () => {
+        const response = await client.actor(ACTOR_ID).server().request('/', { responseType: 'buffer' });
+
+        expect(Buffer.isBuffer(response.data)).toBe(true);
+        expect(JSON.parse(response.data.toString())).toEqual({ ok: true });
+    });
+
+    test('request() returns the body unread with the stream response type', async () => {
+        const response = await client.actor(ACTOR_ID).server().request('/', { responseType: 'stream' });
+
+        expect(response.data).toBeInstanceOf(Readable);
+        expect(JSON.parse(Buffer.concat(await response.data.toArray()).toString())).toEqual({ ok: true });
+    });
+
+    test.each<{ name: string; options: ActorServerRequestOptions }>([
+        { name: 'method', options: { method: 'get' as 'GET' } },
+        { name: 'response type', options: { responseType: 'text' as 'buffer' } },
+        { name: 'option', options: { compression: 'gzip' } as unknown as ActorServerRequestOptions },
+    ])('request() rejects an unknown $name without sending a request', async ({ options }) => {
+        await expect(client.actor(ACTOR_ID).server().request('/', options)).rejects.toThrow();
+        expect(received).toHaveLength(0);
+    });
+
+    test('request() throws for an Actor that does not exist', async () => {
+        actor = 404;
+
+        await expect(client.actor(ACTOR_ID).server().request()).rejects.toThrow('Actor test-actor-id does not exist.');
+    });
+
+    test('request() returns an error response of the server as it is', async () => {
+        const response = await client.actor(ACTOR_ID).server().request('/missing');
+
+        expect(response.status).toBe(404);
+        expect(response.data).toBe('Not here');
+    });
+
+    test('request() returns an error response whose body does not parse with the raw bytes', async () => {
+        const response = await client.actor(ACTOR_ID).server().request('/broken');
+
+        expect(response.status).toBe(500);
+        expect(Buffer.from(response.data).toString()).toBe('{not json');
+    });
+
+    test.each([
+        { name: 'a rate limit', status: 429 },
+        { name: 'Service Unavailable', status: 503 },
+    ])('request() retries $name', async ({ status }) => {
+        flakyStatuses = [status, status];
+        client = new ApifyClient({ baseUrl, token: 'test-token', maxRetries: 2, minDelayBetweenRetriesMillis: 1 });
+
+        const response = await client.actor(ACTOR_ID).server().request('/flaky');
+
+        expect(response.status).toBe(200);
+        expect(serverRequests()).toHaveLength(3);
+    });
+
+    test("request() leaves a 429 from the server out of the client's rate-limit statistics", async () => {
+        flakyStatuses = [429];
+        client = new ApifyClient({ baseUrl, token: 'test-token', maxRetries: 1, minDelayBetweenRetriesMillis: 1 });
+
+        await client.actor(ACTOR_ID).server().request('/flaky');
+
+        expect(client.stats.rateLimitErrors).toEqual([]);
+    });
+
+    test('request() returns the last retried response once the retries run out', async () => {
+        flakyStatuses = [503, 503, 503];
+        client = new ApifyClient({ baseUrl, token: 'test-token', maxRetries: 1, minDelayBetweenRetriesMillis: 1 });
+
+        const response = await client.actor(ACTOR_ID).server().request('/flaky');
+
+        expect(response.status).toBe(503);
+        expect(serverRequests()).toHaveLength(2);
+    });
+
+    test('request() returns a server error other than 503 without retrying it', async () => {
+        flakyStatuses = [500];
+        client = new ApifyClient({ baseUrl, token: 'test-token', maxRetries: 2, minDelayBetweenRetriesMillis: 1 });
+
+        const response = await client
+            .actor(ACTOR_ID)
+            .server()
+            .request('/flaky', { method: 'POST', data: { a: 1 } });
+
+        expect(response.status).toBe(500);
+        expect(serverRequests()).toHaveLength(1);
+    });
+
+    test('request() does not retry a transport error, since the Actor may have already handled the request', async () => {
+        client = new ApifyClient({ baseUrl, token: 'test-token', maxRetries: 2, minDelayBetweenRetriesMillis: 1 });
+
+        await expect(
+            client
+                .actor(ACTOR_ID)
+                .server()
+                .request('/hang-up', { method: 'POST', data: { a: 1 } }),
+        ).rejects.toThrow();
+        expect(serverRequests()).toHaveLength(1);
+    });
+
+    test.each([
+        { name: 'no build set uses latest', build: undefined, buildId: 'latest-build-id' },
+        { name: 'a build tag', build: 'beta', buildId: 'beta-build-id' },
+    ])('getOpenApiSpec() returns the web server schema of the tagged build: $name', async ({ build, buildId }) => {
+        actor = serverActor({ actorStandby: { isEnabled: true, build } });
+
+        await expect(client.actor(ACTOR_ID).server().getOpenApiSpec()).resolves.toEqual(OPENAPI_SPEC);
+        expect(received.at(-1)?.path).toBe(`/v2/actor-builds/${buildId}`);
+    });
+
+    test('getOpenApiSpec() looks a build number up in the builds of the Actor', async () => {
+        actor = serverActor({ actorStandby: { isEnabled: true, build: '0.0.1' } });
+        builds = { 'latest-build-id': '0.0.2', 'old-build-id': '0.0.1' };
+
+        await expect(client.actor(ACTOR_ID).server().getOpenApiSpec()).resolves.toEqual(OPENAPI_SPEC);
+        expect(received.at(-1)?.path).toBe('/v2/actor-builds/old-build-id');
+    });
+
+    test.each([
+        { name: 'no web server schema', definition: { name: 'test-actor' } },
+        { name: 'no Actor definition', definition: null },
+    ])('getOpenApiSpec() returns undefined for a build with $name', async ({ definition }) => {
+        actorDefinition = definition;
+
+        await expect(client.actor(ACTOR_ID).server().getOpenApiSpec()).resolves.toBeUndefined();
+    });
+
+    test('getOpenApiSpec() throws for a build that is neither a tag nor a listed build number', async () => {
+        actor = serverActor({ actorStandby: { isEnabled: true, build: '9.9.9' } });
+        builds = { 'latest-build-id': '0.0.2' };
+
+        await expect(client.actor(ACTOR_ID).server().getOpenApiSpec()).rejects.toThrow(
+            'Build 9.9.9 of Actor test-actor-id does not exist.',
+        );
+    });
+
+    test('getOpenApiSpec() stops the build number lookup at an older build of the same version', async () => {
+        actor = serverActor({ actorStandby: { isEnabled: true, build: '0.0.4' } });
+        builds = { 'build-5': '0.0.5', 'build-3': '0.0.3', 'build-2': '0.0.2', 'build-1': '0.0.1' };
+        buildsPerPage = 1;
+
+        await expect(client.actor(ACTOR_ID).server().getOpenApiSpec()).rejects.toThrow('does not exist');
+        expect(received.filter((request) => request.path === `${ACTOR_PATH}/builds`)).toHaveLength(2);
+    });
+
+    test('getOpenApiSpec() throws for an unknown tag without listing the builds', async () => {
+        actor = serverActor({ actorStandby: { isEnabled: true, build: 'nightly' } });
+
+        await expect(client.actor(ACTOR_ID).server().getOpenApiSpec()).rejects.toThrow(
+            'Build nightly of Actor test-actor-id does not exist.',
+        );
+        expect(received.filter((request) => request.path === `${ACTOR_PATH}/builds`)).toHaveLength(0);
+    });
+
+    test('standby() logs a deprecation warning and returns the server client', async () => {
+        const deprecated = vi.spyOn(client.httpClient.logger, 'deprecated');
+        const actorClient = client.actor(ACTOR_ID);
+
+        const standbyClient = actorClient.standby();
+
+        expect(deprecated).toHaveBeenCalledWith(expect.stringContaining('`standby()` is deprecated'));
+        expect(standbyClient).toBe(actorClient.server());
+        await expect(standbyClient.request('/search')).resolves.toMatchObject({ data: { ok: true } });
+    });
+});

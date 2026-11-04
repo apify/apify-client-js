@@ -92,7 +92,7 @@ function getHeader(config: ApifyRequestConfig, name: string): string | undefined
 
 async function maybeCompressRequest(config: ApifyRequestConfig): Promise<ApifyRequestConfig> {
     // A caller-supplied encoding means the body is already encoded and the header describes it, so leave both alone.
-    if (getHeader(config, 'content-encoding')) return config;
+    if (config.doNotCompress || getHeader(config, 'content-encoding')) return config;
 
     if (!isCompressibleContentType(getHeader(config, 'content-type'))) return config;
 
@@ -126,6 +126,8 @@ function parseResponseData(response: ApifyResponse): ApifyResponse {
     try {
         response.data = maybeParseBody(response.data, contentTypeHeader);
     } catch (err) {
+        // A caller that takes error responses gets an unparsable error body as the raw bytes.
+        if (response.status >= 300 && response.config.throwOnErrorStatus === false) return response;
         throw new InvalidResponseBodyError(response, err as Error);
     }
 

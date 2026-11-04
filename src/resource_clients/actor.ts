@@ -8,6 +8,7 @@ import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
 import { cast, parseDateFields, pluckData, stringifyWebhooksToBase64 } from '../utils';
+import { ActorServerClient } from './actor_server';
 import type { ActorVersion } from './actor_version';
 import { ActorVersionClient } from './actor_version';
 import { ActorVersionCollectionClient } from './actor_version_collection';
@@ -41,6 +42,8 @@ import type { ValueOf } from 'type-fest';
  * @see https://docs.apify.com/platform/actors
  */
 export class ActorClient extends ResourceClient {
+    private _serverClient?: ActorServerClient;
+
     /**
      * @hidden
      */
@@ -508,6 +511,53 @@ export class ActorClient extends ResourceClient {
     webhooks(): WebhookCollectionClient {
         return new WebhookCollectionClient(this._subResourceOptions());
     }
+
+    /**
+     * Returns a client for the server interface of this Actor.
+     *
+     * A Server Actor runs a web server, its server interface, that is called over HTTP without starting a run for
+     * each call. Server Actors were formerly called Actor Standby. Every call returns the same client, so the server
+     * URL it fetches is reused.
+     *
+     * @returns The client for the server interface of this Actor
+     * @see https://docs.apify.com/platform/actors/running/standby
+     * @since Added in 2.26.0
+     *
+     * @example
+     * ```javascript
+     * const response = await client.actor('username/actor-name').server().request('/search', {
+     *     params: { q: 'apify' },
+     * });
+     * ```
+     */
+    server(): ActorServerClient {
+        this._serverClient ??= new ActorServerClient({
+            baseUrl: this.baseUrl,
+            publicBaseUrl: this.publicBaseUrl,
+            apifyClient: this.apifyClient,
+            httpClient: this.httpClient,
+            id: this.id,
+            params: this.params,
+        });
+        return this._serverClient;
+    }
+
+    /**
+     * Returns a client for the server interface of this Actor in Standby mode.
+     *
+     * Named after Actor Standby, the former name of Server Actors.
+     *
+     * @deprecated Use {@link server} instead. Will be removed in v4.
+     * @returns The client for the server interface of this Actor
+     * @see https://docs.apify.com/platform/actors/running/standby
+     * @since Added in 2.26.0
+     */
+    standby(): ActorServerClient {
+        this.httpClient.logger.deprecated(
+            '`standby()` is deprecated and will be removed in v4. Use `server()` instead.',
+        );
+        return this.server();
+    }
 }
 
 /**
@@ -581,6 +631,11 @@ export interface Actor {
     actorStandby?: ActorStandby & {
         isEnabled: boolean;
     };
+    /**
+     * URL of the Actor's server interface, or `null` if the Actor is not a Server Actor
+     * @since Added in 2.26.0
+     */
+    standbyUrl?: string | null;
     /**
      * Permission level of the Actor on Apify platform
      * @since Added in 2.21.0
@@ -1064,6 +1119,12 @@ export interface ActorDefinition {
     minMemoryMbytes?: number;
     maxMemoryMbytes?: number;
     usesStandbyMode?: boolean;
+    /**
+     * OpenAPI specification of the Actor's web server.
+     * @see https://docs.apify.com/platform/actors/development/actor-definition/web-server-schema
+     * @since Added in 2.26.0
+     */
+    webServerSchema?: Record<string, unknown>;
 }
 
 interface CommonActorPricingInfo {

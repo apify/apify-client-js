@@ -1,5 +1,6 @@
 export * from './apify_client';
 export * from './resource_clients/actor';
+export * from './resource_clients/actor_server';
 export * from './resource_clients/actor_collection';
 export * from './resource_clients/actor_env_var';
 export * from './resource_clients/actor_env_var_collection';

@@ -204,6 +204,7 @@ export class HttpClient {
         const makeRequest: RetryFunction<ApifyResponse, Error> = async (stopTrying, attempt) => {
             this.stats.requests++;
             let response: ApifyResponse;
+            let returnErrorResponse = false;
             const requestIsStream = isStream(config.data);
 
             try {
@@ -223,22 +224,32 @@ export class HttpClient {
                 response = await this.axios.request(config);
                 if (this._isStatusOk(response.status)) return response;
 
+                // A caller that takes error responses gets the last one, once the retries are spent, as it is.
+                returnErrorResponse =
+                    config.throwOnErrorStatus === false &&
+                    (requestIsStream ||
+                        attempt > this.maxRetries ||
+                        !this._isStatusCodeRetryable(response.status, config));
+
                 // A failed request with `responseType: 'stream'` carries the API error body in the stream. Read
                 // it so that `ApifyApiError` can parse it like any other error body. A body that cannot be read
                 // leaves the error without a message, which beats losing the status code to a stream error.
-                if (isStream(response.data)) {
+                if (isStream(response.data) && !returnErrorResponse) {
                     response.data = await readStreamToBuffer(response.data).catch(() => undefined);
                 }
             } catch (err) {
                 return cast(this._handleRequestError(err as AxiosError, config, stopTrying));
             }
 
-            if (response.status === RATE_LIMIT_EXCEEDED_STATUS_CODE) {
+            // The statistics track the API's rate limits, so a call that takes error responses keeps its 429s out.
+            if (response.status === RATE_LIMIT_EXCEEDED_STATUS_CODE && config.throwOnErrorStatus !== false) {
                 this.stats.addRateLimitError(attempt);
             }
 
+            if (returnErrorResponse) return response;
+
             const apiError = new ApifyApiError(response, attempt);
-            if (this._isStatusCodeRetryable(response.status)) {
+            if (this._isStatusCodeRetryable(response.status, config)) {
                 if (requestIsStream) {
                     this._informAboutStreamNoRetry();
                 } else {
@@ -264,6 +275,9 @@ export class HttpClient {
      */
     private _handleRequestError(err: AxiosError, config: ApifyRequestConfig, stopTrying: (e: Error) => void) {
         if (this._isTimeoutError(err) && config.doNotRetryTimeouts) {
+            return stopTrying(err);
+        }
+        if (config.retryTransportErrors === false) {
             return stopTrying(err);
         }
 
@@ -316,11 +330,12 @@ export class HttpClient {
     }
 
     /**
-     * We retry 429 (rate limit) and 500+.
+     * We retry 429 (rate limit) and 500+, or the statuses in `config.retryStatusCodes` when it is set.
      * For status codes 300-499 (except 429) we do not retry the request,
      * because it's probably caused by invalid url (redirect 3xx) or invalid user input (4xx).
      */
-    private _isStatusCodeRetryable(statusCode: number) {
+    private _isStatusCodeRetryable(statusCode: number, config: ApifyRequestConfig) {
+        if (config.retryStatusCodes) return config.retryStatusCodes.includes(statusCode);
         const isRateLimitError = statusCode === RATE_LIMIT_EXCEEDED_STATUS_CODE;
         const isInternalError = statusCode >= 500;
         return isRateLimitError || isInternalError;
@@ -339,6 +354,26 @@ export interface ApifyRequestConfig extends AxiosRequestConfig {
     stringifyFunctions?: boolean;
     forceBuffer?: boolean;
     doNotRetryTimeouts?: boolean;
+    /**
+     * Set to `false` to resolve to the error response once the retries are spent, instead of throwing `ApifyApiError`.
+     * @since Added in 2.26.0
+     */
+    throwOnErrorStatus?: boolean;
+    /**
+     * Status codes to retry, replacing the default of 429 and 500+.
+     * @since Added in 2.26.0
+     */
+    retryStatusCodes?: number[];
+    /**
+     * Set to `false` to not retry network errors, timeouts and unparsable response bodies.
+     * @since Added in 2.26.0
+     */
+    retryTransportErrors?: boolean;
+    /**
+     * Set to `true` to send the request body uncompressed.
+     * @since Added in 2.26.0
+     */
+    doNotCompress?: boolean;
 }
 
 export interface ApifyResponse<T = any> extends AxiosResponse<T> {

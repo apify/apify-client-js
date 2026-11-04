@@ -62,6 +62,7 @@ export interface Actor {
     restartOnError?: boolean;
     seoDescription?: string;
     seoTitle?: string;
+    standbyUrl?: string | null;
     stats: ActorStats;
     taggedBuilds?: ActorTaggedBuilds;
     title?: string;
@@ -112,6 +113,9 @@ export class ActorClient extends ResourceClient {
     get(): Promise<Actor | undefined>;
     lastRun(options?: ActorLastRunOptions): RunClient;
     runs(): RunCollectionClient;
+    server(): ActorServerClient;
+    // @deprecated
+    standby(): ActorServerClient;
     start(input?: unknown, options?: ActorStartOptions): Promise<ActorRun>;
     update(newFields: ActorUpdateOptions): Promise<Actor>;
     validateInput(input?: unknown, options?: ActorValidateInputOptions): Promise<boolean>;
@@ -222,6 +226,7 @@ export interface ActorDefinition {
     usesStandbyMode?: boolean;
     // (undocumented)
     version: string;
+    webServerSchema?: Record<string, unknown>;
 }
 
 // @public (undocumented)
@@ -431,6 +436,36 @@ export interface ActorRunUsage {
     PROXY_SERPS?: number;
     REQUEST_QUEUE_READS?: number;
     REQUEST_QUEUE_WRITES?: number;
+}
+
+// @public
+export class ActorServerClient extends ResourceClient {
+    constructor(options: ApiClientSubResourceOptions);
+    getOpenApiSpec(): Promise<Record<string, unknown> | undefined>;
+    getUrl(): Promise<string>;
+    request<T = any>(path?: string, options?: ActorServerRequestOptions & {
+        responseType?: 'parsed';
+    }): Promise<ApifyResponse<T>>;
+    // (undocumented)
+    request(path: string, options: ActorServerRequestOptions & {
+        responseType: 'buffer';
+    }): Promise<ApifyResponse<Buffer>>;
+    // (undocumented)
+    request(path: string, options: ActorServerRequestOptions & {
+        responseType: 'stream';
+    }): Promise<ApifyResponse<Readable>>;
+    // (undocumented)
+    request(path?: string, options?: ActorServerRequestOptions): Promise<ApifyResponse>;
+}
+
+// @public
+export interface ActorServerRequestOptions {
+    data?: unknown;
+    headers?: Record<string, string>;
+    method?: 'GET' | 'HEAD' | 'POST' | 'PUT' | 'DELETE' | 'CONNECT' | 'OPTIONS' | 'TRACE' | 'PATCH';
+    params?: Record<string, unknown>;
+    responseType?: 'parsed' | 'buffer' | 'stream';
+    timeoutSecs?: number;
 }
 
 // @public (undocumented)
@@ -735,12 +770,16 @@ export interface ApifyClientOptions {
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
 interface ApifyRequestConfig extends AxiosRequestConfig {
+    doNotCompress?: boolean;
     // (undocumented)
     doNotRetryTimeouts?: boolean;
     // (undocumented)
     forceBuffer?: boolean;
+    retryStatusCodes?: number[];
+    retryTransportErrors?: boolean;
     // (undocumented)
     stringifyFunctions?: boolean;
+    throwOnErrorStatus?: boolean;
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
