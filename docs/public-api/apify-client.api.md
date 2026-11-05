@@ -3949,6 +3949,7 @@ export interface RunGetOptions extends TimeoutOptions {
 
 // @public
 export interface RunIterateDatasetItemsOptions extends PaginationOptions, TimeoutOptions {
+    chunkSize?: number;
     clean?: boolean;
     fields?: string[];
     omit?: string[];
