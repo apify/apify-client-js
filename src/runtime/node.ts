@@ -2,7 +2,7 @@ import type http from 'node:http';
 import type { Socket } from 'node:net';
 import os from 'node:os';
 import { Readable } from 'node:stream';
-import { brotliCompress, constants, gzip } from 'node:zlib';
+import * as zlib from 'node:zlib';
 
 import type { Runtime } from './types.js';
 
@@ -18,10 +18,23 @@ export const runtime: Runtime = {
     async compress(data, { algorithm, quality }) {
         return new Promise((resolve, reject) => {
             const done = (error: Error | null, result: Buffer) => (error ? reject(error) : resolve(result));
-            if (algorithm === 'br') {
-                brotliCompress(data, { params: { [constants.BROTLI_PARAM_QUALITY]: quality } }, done);
-            } else {
-                gzip(data, { level: quality }, done);
+            switch (algorithm) {
+                case 'br':
+                    zlib.brotliCompress(data, { params: { [zlib.constants.BROTLI_PARAM_QUALITY]: quality } }, done);
+                    break;
+                case 'gzip':
+                    zlib.gzip(data, { level: quality }, done);
+                    break;
+                case 'zstd':
+                    // `node:zlib` gained zstd in Node.js 22.15, later than the oldest version the client supports.
+                    // The lookup through the namespace keeps the module loading there, which a named import of
+                    // a missing export would not, and the check turns the gap into a clear error.
+                    if (typeof zlib.zstdCompress !== 'function') {
+                        reject(new Error('zstd compression requires Node.js 22.15.0 or newer.'));
+                        break;
+                    }
+                    zlib.zstdCompress(data, { params: { [zlib.constants.ZSTD_c_compressionLevel]: quality } }, done);
+                    break;
             }
         });
     },

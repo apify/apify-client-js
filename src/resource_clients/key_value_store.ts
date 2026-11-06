@@ -492,12 +492,12 @@ export class KeyValueStoreClient extends ResourceClient {
      * @param record.contentEncoding - Optional encoding already applied to `value`, sent as the `Content-Encoding`
      *                                 header. Set it to upload a pre-compressed value: the client then sends the
      *                                 bytes as they are and does not compress them again. The API accepts `gzip`,
-     *                                 `br`, `deflate`, and `identity`, and stores the record exactly as uploaded, so
-     *                                 this is also the encoding the record is served with. Only binary values and
-     *                                 streams can carry a compression, so any encoding other than `identity` throws
-     *                                 a `TypeError` when `value` is a string, or a plain object, array, or other
-     *                                 value that the client serializes to JSON. Node.js only, since browsers cannot
-     *                                 send the header to the API.
+     *                                 `br`, `zstd`, `deflate`, and `identity`, and stores the record exactly as
+     *                                 uploaded, so this is also the encoding the record is served with. Only binary
+     *                                 values and streams can carry a compression, so any encoding other than
+     *                                 `identity` throws a `TypeError` when `value` is a string, or a plain object,
+     *                                 array, or other value that the client serializes to JSON. Node.js only, since
+     *                                 browsers cannot send the header to the API.
      * @param options - Storage options
      * @param options.timeoutSecs - Timeout for the API request. Default is `'long'`.
      * @param options.doNotRetryTimeouts - If `true`, don't retry on timeout errors. Default is `false`.

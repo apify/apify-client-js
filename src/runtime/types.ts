@@ -8,7 +8,7 @@ import type { Readable } from 'node:stream';
  */
 export interface CompressionOptions {
     /** Algorithm to compress with, named by the `Content-Encoding` value it produces. */
-    algorithm: 'br' | 'gzip';
+    algorithm: 'br' | 'gzip' | 'zstd';
     /** Compression level, in the range the algorithm defines. */
     quality: number;
 }
