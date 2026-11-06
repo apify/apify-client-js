@@ -275,6 +275,9 @@ export interface VersionClientNarrowings {
     // union discriminated on exactly this field, and a version with no source type carries no usable
     // source location either, so accepting the `null` would only make every variant unreachable.
     sourceType: `${ActorSourceType}`;
+    // The spec's flat schema allows `actorPath` whatever the source type. The API accepts a path only
+    // when the `sourceType` is `SOURCE_FILES` or `TARBALL`, so only those two variants reinstate it.
+    actorPath?: GeneratedVersion['actorPath'];
 }
 
 /**
@@ -283,6 +286,7 @@ export interface VersionClientNarrowings {
  * The spec models a version as one flat object with all four source locations optional. This client
  * keeps a union discriminated on `sourceType` instead, because that narrows the source location down
  * to the single field which applies -- so the four are dropped here and reinstated per variant.
+ * `actorPath` is dropped as well, and only the `SOURCE_FILES` and `TARBALL` variants reinstate it.
  */
 export interface BaseVersion<SourceType extends `${ActorSourceType}`>
     extends
@@ -297,6 +301,12 @@ export interface BaseVersion<SourceType extends `${ActorSourceType}`>
  */
 export interface VersionSourceFiles extends BaseVersion<`${ActorSourceType.SourceFiles}`> {
     sourceFiles: (SourceCodeFile | SourceCodeFolder)[];
+    /**
+     * The Actor's folder inside the uploaded source, as a POSIX path relative to the upload root, such as
+     * `actors/typescript-actor`. When absent or `null`, the upload root is the Actor's folder. It has 1 to 255 characters,
+     * with no leading, trailing, or repeated `/` and no `.` or `..` segment.
+     */
+    actorPath?: GeneratedVersion['actorPath'];
 }
 
 /** An Actor version built from a Git repository. */
@@ -307,6 +317,12 @@ export interface VersionGitRepo extends BaseVersion<`${ActorSourceType.GitRepo}`
 /** An Actor version built from a downloadable tarball or ZIP archive. */
 export interface VersionTarball extends BaseVersion<`${ActorSourceType.Tarball}`> {
     tarballUrl: NonNullable<GeneratedVersion['tarballUrl']>;
+    /**
+     * The Actor's folder inside the archive, as a POSIX path relative to the archive root, such as
+     * `actors/typescript-actor`. When absent or `null`, the archive root is the Actor's folder. It has 1 to 255 characters,
+     * with no leading, trailing, or repeated `/` and no `.` or `..` segment.
+     */
+    actorPath?: GeneratedVersion['actorPath'];
 }
 
 /** An Actor version built from a GitHub Gist. */

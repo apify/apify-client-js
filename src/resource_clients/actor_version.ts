@@ -137,5 +137,10 @@ export class ActorVersionClient extends ResourceClient {
  * All of them are optional, because the endpoint leaves untouched whatever the payload does not
  * mention. The version union enforces the pairing: a `sourceType` can only be sent next to the
  * source location it implies, never next to one of the other three.
+ *
+ * On a `SOURCE_FILES` or `TARBALL` version, `actorPath: null` removes the stored path. So does an
+ * update that sends `sourceType`, `sourceFiles`, or `tarballUrl` without `actorPath`, so send it
+ * again with every upload. The API rejects an `actorPath` on a `GIT_REPO` or `GITHUB_GIST` version,
+ * also when the update leaves out `sourceType`, because it then checks the stored source type.
  */
 export type ActorVersionUpdateData = Partial<Version>;

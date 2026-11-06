@@ -949,6 +949,7 @@ interface components {
             gitRepoUrl?: string;
             tarballUrl?: string;
             gitHubGistUrl?: string;
+            actorPath?: string;
         };
         DefaultRunOptions: {
             build?: string;
@@ -1010,6 +1011,7 @@ interface components {
             gitRepoUrl?: string | null;
             tarballUrl?: string | null;
             gitHubGistUrl?: string | null;
+            actorPath?: string | null;
             githubWebhookId?: number | null;
             gitlabWebhookId?: number | null;
             bitbucketWebhookId?: string | null;
@@ -1167,6 +1169,7 @@ interface components {
             gitRepoUrl?: string;
             tarballUrl?: string;
             gitHubGistUrl?: string;
+            actorPath?: string | null;
         };
         UpdateBuildOnPushRequest: {
             providerId: string;
@@ -4463,6 +4466,8 @@ export type Version = VersionSourceFiles | VersionGitRepo | VersionTarball | Ver
 // @public (undocumented)
 interface VersionClientNarrowings {
     // (undocumented)
+    actorPath?: GeneratedVersion['actorPath'];
+    // (undocumented)
     sourceType: `${ActorSourceType}`;
 }
 
@@ -4491,6 +4496,7 @@ export interface VersionSourceCode extends BaseVersion<`${ActorSourceType.Source
 
 // @public
 export interface VersionSourceFiles extends BaseVersion<`${ActorSourceType.SourceFiles}`> {
+    actorPath?: GeneratedVersion['actorPath'];
     // (undocumented)
     sourceFiles: (SourceCodeFile | SourceCodeFolder)[];
 }
@@ -4501,6 +4507,7 @@ type VersionSourceLocation = 'sourceFiles' | 'gitRepoUrl' | 'tarballUrl' | 'gitH
 
 // @public
 export interface VersionTarball extends BaseVersion<`${ActorSourceType.Tarball}`> {
+    actorPath?: GeneratedVersion['actorPath'];
     // (undocumented)
     tarballUrl: NonNullable<GeneratedVersion['tarballUrl']>;
 }

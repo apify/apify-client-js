@@ -296,8 +296,8 @@ export type AdapterWidthGuards = AssertAll<
         OverridesStayWider<KeyValueStoreResourceRePointed, Schemas['KeyValueStoreResource']>,
         OverridesStayWider<ListOfKeysRePointed, Schemas['ListOfKeys']>,
         // `VersionClientNarrowings` has no entry here on purpose: dropping the spec's
-        // `sourceType: null` is the one narrowing the version union rests on, and it is argued for at
-        // the declaration.
+        // `sourceType: null` is the narrowing the version union rests on, and dropping its
+        // `actorPath: null` follows what the API returns. Both are argued for at the declaration.
         OverridesStayWider<VersionRePointed, Schemas['Version']>,
         // `versions` is excluded: it re-points at the discriminated `Version` union, which is
         // narrower than the spec's flat `Version` by design.
