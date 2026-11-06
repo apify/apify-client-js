@@ -197,8 +197,8 @@ export function toBytes(value: unknown): Uint8Array | undefined {
 /**
  * Decides whether a request body with the given content type is worth compressing.
  *
- * Images, audio, video and archives already carry their own compression. Running them through brotli or gzip
- * burns CPU, holds a second full copy of the body in memory, and usually produces output slightly larger than
+ * Images, audio, video and archives already carry their own compression. Running them through brotli, gzip or
+ * zstd burns CPU, holds a second full copy of the body in memory, and usually produces output slightly larger than
  * the input. Formats that are raw despite such a media type, for example `image/bmp` or `audio/wav`, are still
  * compressed. A body with no content type is assumed to be compressible.
  * @internal

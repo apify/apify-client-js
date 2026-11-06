@@ -9,7 +9,7 @@ export const runtime: Runtime = {
     // Browsers do not let a page set the `User-Agent` header.
     platform: undefined,
 
-    // No request compression: brotli and gzip have no Web API, and a `content-encoding` request header is not
+    // No request compression: brotli, gzip and zstd have no Web API, and a `content-encoding` request header is not
     // on the list of headers the Apify API allows in a cross-origin request, so a browser would fail the
     // preflight. The client compresses in Node.js alone, so nothing reaches this.
     async compress(): Promise<never> {
