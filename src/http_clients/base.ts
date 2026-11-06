@@ -789,7 +789,7 @@ function getHeader(headers: Record<string, string>, name: string): string | unde
  * Merges two header records, header names compared case-insensitively. A header from `override` replaces a
  * same-named header in `base` whatever the casing of either, and keeps the casing it was passed with.
  */
-function mergeHeaders(base: Record<string, string>, override?: Record<string, string>): Record<string, string> {
+export function mergeHeaders(base: Record<string, string>, override?: Record<string, string>): Record<string, string> {
     const merged = { ...base };
     for (const [key, value] of Object.entries(override ?? {})) {
         for (const existing of Object.keys(merged)) {

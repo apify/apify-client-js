@@ -56,6 +56,19 @@ The headers you pass in `headers` reach the Actor's server as they are. If the A
 
 For details, see [How do I authenticate my requests](https://docs.apify.com/platform/actors/running/standby#how-do-i-authenticate-my-requests) in the platform documentation.
 
+## Calling a Server Actor from a Server Actor
+
+A multi-tenant Server Actor shares the developer's runs among its users, so the platform tells requests apart by a new ID it sends in the `X-Actor-Request-ID` header of each request it forwards to the Actor. The Actor uses that ID to charge the request's caller, and to pass the caller's pricing tier on to Actors it calls.
+
+When your multi-tenant Server Actor calls another one while handling a request, pass the incoming `X-Actor-Request-ID` header in `parentRequestId`. The client sends it as the same header, so the called Actor charges at the pricing tier of your incoming request. Use a client created with the run's `APIFY_TOKEN`. For details, see [Compose multi-tenant Server Actors](https://docs.apify.com/platform/actors/development/programming-interface/standby#compose-server-actors).
+
+```ts
+const response = await client.actor('username/other-actor').server().request('/search', {
+    params: { q: 'apify' },
+    parentRequestId: req.headers['x-actor-request-id'],
+});
+```
+
 ## Timeouts, retries, and errors
 
 When no server run is ready, the first request waits for the platform to start one. The method uses the `long` timeout tier by default for that reason. You can pass a different `timeoutSecs`, or a `signal` to abort the request, the same way as for API calls. For details, see [Timeouts](./10_timeouts.mdx).
