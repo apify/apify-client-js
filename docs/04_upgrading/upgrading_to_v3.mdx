@@ -447,7 +447,7 @@ Neither accepts `0` any more. In v2, `setRecord(record, { timeoutSecs: 0 })` mea
 
 ## Request compression is configurable
 
-The <ApiLink to="class/ApifyClient">`ApifyClient`</ApiLink> constructor takes a `compression` option: `'brotli'`, `'gzip'`, or an <ApiLink to="interface/HttpCompressor">`HttpCompressor`</ApiLink> for a custom quality or algorithm. The default stays brotli at quality 6. For the rules that decide which bodies get compressed, see [HTTP compression](../02_concepts/12_http_compression.mdx).
+The <ApiLink to="class/ApifyClient">`ApifyClient`</ApiLink> constructor takes a `compression` option: `'brotli'`, `'gzip'`, `'zstd'`, or an <ApiLink to="interface/HttpCompressor">`HttpCompressor`</ApiLink> for a custom quality or algorithm. The default stays brotli at quality 6. For the rules that decide which bodies get compressed, see [HTTP compression](../02_concepts/12_http_compression.mdx).
 
 ```js
 import { ApifyClient, BrotliHttpCompressor } from 'apify-client';
@@ -466,7 +466,7 @@ Which bodies get compressed changed as well:
 - A body whose `Content-Type` is already compressed, such as an image, audio, video or an archive, is sent as it is. v2 compressed any string or `Buffer` of 1 kB or more. See [Already-compressed payloads](../02_concepts/12_http_compression.mdx#already-compressed-payloads).
 - A `Uint8Array`, another typed array, or an `ArrayBuffer` is compressed once it reaches the same 1 kB threshold, where v2 compressed only strings and `Buffer`s, so a request carrying one gains a `content-encoding` header.
 
-The API accepts both encodings the client sends, `br` and `gzip`, so neither change needs anything on your side.
+The API accepts every encoding the client sends, `br`, `gzip`, and `zstd`, so neither change needs anything on your side.
 
 ## `versions().list()` and `envVars().list()` lose their pagination options
 
