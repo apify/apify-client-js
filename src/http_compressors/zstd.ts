@@ -20,8 +20,7 @@ const optionsSchema = z.strictObject({
 /**
  * Compresses request bodies using zstd.
  *
- * Built on the `node:zlib` module, so it works wherever the client runs on Node.js 22.15 or newer, where
- * `node:zlib` gained zstd. On an older runtime the request fails with an error that says so.
+ * Built on the `node:zlib` module, so it works wherever the client runs on Node.js.
  *
  * @example
  * ```javascript

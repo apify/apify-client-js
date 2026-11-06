@@ -69,7 +69,7 @@ const gzipClient = new ApifyClient({ token: 'MY-APIFY-TOKEN', compression: 'gzip
 const zstdClient = new ApifyClient({ token: 'MY-APIFY-TOKEN', compression: 'zstd' });
 ```
 
-All three algorithms come from `node:zlib`, so none needs an extra dependency. If the runtime's `node:zlib` doesn't implement brotli, which can happen with a Node.js compatibility shim or a bundler polyfill, the request fails with the error from the runtime. The client doesn't fall back to gzip on its own, so pass `compression: 'gzip'` on such a runtime. Zstd needs Node.js 22.15 or newer, where `node:zlib` gained it; on an older version the request fails with an error that says so.
+All three algorithms come from `node:zlib`, so none needs an extra dependency. If the runtime's `node:zlib` doesn't implement brotli, which can happen with a Node.js compatibility shim or a bundler polyfill, the request fails with the error from the runtime. The client doesn't fall back to gzip on its own, so pass `compression: 'gzip'` on such a runtime.
 
 An HTTP client you plug in with <ApiLink to="class/ApifyClient#withCustomHttpClient">`ApifyClient.withCustomHttpClient()`</ApiLink> owns its configuration, so pass `compression` to its constructor. The compressor runs in the shared request pipeline, so a custom transport compresses the same bodies the built-in one does. See [HTTP clients](./09_custom_http_clients.mdx).
 
@@ -127,4 +127,4 @@ const client = new ApifyClient({ token: 'MY-APIFY-TOKEN', compression: identityC
 | **Quality range**             | `0` to `11`                             | `1` to `9`                            | `1` to `22`                                 |
 | **Default quality**           | `6`                                     | `6`                                   | `3`                                         |
 | **Enable via config**         | `compression: 'brotli'` (default)       | `compression: 'gzip'`                 | `compression: 'zstd'`                       |
-| **Best for**                  | Large payloads where bandwidth matters  | Low CPU cost, runtimes without brotli | Fast compression at a good ratio, Node.js 22.15+ |
+| **Best for**                  | Large payloads where bandwidth matters  | Low CPU cost, runtimes without brotli | Fast compression at a good ratio            |
