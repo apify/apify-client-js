@@ -949,6 +949,7 @@ interface components {
             gitRepoUrl?: string;
             tarballUrl?: string;
             gitHubGistUrl?: string;
+            actorPath?: string | null;
         };
         DefaultRunOptions: {
             build?: string;
@@ -1010,6 +1011,7 @@ interface components {
             gitRepoUrl?: string | null;
             tarballUrl?: string | null;
             gitHubGistUrl?: string | null;
+            actorPath?: string | null;
             githubWebhookId?: number | null;
             gitlabWebhookId?: number | null;
             bitbucketWebhookId?: string | null;
@@ -1167,6 +1169,7 @@ interface components {
             gitRepoUrl?: string;
             tarballUrl?: string;
             gitHubGistUrl?: string;
+            actorPath?: string | null;
         };
         UpdateBuildOnPushRequest: {
             providerId: string;
@@ -1388,6 +1391,7 @@ interface components {
                 sourceFiles?: components["schemas"]["SourceCodeFile"][];
                 gitHubGistUrl?: string;
                 tarballUrl?: string;
+                actorPath?: string | null;
             };
             actorDefinition?: components["schemas"]["ActorDefinition"] | null;
         };
