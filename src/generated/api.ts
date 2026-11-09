@@ -185,6 +185,10 @@ export interface paths {
          *     }
          *     ```
          *
+         *     If the Actor is in a subdirectory of the uploaded `SOURCE_FILES` or
+         *     `TARBALL` source, such as in a monorepo, set `actorPath` to that
+         *     directory, for example `"actorPath": "actors/typescript-actor"`.
+         *
          *     The response is the `Version` object as
          *     returned by the [Get Actor version](https://docs.apify.com/api/v2/actor-version-get) endpoint.
          */
@@ -213,6 +217,10 @@ export interface paths {
          *
          *     If the object does not define a specific property, its value will not be
          *     updated.
+         *
+         *     An update that sends `sourceType`, `sourceFiles`, or `tarballUrl` without
+         *     `actorPath` removes the version's stored `actorPath`. For a monorepo
+         *     version, send `actorPath` again with every upload.
          *
          *     The request needs to specify the `Content-Type: application/json` HTTP
          *     header!
@@ -5117,6 +5125,11 @@ export interface components {
             tarballUrl?: string;
             /** @description URL of the GitHub Gist to clone the source code from. Applies when the `sourceType` is `GITHUB_GIST`. */
             gitHubGistUrl?: string;
+            /**
+             * @description The Actor's directory inside the uploaded source, as a path relative to the upload root with `/` separators, for example `actors/typescript-actor`. Applies when the `sourceType` is `SOURCE_FILES` or `TARBALL`. The API rejects a path when the `sourceType` is `GIT_REPO` or `GITHUB_GIST`. When omitted or `null`, the upload root is the Actor's directory. It has 1 to 255 characters, with no leading, trailing, or repeated `/` and no `.` or `..` segments.
+             * @example actors/typescript-actor
+             */
+            actorPath?: string | null;
         };
         /**
          * DefaultRunOptions
@@ -5173,13 +5186,20 @@ export interface components {
             /** @description Whether to pass the Actor's input to the standby run. If `false`, the standby runs start with no input. */
             shouldPassActorInput?: boolean | null;
             /**
-             * @description Whether each user gets their own standby runs (`SINGLE_TENANT`) or runs are shared across users (`MULTI_TENANT`). Set by Apify.
+             * @description Whether each user gets their own standby runs (`SINGLE_TENANT`) or runs are shared across users (`MULTI_TENANT`).
              * @example SINGLE_TENANT
+             * @enum {string|null}
              */
-            tenancy?: string | null;
-            /** @description Whether standby requests can be authenticated with an Apify Console session. Set by Apify. */
+            tenancy?: "SINGLE_TENANT" | "MULTI_TENANT" | null;
+            /**
+             * @description Whether standby requests can be authenticated with an Apify Console session.
+             *     When creating an Actor, omit this field or set it to `false`. When updating an Actor, only Apify administrators can change it; other users can only send the current value, or `false` if it's not set yet.
+             */
             isConsoleAuthEnabled?: boolean | null;
-            /** @description Whether standby requests can be made without an API token. Set by Apify. */
+            /**
+             * @description Whether standby requests can be made without an API token.
+             *     When creating an Actor, omit this field or set it to `false`. When updating an Actor, only Apify administrators can change it; other users can only send the current value, or `false` if it's not set yet.
+             */
             isTokenlessEnabled?: boolean | null;
         };
         /** ExampleRunInput */
@@ -5307,6 +5327,11 @@ export interface components {
             tarballUrl?: string | null;
             /** @description URL of the GitHub Gist to clone the source code from. Applies when the `sourceType` is `GITHUB_GIST`. */
             gitHubGistUrl?: string | null;
+            /**
+             * @description The Actor's directory inside the uploaded source, as a path relative to the upload root with `/` separators, for example `actors/typescript-actor`. Applies when the `sourceType` is `SOURCE_FILES` or `TARBALL`. When absent or `null`, the upload root is the Actor's directory. On a `TARBALL` version, only users with write access to the Actor get it. It has 1 to 255 characters, with no leading, trailing, or repeated `/` and no `.` or `..` segments.
+             * @example actors/typescript-actor
+             */
+            actorPath?: string | null;
             /** @description ID of the GitHub webhook that triggers a build on push. Present when build on push is enabled for a GitHub repository. */
             githubWebhookId?: number | null;
             /** @description ID of the GitLab webhook that triggers a build on push. Present when build on push is enabled for a GitLab repository. */
@@ -5773,6 +5798,11 @@ export interface components {
             tarballUrl?: string;
             /** @description URL of the GitHub Gist to clone the source code from. Applies when the `sourceType` is `GITHUB_GIST`. */
             gitHubGistUrl?: string;
+            /**
+             * @description The Actor's directory inside the uploaded source, as a path relative to the upload root with `/` separators, for example `actors/typescript-actor`. Applies when the `sourceType` is `SOURCE_FILES` or `TARBALL`. The API rejects it when the `sourceType` is `GIT_REPO` or `GITHUB_GIST`. On an update without `sourceType`, the API checks it against the version's stored source type. When the version has no `actorPath`, the upload root is the Actor's directory. It has 1 to 255 characters, with no leading, trailing, or repeated `/` and no `.` or `..` segments. An update that sends `sourceType`, `sourceFiles`, or `tarballUrl` without `actorPath` removes the stored `actorPath`, so send it again with every upload. An update of other fields, such as `envVars` or `buildTag`, keeps it. Send `null` to remove it.
+             * @example actors/typescript-actor
+             */
+            actorPath?: string | null;
         };
         /** UpdateBuildOnPushRequest */
         UpdateBuildOnPushRequest: {
@@ -6414,6 +6444,11 @@ export interface components {
                  * @example https://example.com/my-actor.zip
                  */
                 tarballUrl?: string;
+                /**
+                 * @description The Actor's directory inside the uploaded source, present when the version sets it. Applies when sourceType is SOURCE_FILES or TARBALL. On a TARBALL version, only users with write access to the Actor get it.
+                 * @example actors/typescript-actor
+                 */
+                actorPath?: string | null;
             };
             actorDefinition?: components["schemas"]["ActorDefinition"] | null;
         };

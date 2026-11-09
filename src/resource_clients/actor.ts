@@ -13,6 +13,7 @@ import * as schemas from '../schemas.js';
 import { timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
 import { anyObjectSchema, isStream, parseArgument, parseResponse, stringifyWebhooksToBase64 } from '../utils.js';
 import { startWaitingForResources } from '../wait_for_resources.js';
+import { ActorServerClient } from './actor_server.js';
 import { ActorVersionClient } from './actor_version.js';
 import { ActorVersionCollectionClient } from './actor_version_collection.js';
 import type { Build, BuildClientGetOptions } from './build.js';
@@ -123,6 +124,8 @@ export type {
  * @see https://docs.apify.com/platform/actors
  */
 export class ActorClient extends ResourceClient {
+    #serverClient?: ActorServerClient;
+
     /**
      * @hidden
      */
@@ -577,6 +580,51 @@ export class ActorClient extends ResourceClient {
      */
     webhooks(): WebhookCollectionClient {
         return new WebhookCollectionClient(this.subResourceOptions());
+    }
+
+    /**
+     * Returns a client for the server interface of this Actor.
+     *
+     * A Server Actor runs a web server, its server interface, that is called over HTTP without starting a run for
+     * each call. Server Actors were formerly called Actor Standby, and {@link standby} is a deprecated alias of this
+     * method. Every call returns the same client, so the server URL it fetches is reused.
+     *
+     * @returns The client for the server interface of this Actor
+     * @see https://docs.apify.com/platform/actors/running/standby
+     *
+     * @example
+     * ```javascript
+     * const response = await client.actor('username/actor-name').server().request('/search', {
+     *     params: { q: 'apify' },
+     * });
+     * ```
+     */
+    server(): ActorServerClient {
+        this.#serverClient ??= new ActorServerClient({
+            baseUrl: this.baseUrl,
+            publicBaseUrl: this.publicBaseUrl,
+            apifyClient: this.apifyClient,
+            httpClient: this.httpClient,
+            id: this.id,
+            params: this.params,
+        });
+        return this.#serverClient;
+    }
+
+    /**
+     * Returns a client for the server interface of this Actor in Standby mode.
+     *
+     * Named after Actor Standby, the former name of Server Actors.
+     *
+     * @deprecated Use {@link server} instead. Will be removed in v4.
+     * @returns The client for the server interface of this Actor
+     * @see https://docs.apify.com/platform/actors/running/standby
+     */
+    standby(): ActorServerClient {
+        this.httpClient.logger.deprecated(
+            '`standby()` is deprecated and will be removed in v4. Use `server()` instead.',
+        );
+        return this.server();
     }
 }
 

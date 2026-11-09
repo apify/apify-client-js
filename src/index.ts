@@ -3,6 +3,7 @@ export * from './resource_clients/actor.js';
 export * from './resource_clients/actor_collection.js';
 export * from './resource_clients/actor_env_var.js';
 export * from './resource_clients/actor_env_var_collection.js';
+export * from './resource_clients/actor_server.js';
 export * from './resource_clients/actor_version.js';
 export * from './resource_clients/actor_version_collection.js';
 export * from './resource_clients/build.js';

@@ -111,6 +111,7 @@ export const CreateVersionRequest = lazySchema(() => z.looseObject({
     gitRepoUrl: z.string().optional(),
     tarballUrl: z.string().optional(),
     gitHubGistUrl: z.string().optional(),
+    actorPath: z.string().min(1).max(255).nullable().optional(),
 }));
 
 /** The default settings applied to an Actor run. Can be overridden elsewhere. */
@@ -134,7 +135,7 @@ export const ActorStandby = lazySchema(() => z.looseObject({
     memoryMbytes: z.int().nullable().optional(),
     disableStandbyFieldsOverride: z.boolean().nullable().optional(),
     shouldPassActorInput: z.boolean().nullable().optional(),
-    tenancy: z.string().nullable().optional(),
+    tenancy: z.enum(["SINGLE_TENANT", "MULTI_TENANT"]).or(z.string()).nullable().optional(),
     isConsoleAuthEnabled: z.boolean().nullable().optional(),
     isTokenlessEnabled: z.boolean().nullable().optional(),
 }));
@@ -180,6 +181,7 @@ export const Version = lazySchema(() => z.looseObject({
     gitRepoUrl: z.string().nullable().optional(),
     tarballUrl: z.string().nullable().optional(),
     gitHubGistUrl: z.string().nullable().optional(),
+    actorPath: z.string().min(1).max(255).nullable().optional(),
     githubWebhookId: z.int().nullable().optional(),
     gitlabWebhookId: z.int().nullable().optional(),
     bitbucketWebhookId: z.string().nullable().optional(),
@@ -361,6 +363,7 @@ export const UpdateVersionRequest = lazySchema(() => z.looseObject({
     gitRepoUrl: z.string().optional(),
     tarballUrl: z.string().optional(),
     gitHubGistUrl: z.string().optional(),
+    actorPath: z.string().min(1).max(255).nullable().optional(),
 }));
 
 export const UpdateBuildOnPushRequest = lazySchema(() => z.looseObject({
@@ -622,6 +625,7 @@ export const Build = lazySchema(() => z.looseObject({
         sourceFiles: z.array(SourceCodeFile()).optional(),
         gitHubGistUrl: z.string().optional(),
         tarballUrl: z.string().optional(),
+        actorPath: z.string().nullable().optional(),
     }).optional(),
     actorDefinition: ActorDefinition().nullable().optional(),
 }));

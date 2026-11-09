@@ -87,6 +87,9 @@ export class ActorClient extends ResourceClient {
     get(options?: TimeoutOptions): Promise<ActorResource | undefined>;
     lastRun(options?: ActorLastRunOptions): RunClient;
     runs(): RunCollectionClient;
+    server(): ActorServerClient;
+    // @deprecated
+    standby(): ActorServerClient;
     start(input?: ActorInput, options?: ActorStartOptions): Promise<Run>;
     update(newFields: ActorUpdateOptions, options?: TimeoutOptions): Promise<ActorResource>;
     validateInput(input?: ActorInput, options?: ActorValidateInputOptions): Promise<boolean>;
@@ -225,6 +228,36 @@ export type ActorRunPricingInfo = PayPerEventActorPricingInfo | PricePerDatasetI
 
 // @public
 export interface ActorRunStorageIds extends GeneratedRunStorageIds {
+}
+
+// @public
+export class ActorServerClient extends ResourceClient {
+    constructor(options: ApiClientSubResourceOptions);
+    getOpenApiSpec(options?: TimeoutOptions): Promise<Record<string, unknown> | undefined>;
+    getUrl(options?: TimeoutOptions): Promise<string>;
+    request<T = any>(path?: string, options?: ActorServerRequestOptions & {
+        responseType?: 'parsed';
+    }): Promise<ApifyResponse<T>>;
+    // (undocumented)
+    request(path: string, options: ActorServerRequestOptions & {
+        responseType: 'buffer';
+    }): Promise<ApifyResponse<Buffer>>;
+    // (undocumented)
+    request(path: string, options: ActorServerRequestOptions & {
+        responseType: 'stream';
+    }): Promise<ApifyResponse<Readable>>;
+    // (undocumented)
+    request(path?: string, options?: ActorServerRequestOptions): Promise<ApifyResponse>;
+}
+
+// @public
+export interface ActorServerRequestOptions extends TimeoutOptions {
+    compression?: HttpCompressionAlgorithm | HttpCompressor;
+    data?: unknown;
+    headers?: Record<string, string>;
+    method?: HttpMethod;
+    params?: Record<string, unknown>;
+    responseType?: ApifyResponseType;
 }
 
 // @public
@@ -448,14 +481,20 @@ export interface ApifyClientOptions {
 
 // @public
 export interface ApifyRequestConfig {
+    authorizationHeader?: 'Authorization' | 'X-Apify-Authorization';
+    compression?: HttpCompressor | false;
     data?: unknown;
     doNotRetryTimeouts?: boolean;
+    followRedirects?: boolean;
     headers?: Record<string, string>;
     method: HttpMethod;
     params?: Record<string, unknown>;
     responseType?: ApifyResponseType;
+    retryStatusCodes?: readonly number[];
+    retryTransportErrors?: boolean;
     signal?: AbortSignal;
     stringifyFunctions?: boolean;
+    throwOnErrorStatus?: boolean;
     timeoutSecs?: Timeout;
     url: string;
 }
@@ -910,7 +949,7 @@ interface components {
             gitRepoUrl?: string;
             tarballUrl?: string;
             gitHubGistUrl?: string;
-            actorPath?: string;
+            actorPath?: string | null;
         };
         DefaultRunOptions: {
             build?: string;
@@ -931,7 +970,7 @@ interface components {
             memoryMbytes?: number | null;
             disableStandbyFieldsOverride?: boolean | null;
             shouldPassActorInput?: boolean | null;
-            tenancy?: string | null;
+            tenancy?: "SINGLE_TENANT" | "MULTI_TENANT" | null;
             isConsoleAuthEnabled?: boolean | null;
             isTokenlessEnabled?: boolean | null;
         };
@@ -1352,6 +1391,7 @@ interface components {
                 sourceFiles?: components["schemas"]["SourceCodeFile"][];
                 gitHubGistUrl?: string;
                 tarballUrl?: string;
+                actorPath?: string | null;
             };
             actorDefinition?: components["schemas"]["ActorDefinition"] | null;
         };
@@ -3168,6 +3208,7 @@ export type HttpMethod = Schemas['HttpMethod'];
 // @public
 export interface HttpRequest {
     body?: HttpRequestBody;
+    followRedirects: boolean;
     headers: Record<string, string>;
     method: HttpMethod;
     signal?: AbortSignal;
@@ -3912,6 +3953,7 @@ export interface RunGetOptions extends TimeoutOptions {
 
 // @public
 export interface RunIterateDatasetItemsOptions extends PaginationOptions, TimeoutOptions {
+    chunkSize?: number;
     clean?: boolean;
     fields?: string[];
     omit?: string[];
