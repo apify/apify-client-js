@@ -6,6 +6,7 @@ import { ApifyClientError } from '../apify_client_error.js';
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceClient } from '../base/resource_client.js';
 import type { ApifyResponse, ApifyResponseType, HttpMethod } from '../http_clients/index.js';
+import { mergeHeaders } from '../http_clients/base.js';
 import type { HttpCompressor } from '../http_compressors/base.js';
 import type { HttpCompressionAlgorithm } from '../http_compressors/resolve.js';
 import { compressionSchema, resolveCompressor } from '../http_compressors/resolve.js';
@@ -51,6 +52,7 @@ const requestOptionsSchema = z.strictObject({
     params: z.record(z.string(), z.unknown()).optional(),
     headers: z.record(z.string(), z.string()).optional(),
     data: z.unknown().optional(),
+    parentRequestId: z.string().optional(),
     compression: compressionSchema.optional(),
     responseType: z.enum(['parsed', 'buffer', 'stream']).optional(),
     ...timeoutOptionsShape,
@@ -195,6 +197,8 @@ export class ActorServerClient extends ResourceClient {
      * @param options.headers - Additional headers of the request.
      * @param options.data - Request body, serialized the same way as for API calls: a plain object or array is sent
      * as JSON, and a string or binary value as it is.
+     * @param options.parentRequestId - The `X-Actor-Request-ID` header of the request your Server Actor is handling,
+     * sent on as the same header so the called Actor charges at that request's pricing tier.
      * @param options.compression - Compression algorithm for the request body, as a name or an {@link HttpCompressor}.
      * The body is compressed under the same conditions as for API calls. Set it only if the Actor's server decodes
      * the resulting `Content-Encoding`.
@@ -235,6 +239,7 @@ export class ActorServerClient extends ResourceClient {
             params,
             headers,
             data,
+            parentRequestId,
             compression,
             responseType,
             timeoutSecs = 'long',
@@ -251,7 +256,10 @@ export class ActorServerClient extends ResourceClient {
             url: `${serverUrl.replace(/\/+$/, '')}/${serverPath}`,
             method,
             params,
-            headers,
+            headers:
+                parentRequestId === undefined
+                    ? headers
+                    : mergeHeaders(headers ?? {}, { 'X-Actor-Request-ID': parentRequestId }),
             data,
             compression: compression === undefined ? false : resolveCompressor(compression),
             authorizationHeader: 'X-Apify-Authorization',
@@ -303,6 +311,12 @@ export interface ActorServerRequestOptions extends TimeoutOptions {
      * or binary value as it is.
      */
     data?: unknown;
+    /**
+     * The `X-Actor-Request-ID` header of the request your Server Actor is handling. It's sent on as the same header,
+     * so the called Actor charges at that request's pricing tier.
+     * @see https://docs.apify.com/platform/actors/development/programming-interface/standby#compose-server-actors
+     */
+    parentRequestId?: string;
     /**
      * Compression algorithm for the request body, as a name or an {@link HttpCompressor}. The body is sent
      * uncompressed when it's not set, since the Actor's server may not decode a compressed body.
