@@ -464,6 +464,7 @@ export interface ActorServerRequestOptions {
     headers?: Record<string, string>;
     method?: 'GET' | 'HEAD' | 'POST' | 'PUT' | 'DELETE' | 'CONNECT' | 'OPTIONS' | 'TRACE' | 'PATCH';
     params?: Record<string, unknown>;
+    parentRequestId?: string;
     responseType?: 'parsed' | 'buffer' | 'stream';
     timeoutSecs?: number;
 }

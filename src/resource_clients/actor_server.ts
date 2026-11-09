@@ -175,6 +175,8 @@ export class ActorServerClient extends ResourceClient {
      * @param options.headers - Additional headers of the request.
      * @param options.data - Request body, serialized the same way as for API calls: a plain object or array is sent
      * as JSON, and a string or binary value as it is.
+     * @param options.parentRequestId - The `X-Actor-Request-ID` header of the request your Server Actor is handling,
+     * sent on as the same header so the called Actor charges at that request's pricing tier.
      * @param options.responseType - How to return the response body: `'parsed'` by its content type, `'buffer'` as
      * raw bytes, or `'stream'` as a Readable stream with the body unread. A stream holds its connection open until
      * you consume it to the end or destroy it. Node.js only. Default is `'parsed'`.
@@ -212,11 +214,12 @@ export class ActorServerClient extends ResourceClient {
                 method: ow.optional.string.oneOf(HTTP_METHODS),
                 params: ow.optional.object,
                 headers: ow.optional.object.valuesOfType(ow.string),
+                parentRequestId: ow.optional.string,
                 responseType: ow.optional.string.oneOf(['parsed', 'buffer', 'stream']),
                 timeoutSecs: ow.optional.number.positive,
             }),
         );
-        const { method = 'GET', params, headers, responseType, timeoutSecs } = rest;
+        const { method = 'GET', params, headers, parentRequestId, responseType, timeoutSecs } = rest;
 
         if (responseType === 'stream' && !isNode()) {
             throw new Error("The 'stream' response type can only be used in Node.js environment.");
@@ -229,7 +232,10 @@ export class ActorServerClient extends ResourceClient {
         // `Authorization` header is dropped (`null`) so the caller's own one, if any, reaches the Actor.
         const authHeaders: Record<string, string | null> = { Authorization: null };
         if (this.apifyClient.token) authHeaders['X-Apify-Authorization'] = `Bearer ${this.apifyClient.token}`;
-        const requestHeaders = mergeHeaders(authHeaders, headers);
+        const requestHeaders = mergeHeaders(
+            mergeHeaders(authHeaders, headers),
+            parentRequestId === undefined ? undefined : { 'X-Actor-Request-ID': parentRequestId },
+        );
 
         const config: ApifyRequestConfig = {
             url: `${serverUrl.replace(/\/+$/, '')}/${serverPath}`,
@@ -282,6 +288,12 @@ export interface ActorServerRequestOptions {
      * or binary value as it is.
      */
     data?: unknown;
+    /**
+     * The `X-Actor-Request-ID` header of the request your Server Actor is handling. It's sent on as the same header,
+     * so the called Actor charges at that request's pricing tier.
+     * @see https://docs.apify.com/platform/actors/development/programming-interface/standby#compose-server-actors
+     */
+    parentRequestId?: string;
     /**
      * How to return the response body: `'parsed'` by its content type, `'buffer'` as raw bytes, or `'stream'` as a
      * Readable stream with the body unread. Node.js only.
