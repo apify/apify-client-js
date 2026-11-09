@@ -621,12 +621,14 @@ export interface ActorVersionSourceFile {
 
 // @public
 export interface ActorVersionSourceFiles extends BaseActorVersion<ActorSourceType.SourceFiles> {
+    actorPath?: string | null;
     // (undocumented)
     sourceFiles: ActorVersionSourceFile[];
 }
 
 // @public (undocumented)
 export interface ActorVersionTarball extends BaseActorVersion<ActorSourceType.Tarball> {
+    actorPath?: string | null;
     // (undocumented)
     tarballUrl: string;
 }

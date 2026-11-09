@@ -111,6 +111,15 @@ export interface BaseActorVersion<SourceType extends ActorSourceType> {
  */
 export interface ActorVersionSourceFiles extends BaseActorVersion<ActorSourceType.SourceFiles> {
     sourceFiles: ActorVersionSourceFile[];
+    /**
+     * The Actor's folder inside the uploaded source, as a POSIX path relative to the upload root, such as
+     * `actors/typescript-actor`. When absent or `null`, the upload root is the Actor's folder. It has 1 to 255
+     * characters, with no leading, trailing, or repeated `/` and no `.` or `..` segment.
+     *
+     * An update that sends `sourceType` or `sourceFiles` without `actorPath` removes the stored path.
+     * @since Added in 2.26.0
+     */
+    actorPath?: string | null;
 }
 
 export interface ActorVersionSourceFile {
@@ -125,6 +134,15 @@ export interface ActorVersionGitRepo extends BaseActorVersion<ActorSourceType.Gi
 
 export interface ActorVersionTarball extends BaseActorVersion<ActorSourceType.Tarball> {
     tarballUrl: string;
+    /**
+     * The Actor's folder inside the archive, as a POSIX path relative to the archive root, such as
+     * `actors/typescript-actor`. When absent or `null`, the archive root is the Actor's folder. It has 1 to 255
+     * characters, with no leading, trailing, or repeated `/` and no `.` or `..` segment.
+     *
+     * An update that sends `sourceType` or `tarballUrl` without `actorPath` removes the stored path.
+     * @since Added in 2.26.0
+     */
+    actorPath?: string | null;
 }
 
 export interface ActorVersionGitHubGist extends BaseActorVersion<ActorSourceType.GitHubGist> {
