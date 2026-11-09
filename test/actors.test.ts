@@ -66,6 +66,8 @@ describe('Actor methods', () => {
         // purge the client instance to avoid sharing state between tests
         client = null as any;
         page.close().catch(() => {});
+        // Reset the shared mock response, also when a test fails, so it does not leak into later tests.
+        mockServer.setResponse(null);
     });
 
     describe('actors()', () => {
@@ -528,9 +530,6 @@ describe('Actor methods', () => {
 
             await expect(page.evaluate((id, i) => client.actor(id).validateInput(i), actorId, input)).rejects.toThrow();
             validateRequest({ params: { actorId }, body: input, endpointId: 'validate-input' });
-
-            // Reset the shared mock response so the 404 status does not leak into later tests.
-            mockServer.setResponse(null);
         });
 
         test('build() works', async () => {
@@ -734,8 +733,6 @@ describe('Actor methods', () => {
                     endpointId: 'create-actor-version',
                 });
                 expect(res).toMatchObject({ sourceType: 'SOURCE_FILES', actorPath: 'actors/x' });
-
-                mockServer.setResponse(null);
             });
 
             test('`actorPath` is typed on the multi-file and tarball variants only', () => {
@@ -855,8 +852,6 @@ describe('Actor methods', () => {
                 const res = await client.actor(actorId).version(versionNumber).get();
                 validateRequest({ query: {}, params: { actorId, versionNumber }, endpointId: 'get-actor-version' });
                 expect(res).toMatchObject({ sourceType: 'SOURCE_FILES', actorPath: 'actors/x' });
-
-                mockServer.setResponse(null);
             });
 
             test('update() sends `actorPath` on a tarball version', async () => {
@@ -879,8 +874,6 @@ describe('Actor methods', () => {
                     endpointId: 'update-actor-version',
                 });
                 expect(res).toMatchObject({ sourceType: 'TARBALL', actorPath: 'actors/x' });
-
-                mockServer.setResponse(null);
             });
 
             test('update() sends `actorPath: null` to remove the path', async () => {

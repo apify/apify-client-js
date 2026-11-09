@@ -140,7 +140,7 @@ export class ActorVersionClient extends ResourceClient {
  *
  * On a `SOURCE_FILES` or `TARBALL` version, `actorPath: null` removes the stored path. So does an
  * update that sends `sourceType`, `sourceFiles`, or `tarballUrl` without `actorPath`, so send it
- * again with every upload. The API rejects an `actorPath` on a `GIT_REPO` or `GITHUB_GIST` version,
+ * again with every upload. The API rejects an `actorPath` on a version of any other source type,
  * also when the update leaves out `sourceType`, because it then checks the stored source type.
  */
 export type ActorVersionUpdateData = Partial<Version>;

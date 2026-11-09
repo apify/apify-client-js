@@ -303,8 +303,8 @@ export interface VersionSourceFiles extends BaseVersion<`${ActorSourceType.Sourc
     sourceFiles: (SourceCodeFile | SourceCodeFolder)[];
     /**
      * The Actor's folder inside the uploaded source, as a POSIX path relative to the upload root, such as
-     * `actors/typescript-actor`. When absent or `null`, the upload root is the Actor's folder. It has 1 to 255 characters,
-     * with no leading, trailing, or repeated `/` and no `.` or `..` segment.
+     * `actors/typescript-actor`. When absent or `null`, the upload root is the Actor's folder. It has 1 to 255
+     * characters, with no leading, trailing, or repeated `/` and no `.` or `..` segment.
      */
     actorPath?: GeneratedVersion['actorPath'];
 }
@@ -319,8 +319,8 @@ export interface VersionTarball extends BaseVersion<`${ActorSourceType.Tarball}`
     tarballUrl: NonNullable<GeneratedVersion['tarballUrl']>;
     /**
      * The Actor's folder inside the archive, as a POSIX path relative to the archive root, such as
-     * `actors/typescript-actor`. When absent or `null`, the archive root is the Actor's folder. It has 1 to 255 characters,
-     * with no leading, trailing, or repeated `/` and no `.` or `..` segment.
+     * `actors/typescript-actor`. When absent or `null`, the archive root is the Actor's folder. It has 1 to 255
+     * characters, with no leading, trailing, or repeated `/` and no `.` or `..` segment.
      */
     actorPath?: GeneratedVersion['actorPath'];
 }
