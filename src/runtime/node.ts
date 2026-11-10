@@ -28,6 +28,8 @@ export const runtime: Runtime = {
                 case 'zstd':
                     zstdCompress(data, { params: { [constants.ZSTD_c_compressionLevel]: quality } }, done);
                     break;
+                default:
+                    reject(new Error(`Unrecognized compression algorithm: ${String(algorithm)}`));
             }
         });
     },

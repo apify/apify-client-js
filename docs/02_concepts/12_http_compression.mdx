@@ -15,7 +15,7 @@ The client compresses request bodies before sending them to the API. Compression
 
 ## How it works
 
-The client compresses request bodies with the compressor configured via the `compression` option of the <ApiLink to="class/ApifyClient">`ApifyClient`</ApiLink> constructor, brotli by default. The API accepts brotli, gzip, and zstd and decompresses the body transparently. A body is compressed only when it's large enough to benefit, its content type isn't already compressed, and the request carries no `Content-Encoding` of its own. For details, see [Minimum body size](#minimum-body-size), [Already-compressed payloads](#already-compressed-payloads), and [Pre-compressed bodies](#pre-compressed-bodies).
+The client compresses request bodies with the compressor configured via the `compression` option of the <ApiLink to="class/ApifyClient">`ApifyClient`</ApiLink> constructor, brotli by default. The API accepts all the compression algorithms with default implementations in `apify-client` and decompresses the body transparently. A body is compressed only when it's large enough to benefit, its content type isn't already compressed, and the request carries no `Content-Encoding` of its own. For details, see [Minimum body size](#minimum-body-size), [Already-compressed payloads](#already-compressed-payloads), and [Pre-compressed bodies](#pre-compressed-bodies).
 
 Compression needs `node:zlib`, so it runs where the client resolves its Node.js implementation. In a browser or an edge runtime it sends every body as it is, and the `compression` option has no effect. See [Bundled environments](./13_bundled_environments.mdx) for what decides which implementation a bundle gets.
 
@@ -92,7 +92,7 @@ const fastClient = new ApifyClient({
     compression: new GzipHttpCompressor({ quality: 1 }),
 });
 
-// Zstd at a high level
+// Zstd at the highest level
 const zstdClient = new ApifyClient({
     token: 'MY-APIFY-TOKEN',
     compression: new ZstdHttpCompressor({ quality: 19 }),
@@ -124,7 +124,7 @@ const client = new ApifyClient({ token: 'MY-APIFY-TOKEN', compression: identityC
 | **Compression ratio**         | Typically better than gzip              | Good                                  | Close to brotli at high levels              |
 | **CPU cost**                  | Moderate, depends on quality            | Low                                   | Low at the default level, grows with it     |
 | **`Content-Encoding` header** | `br`                                    | `gzip`                                | `zstd`                                      |
-| **Quality range**             | `0` to `11`                             | `1` to `9`                            | `1` to `22`                                 |
+| **Quality range**             | `0` to `11`                             | `1` to `9`                            | `1` to `19`                                 |
 | **Default quality**           | `6`                                     | `6`                                   | `3`                                         |
 | **Enable via config**         | `compression: 'brotli'` (default)       | `compression: 'gzip'`                 | `compression: 'zstd'`                       |
 | **Best for**                  | Large payloads where bandwidth matters  | Low CPU cost, runtimes without brotli | Fast compression at a good ratio            |

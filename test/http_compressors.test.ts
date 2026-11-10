@@ -114,7 +114,7 @@ describe('ZstdHttpCompressor', () => {
 
     test.each([
         { name: 'the fastest', quality: 1 },
-        { name: 'the best', quality: 22 },
+        { name: 'the best', quality: 19 },
     ])('round-trips data at $name quality', async ({ quality }) => {
         const compressed = await new ZstdHttpCompressor({ quality }).compress(payload);
         expect(zstdDecompressSync(compressed)).toEqual(payload);
@@ -127,7 +127,7 @@ describe('ZstdHttpCompressor', () => {
 
     test('passes the quality through to zlib', async () => {
         expect(await new ZstdHttpCompressor({ quality: 1 }).compress(variedPayload)).toEqual(await zstd(1));
-        expect(await new ZstdHttpCompressor({ quality: 22 }).compress(variedPayload)).toEqual(await zstd(22));
+        expect(await new ZstdHttpCompressor({ quality: 19 }).compress(variedPayload)).toEqual(await zstd(19));
     });
 
     test('defaults to level 3', async () => {
@@ -137,7 +137,7 @@ describe('ZstdHttpCompressor', () => {
 
     test.each([
         { name: 'below the minimum', quality: 0 },
-        { name: 'above the maximum', quality: 23 },
+        { name: 'above the maximum', quality: 20 },
         { name: 'negative', quality: -1 },
         { name: 'fractional', quality: 5.5 },
     ])('rejects a quality $name', ({ quality }) => {

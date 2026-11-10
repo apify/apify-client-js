@@ -7,8 +7,12 @@ import type { HttpCompressor } from './base.js';
 /** Lowest valid zstd quality, the fastest with the least compression. */
 const MIN_QUALITY = 1;
 
-/** Highest valid zstd quality, the slowest with the best compression. */
-const MAX_QUALITY = 22;
+/**
+ * Highest quality the compressor accepts. zstd itself goes up to 22, but levels 20 to 22 use a window above the 8 MB
+ * that RFC 9659 requires HTTP decoders to support, so a record stored at those levels could fail to decode in a
+ * browser that accepts zstd. Level 19 is the last one within the limit.
+ */
+const MAX_QUALITY = 19;
 
 /** zstd's own default. Fast, with a ratio close to gzip at its best level. */
 const DEFAULT_QUALITY = 3;
@@ -53,7 +57,8 @@ export class ZstdHttpCompressor implements HttpCompressor {
  */
 export interface ZstdHttpCompressorOptions {
     /**
-     * Compression level, from `1` (the fastest) to `22` (the best compression).
+     * Compression level, from `1` (the fastest) to `19` (the best compression). zstd's levels 20 to 22 are not
+     * accepted: their window exceeds the 8 MB that HTTP decoders are required to support.
      * @default 3
      */
     quality?: number;
