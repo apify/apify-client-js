@@ -9,6 +9,23 @@ All notable changes to this project will be documented in this file.
 
 - Allow passing X-Actor-Request-ID via charge() method (backport of #1162) ([9e497bb](https://github.com/apify/apify-client-js/commit/9e497bbc37f427d10c3dc987517382c8ab1df1cf))
 - Add Server Actor tenancy (backport of #1176) ([27ee92d](https://github.com/apify/apify-client-js/commit/27ee92dcc1051fd4315ca2b7f4dd01bc0ec00ccd))
+- Allow `format` parameter in `dataset.createItemsPublicUrl` (backport of #1100) ([cbca5ce](https://github.com/apify/apify-client-js/commit/cbca5ce6f58e94e733aa05d0bdfad44ac91f3917))
+- Add `pricingInfos` and `exampleRunInput` to `ActorUpdateOptions` (backport of #1144) ([49fdd32](https://github.com/apify/apify-client-js/commit/49fdd3267e9c0008767828df522194c06799261a))
+- Add Server Actor support (formerly Actor Standby) (backport of #1179) ([031d739](https://github.com/apify/apify-client-js/commit/031d7394491d2b8a5d8b50ab236b6f22e3e6c42e))
+- Add `actorPath` to multi-file and zip Actor version types (backport of #1157) ([747f6a8](https://github.com/apify/apify-client-js/commit/747f6a8282e0136524cbd0a808759e250657844f))
+
+### 🐛 Bug Fixes
+
+- Prevent path traversal by sanitizing URLs (backport of #1011) ([eb4be07](https://github.com/apify/apify-client-js/commit/eb4be076d96583518fa53ec793c71afdd578a4e3))
+- Carry the API error body of a failed streaming request (backport of #1055) ([f59dfa3](https://github.com/apify/apify-client-js/commit/f59dfa35532fc904640485e1e7dee0c2c7d81f98))
+- Add missing `readme` field to `Profile` model (backport of #1110) ([033f470](https://github.com/apify/apify-client-js/commit/033f4705a9a0e56797d65f44767c265f066b8d60))
+- Stop waitForFinish() polling a job that keeps returning 404 (backport of #1124) ([02303b5](https://github.com/apify/apify-client-js/commit/02303b55db9b489e87dee08b8c7193c53a03d901))
+- Reject non-positive `expiresInSecs` in signed public URLs (backport of #1188) ([ce4f88c](https://github.com/apify/apify-client-js/commit/ce4f88cbfbc7d9921cc187daf941ac9b8f34355a))
+- Pause between `waitForFinish` polls of a job that is still running (backport of #1189) ([99b0f46](https://github.com/apify/apify-client-js/commit/99b0f46eac5ce01d932625c41952b37cc96229b9))
+
+### ⚡ Performance
+
+- Skip request-body compression for already-compressed content types (backport of #1053) ([e9aaa04](https://github.com/apify/apify-client-js/commit/e9aaa047430b19cc99ea4cc768796ffd5c4a2b77))
 
 
 <!-- git-cliff-unreleased-end -->
