@@ -732,7 +732,7 @@ interface components {
         "status-2": string;
         origin: components["schemas"]["RunOrigin"];
         signature: string;
-        "Content-Encoding": "br" | "gzip" | "deflate" | "identity";
+        "Content-Encoding": "br" | "gzip" | "zstd" | "deflate" | "identity";
         exclusiveStartKey: string;
         "limit-3": number;
         collectionKeys: string;
