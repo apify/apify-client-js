@@ -8,7 +8,7 @@ const API_URL_ENV_VAR = 'APIFY_INTEGRATION_TESTS_API_URL';
 
 /** Client authenticated as the primary test user, or with the given `token` instead. */
 export function makeClient(token?: string): ApifyClient {
-    token ??= process.env[TOKEN_ENV_VAR]
+    token ??= process.env[TOKEN_ENV_VAR];
     if (!token) {
         throw new Error(`${TOKEN_ENV_VAR} environment variable is missing, cannot run tests!`);
     }
