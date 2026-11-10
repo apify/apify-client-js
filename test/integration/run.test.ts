@@ -240,26 +240,59 @@ test('resurrect() restarts a finished run, which then succeeds again', async () 
 });
 
 test('metamorph() transforms a started run into another Actor, keeping the run id', async () => {
-    const run = await client.actor(HELLO_WORLD_ACTOR).start();
-    const runClient = client.run(run.id);
+    // Metamorphing the run from outside is not allowed, so we cheat a bit: the Actor stores its own run token in its key-value store,
+    // and we construct a new client with this token, and test that.
+    const actor = await client.actors().create({
+        name: getRandomResourceName('actor'),
+        versions: [
+            {
+                versionNumber: '0.0',
+                sourceType: ActorSourceType.SourceFiles,
+                buildTag: 'latest',
+                sourceFiles: [
+                    {
+                        name: 'Dockerfile',
+                        format: 'TEXT',
+                        content: 'FROM apify/actor-node:22\nCOPY . ./\nCMD ["node", "main.js"]\n',
+                    },
+                    {
+                        name: 'main.js',
+                        format: 'TEXT',
+                        content: `
+                            const { Actor } = require('apify');
+                            Actor.main(async () => {
+                                await Actor.setValue('TOKEN', process.env.APIFY_TOKEN, { contentType: 'text/plain' });
+                                await new Promise((resolve) => setTimeout(resolve, 60000));
+                            });
+`,
+                    },
+                ],
+            },
+        ],
+    });
+    const actorClient = client.actor(actor.id);
+    let runClient: RunClient | undefined;
 
     try {
-        await waitUntilStarted(runClient);
+        await client.build((await actorClient.build('0.0')).id).waitForFinish();
+        const run = await actorClient.start();
+        runClient = client.run(run.id);
 
-        try {
-            const metamorphedRun = await runClient.metamorph(HELLO_WORLD_ACTOR, {
-                message: 'Hello from metamorph!',
-            });
-            expect(metamorphedRun.id).toBe(run.id);
+        // Only the run's own API token may metamorph it, so take it from the Actor's key-value store.
+        const record = await pollUntilCondition(
+            async () => client.keyValueStore(run.defaultKeyValueStoreId).getRecord('TOKEN'),
+            (rec) => rec !== undefined,
+            { timeoutSecs: 120, backoffFactor: 2 },
+        );
+        const runTokenClient = makeClient(record!.value as string);
 
-            await runClient.waitForFinish();
-        } catch (err) {
-            // hello-world can finish before the metamorph lands; the API call was still exercised.
-            rethrowUnlessAlreadyFinished(err);
-        }
+        const metamorphedRun = await runTokenClient.run(run.id).metamorph(HELLO_WORLD_ACTOR);
+        expect(metamorphedRun.id).toBe(run.id);
     } finally {
-        await runClient.waitForFinish();
-        await runClient.delete();
+        await runClient?.abort();
+        await runClient?.waitForFinish();
+        await runClient?.delete();
+        await actorClient.delete();
     }
 });
 
