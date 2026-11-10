@@ -2,8 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-<!-- git-cliff-unreleased-start -->
-## 2.25.1 - **not yet released**
+## [2.26.0](https://github.com/apify/apify-client-js/releases/tag/v2.26.0) (2026-11-10)
 
 ### 🚀 Features
 
@@ -28,7 +27,6 @@ All notable changes to this project will be documented in this file.
 - Skip request-body compression for already-compressed content types (backport of #1053) ([e9aaa04](https://github.com/apify/apify-client-js/commit/e9aaa047430b19cc99ea4cc768796ffd5c4a2b77))
 
 
-<!-- git-cliff-unreleased-end -->
 ## [2.25.0](https://github.com/apify/apify-client-js/releases/tag/v2.25.0) (2026-08-11)
 
 ### 🚀 Features
