@@ -912,6 +912,7 @@ export interface paths {
          *
          *     * Brotli: `Content-Encoding: br`
          *     * Gzip: `Content-Encoding: gzip`
+         *     * Zstandard: `Content-Encoding: zstd`
          *     * Deflate: `Content-Encoding: deflate`
          */
         post: operations["actor_runs_last_dataset_items_post"];
@@ -2073,6 +2074,7 @@ export interface paths {
          *
          *     * Brotli: `Content-Encoding: br`
          *     * Gzip: `Content-Encoding: gzip`
+         *     * Zstandard: `Content-Encoding: zstd`
          *     * Deflate: `Content-Encoding: deflate`
          */
         post: operations["actorTask_runs_last_dataset_items_post"];
@@ -2766,6 +2768,7 @@ export interface paths {
          *
          *     * Brotli: `Content-Encoding: br`
          *     * Gzip: `Content-Encoding: gzip`
+         *     * Zstandard: `Content-Encoding: zstd`
          *     * Deflate: `Content-Encoding: deflate`
          */
         post: operations["actorRun_dataset_items_post"];
@@ -3538,6 +3541,7 @@ export interface paths {
          *
          *     * Brotli compression: `Content-Encoding: br`
          *     * Gzip compression: `Content-Encoding: gzip`
+         *     * Zstandard compression: `Content-Encoding: zstd`
          *     * Deflate compression: `Content-Encoding: deflate`
          */
         put: operations["keyValueStore_record_put"];
@@ -3815,6 +3819,7 @@ export interface paths {
          *
          *     * Brotli: `Content-Encoding: br`
          *     * Gzip: `Content-Encoding: gzip`
+         *     * Zstandard: `Content-Encoding: zstd`
          *     * Deflate: `Content-Encoding: deflate`
          */
         post: operations["dataset_items_post"];
@@ -10302,7 +10307,7 @@ export interface components {
         /** @description Signature used for the access. */
         signature: string;
         /** @description Compression encoding of the request body. */
-        "Content-Encoding": "br" | "gzip" | "deflate" | "identity";
+        "Content-Encoding": "br" | "gzip" | "zstd" | "deflate" | "identity";
         /** @description All keys up to this one (including) are skipped from the result. */
         exclusiveStartKey: string;
         /** @description Number of keys to be returned. */
