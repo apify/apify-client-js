@@ -2,7 +2,7 @@ import type http from 'node:http';
 import type { Socket } from 'node:net';
 import os from 'node:os';
 import { Readable } from 'node:stream';
-import { brotliCompress, constants, gzip } from 'node:zlib';
+import { brotliCompress, constants, gzip, zstdCompress } from 'node:zlib';
 
 import type { Runtime } from './types.js';
 
@@ -18,10 +18,18 @@ export const runtime: Runtime = {
     async compress(data, { algorithm, quality }) {
         return new Promise((resolve, reject) => {
             const done = (error: Error | null, result: Buffer) => (error ? reject(error) : resolve(result));
-            if (algorithm === 'br') {
-                brotliCompress(data, { params: { [constants.BROTLI_PARAM_QUALITY]: quality } }, done);
-            } else {
-                gzip(data, { level: quality }, done);
+            switch (algorithm) {
+                case 'br':
+                    brotliCompress(data, { params: { [constants.BROTLI_PARAM_QUALITY]: quality } }, done);
+                    break;
+                case 'gzip':
+                    gzip(data, { level: quality }, done);
+                    break;
+                case 'zstd':
+                    zstdCompress(data, { params: { [constants.ZSTD_c_compressionLevel]: quality } }, done);
+                    break;
+                default:
+                    reject(new Error(`Unrecognized compression algorithm: ${String(algorithm)}`));
             }
         });
     },

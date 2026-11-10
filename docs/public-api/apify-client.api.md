@@ -3195,7 +3195,7 @@ export interface HttpClientOptions {
 }
 
 // @public
-export type HttpCompressionAlgorithm = 'brotli' | 'gzip';
+export type HttpCompressionAlgorithm = 'brotli' | 'gzip' | 'zstd';
 
 // @public
 export interface HttpCompressor {
@@ -4676,6 +4676,20 @@ export interface WebhookStats extends GeneratedWebhookStats {
 export type WebhookUpdateData = Partial<Pick<WebhookResource, 'isAdHoc' | 'condition' | 'ignoreSslErrors' | 'doNotRetry' | 'requestUrl' | 'payloadTemplate' | 'shouldInterpolateStrings' | 'isApifyIntegration' | 'headersTemplate' | 'description'> & {
     eventTypes: readonly WebhookEventType[];
 }> & WebhookIdempotencyKey;
+
+// @public
+export class ZstdHttpCompressor implements HttpCompressor {
+    constructor(options?: ZstdHttpCompressorOptions);
+    // (undocumented)
+    compress(data: Buffer): Promise<Buffer>;
+    // (undocumented)
+    readonly contentEncoding = "zstd";
+}
+
+// @public
+export interface ZstdHttpCompressorOptions {
+    quality?: number;
+}
 
 // (No @packageDocumentation comment for this package)
 
