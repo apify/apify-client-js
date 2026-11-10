@@ -218,6 +218,8 @@ export class StreamedLog {
     #decoder = new TextDecoder();
     #splitMarker = /(?:\n|^)(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z)/g;
     #relevancyTimeLimit: Date | null;
+    /** Whether the last message was redirected, so lines that continue it in a later chunk are redirected too. */
+    #lastMessageRedirected = false;
 
     #logClient: LogClient;
     #signal: AbortSignal | undefined;
@@ -369,11 +371,21 @@ export class StreamedLog {
      * Parse the buffer and log complete messages.
      */
     #logBufferContent(): void {
-        const allParts = this.#decoder.decode(concatBytes(this.#streamBuffer)).split(this.#splitMarker).slice(1);
+        const [continuation, ...allParts] = this.#decoder
+            .decode(concatBytes(this.#streamBuffer))
+            .split(this.#splitMarker);
+        this.#streamBuffer = [];
+
+        // Lines before the first marker continue a multi-line message whose first lines an earlier chunk already
+        // redirected, for example the rest of a stack trace.
+        const continuationLines = continuation.replace(/^\n+/, '').trimEnd();
+        if (continuationLines.length && this.#lastMessageRedirected) {
+            this.#destinationLog.info(continuationLines);
+        }
+
         // Parse the buffer parts into complete messages
         const messageMarkers = allParts.filter((_, i) => i % 2 === 0);
         const messageContents = allParts.filter((_, i) => i % 2 !== 0);
-        this.#streamBuffer = [];
 
         messageMarkers.forEach((marker, index) => {
             const decodedMarker = marker;
@@ -382,9 +394,11 @@ export class StreamedLog {
                 // Log only relevant messages. Ignore too old log messages.
                 const logTime = new Date(decodedMarker);
                 if (logTime < this.#relevancyTimeLimit) {
+                    this.#lastMessageRedirected = false;
                     return;
                 }
             }
+            this.#lastMessageRedirected = true;
             const message = decodedMarker + decodedContent;
 
             // Original log level information is not available. Log all on info level. Log level could be guessed for

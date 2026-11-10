@@ -230,3 +230,43 @@ test('StreamedLog reports a failing one-shot log read and still stops', async ()
         warning.mockRestore();
     }
 });
+
+async function redirectChunks(chunks: string[], options: { fromStart?: boolean } = {}): Promise<unknown[][]> {
+    const logStream = Readable.from(chunks.map((chunk) => Buffer.from(chunk)));
+    const logClient = { stream: vi.fn().mockResolvedValue(logStream), get: vi.fn() } as unknown as LogClient;
+    const toLog = new Log();
+    const info = vi.spyOn(toLog, 'info').mockImplementation(() => {});
+
+    const streamedLog = new StreamedLog({ toLog, logClient, ...options });
+    streamedLog.start();
+    // `stop()` ends redirection after the chunk in flight, so let the whole stream be read first.
+    await vi.waitFor(() => expect(logStream.readableEnded).toBe(true));
+    await streamedLog.stop();
+    return info.mock.calls;
+}
+
+test('StreamedLog redirects the lines of a multi-line message that arrive in a later chunk', async () => {
+    const calls = await redirectChunks([
+        '2025-01-01T00:00:00.000Z ERROR boom\n  at line 1\n',
+        '  at line 2\n  at line 3\n2025-01-01T00:00:01.000Z next\n',
+    ]);
+
+    expect(calls).toEqual([
+        ['2025-01-01T00:00:00.000Z ERROR boom\n  at line 1'],
+        ['  at line 2\n  at line 3'],
+        ['2025-01-01T00:00:01.000Z next'],
+    ]);
+});
+
+test('StreamedLog skips the later lines of a multi-line message older than the redirection start', async () => {
+    const calls = await redirectChunks(
+        [
+            '2000-01-01T00:00:00.000Z old message\n  old line 1\n',
+            '  old line 2\n2999-01-01T00:00:00.000Z new message\n  new line 1\n',
+            '  new line 2\n',
+        ],
+        { fromStart: false },
+    );
+
+    expect(calls).toEqual([['2999-01-01T00:00:00.000Z new message\n  new line 1'], ['  new line 2']]);
+});
