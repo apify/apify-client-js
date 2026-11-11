@@ -2693,7 +2693,10 @@ export interface paths {
          * Charge events in Actor run
          * @description Charge for events in the run of your [pay-per-event Actor](https://docs.apify.com/actors/monetize/pay-per-event).
          *     The event you are charging for must be one of the configured events in your Actor. If the Actor is not set up as pay per event, or if the event is not configured,
-         *     the endpoint will return an error. The endpoint must be called from the Actor run itself, with the same API token that the run was started with.
+         *     the endpoint will return an error. The endpoint must be called from the Actor run itself, with the API token provided to the run at startup in the `APIFY_TOKEN` environment variable.
+         *
+         *     To charge a request to a multi-tenant Server Actor, set `requestId` to the request's `X-Actor-Request-ID` header value.
+         *     See [Charge for a request](https://docs.apify.com/actors/monetize/server-actors#charge-for-a-request).
          */
         post: operations["PostChargeRun"];
         delete?: never;
@@ -5268,7 +5271,7 @@ export interface components {
              */
             categories?: string[] | null;
             defaultRunOptions?: components["schemas"]["DefaultRunOptions"];
-            /** @description The configuration of the Actor's standby mode. For details, see [Standby mode](https://docs.apify.com/platform/actors/development/programming-interface/standby). */
+            /** @description The configuration of the Actor's standby mode. For details, see [Develop Server Actors](https://docs.apify.com/platform/actors/development/programming-interface/server-actors). */
             actorStandby?: components["schemas"]["ActorStandby"] | null;
             /** @description Sample input payload that demonstrates what a typical run input for an Actor looks like. Used when no explicit input for a run is provided. */
             exampleRunInput?: components["schemas"]["ExampleRunInput"] | null;
@@ -5753,7 +5756,7 @@ export interface components {
             taggedBuilds?: {
                 [key: string]: components["schemas"]["UpdatedBuildProperty"];
             } | null;
-            /** @description The configuration of the Actor's standby mode. For details, see [Standby mode](https://docs.apify.com/platform/actors/development/programming-interface/standby). */
+            /** @description The configuration of the Actor's standby mode. For details, see [Develop Server Actors](https://docs.apify.com/platform/actors/development/programming-interface/server-actors). */
             actorStandby?: components["schemas"]["ActorStandby"] | null;
             /** @description Sample input payload that demonstrates what a typical run input for an Actor looks like. Used when no explicit input for a run is provided. */
             exampleRunInput?: components["schemas"]["ExampleRunInput"] | null;
@@ -7006,7 +7009,7 @@ export interface components {
              * @example 0.2654
              */
             usageTotalUsd?: number | null;
-            /** @description Platform usage costs breakdown in USD. Only present if you own the run and are paying for platform usage (pay-per-usage or pay-per-event with usage costs like Standby Actors). Not available for standard pay-per-event Actors. Requires authentication token to access. */
+            /** @description Platform usage costs breakdown in USD. Only present if you own the run and are paying for platform usage (pay per usage, or pay per event with usage costs, such as runs of single-tenant Server Actors). Not available for standard pay-per-event Actors. Requires authentication token to access. */
             usageUsd?: components["schemas"]["RunUsageUsd"] | null;
             /** @description List of metamorph events that occurred during the run. */
             metamorphs?: components["schemas"]["RunMetamorphEvent"][] | null;
@@ -8337,7 +8340,7 @@ export interface components {
             /** @example 1 */
             count: number;
             /**
-             * @description ID of the Server Actor request being charged, from the `X-Actor-Request-ID` header of the incoming request. Required for multi-tenant Server Actor runs, where it identifies the request the charge belongs to.
+             * @description ID of the Server Actor request being charged, from the `X-Actor-Request-ID` header of the incoming request. Required for multi-tenant Server Actor runs, where it identifies the request the charge belongs to. Runs of single-tenant Server Actors ignore it.
              * @example 7Hs2kQw9LxP4mN1vB
              */
             requestId?: string;
