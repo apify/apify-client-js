@@ -12,12 +12,19 @@ import { paginationOptionsShape, parseArgument } from '../utils.js';
 import type { RunListItem } from './actor.js';
 
 const jobStatusSchema = z.enum(ACTOR_JOB_STATUSES);
+const standbyDeploymentSchema = z.enum([
+    'SINGLE_TENANT',
+    'MULTI_TENANT_OWNER_PAID',
+    'MULTI_TENANT_FREE_USERS',
+    'MULTI_TENANT_PAYING_USERS',
+]);
 const listOptionsSchema = z.strictObject({
     ...paginationOptionsShape,
     desc: z.boolean().optional(),
     status: z.union([jobStatusSchema, z.array(jobStatusSchema)]).optional(),
     startedBefore: z.union([z.date(), z.string()]).optional(),
     startedAfter: z.union([z.date(), z.string()]).optional(),
+    deployment: z.union([standbyDeploymentSchema, z.array(standbyDeploymentSchema)]).optional(),
     ...timeoutOptionsShape,
 });
 
@@ -94,4 +101,14 @@ export interface RunCollectionListOptions extends PaginationOptions, TimeoutOpti
      * @since Added in 2.18.0
      */
     startedAfter?: Date | string;
+    /**
+     * Filter Actor Standby runs by the pool that serves them. Requires `status` with only non-terminal
+     * statuses (`READY`, `RUNNING`, `TIMING-OUT` or `ABORTING`).
+     */
+    deployment?: StandbyDeployment | StandbyDeployment[];
 }
+
+/**
+ * The pool that serves an Actor Standby run.
+ */
+export type StandbyDeployment = z.infer<typeof standbyDeploymentSchema>;
