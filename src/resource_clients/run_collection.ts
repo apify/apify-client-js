@@ -12,7 +12,7 @@ const STANDBY_DEPLOYMENTS = [
     'MULTI_TENANT_OWNER_PAID',
     'MULTI_TENANT_FREE_USERS',
     'MULTI_TENANT_PAYING_USERS',
-] as const;
+] as const satisfies readonly StandbyDeployment[];
 
 /**
  * Client for managing the collection of Actor runs.
@@ -113,4 +113,8 @@ export interface RunCollectionListOptions extends PaginationOptions {
 /**
  * The pool that serves an Actor Standby run.
  */
-export type StandbyDeployment = (typeof STANDBY_DEPLOYMENTS)[number];
+export type StandbyDeployment =
+    | 'SINGLE_TENANT'
+    | 'MULTI_TENANT_OWNER_PAID'
+    | 'MULTI_TENANT_FREE_USERS'
+    | 'MULTI_TENANT_PAYING_USERS';
