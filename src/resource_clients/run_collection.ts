@@ -12,12 +12,13 @@ import { paginationOptionsShape, parseArgument } from '../utils.js';
 import type { RunListItem } from './actor.js';
 
 const jobStatusSchema = z.enum(ACTOR_JOB_STATUSES);
-const standbyDeploymentSchema = z.enum([
+const STANDBY_DEPLOYMENTS = [
     'SINGLE_TENANT',
     'MULTI_TENANT_OWNER_PAID',
     'MULTI_TENANT_FREE_USERS',
     'MULTI_TENANT_PAYING_USERS',
-]);
+] as const;
+const standbyDeploymentSchema = z.enum(STANDBY_DEPLOYMENTS);
 const listOptionsSchema = z.strictObject({
     ...paginationOptionsShape,
     desc: z.boolean().optional(),
@@ -111,4 +112,4 @@ export interface RunCollectionListOptions extends PaginationOptions, TimeoutOpti
 /**
  * The pool that serves an Actor Standby run.
  */
-export type StandbyDeployment = z.infer<typeof standbyDeploymentSchema>;
+export type StandbyDeployment = (typeof STANDBY_DEPLOYMENTS)[number];
