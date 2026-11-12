@@ -17,7 +17,7 @@ const STANDBY_DEPLOYMENTS = [
     'MULTI_TENANT_OWNER_PAID',
     'MULTI_TENANT_FREE_USERS',
     'MULTI_TENANT_PAYING_USERS',
-] as const;
+] as const satisfies readonly StandbyDeployment[];
 const standbyDeploymentSchema = z.enum(STANDBY_DEPLOYMENTS);
 const listOptionsSchema = z.strictObject({
     ...paginationOptionsShape,
@@ -112,4 +112,8 @@ export interface RunCollectionListOptions extends PaginationOptions, TimeoutOpti
 /**
  * The pool that serves an Actor Standby run.
  */
-export type StandbyDeployment = (typeof STANDBY_DEPLOYMENTS)[number];
+export type StandbyDeployment =
+    | 'SINGLE_TENANT'
+    | 'MULTI_TENANT_OWNER_PAID'
+    | 'MULTI_TENANT_FREE_USERS'
+    | 'MULTI_TENANT_PAYING_USERS';
