@@ -16,6 +16,7 @@ import type { Build, BuildClientGetOptions } from './build';
 import { BuildClient } from './build';
 import { BuildCollectionClient } from './build_collection';
 import { RunClient } from './run';
+import type { StandbyDeployment } from './run_collection';
 import { RunCollectionClient } from './run_collection';
 import type { WebhookUpdateData } from './webhook';
 import { WebhookCollectionClient } from './webhook_collection';
@@ -952,7 +953,7 @@ export interface ActorRun extends ActorRunListItem {
  * @since Added in 2.26.0
  */
 export interface ActorRunStandby {
-    deployment: 'SINGLE_TENANT' | 'MULTI_TENANT_OWNER_PAID' | 'MULTI_TENANT_FREE_USERS' | 'MULTI_TENANT_PAYING_USERS';
+    deployment: StandbyDeployment;
 }
 
 /**
