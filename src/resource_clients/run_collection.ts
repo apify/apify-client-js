@@ -7,6 +7,13 @@ import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedIterator, PaginationOptions } from '../utils';
 import type { ActorRunListItem } from './actor';
 
+const STANDBY_DEPLOYMENTS = [
+    'SINGLE_TENANT',
+    'MULTI_TENANT_OWNER_PAID',
+    'MULTI_TENANT_FREE_USERS',
+    'MULTI_TENANT_PAYING_USERS',
+] as const;
+
 /**
  * Client for managing the collection of Actor runs.
  *
@@ -72,6 +79,10 @@ export class RunCollectionClient extends ResourceCollectionClient {
                 ),
                 startedBefore: ow.optional.any(ow.optional.date, ow.optional.string),
                 startedAfter: ow.optional.any(ow.optional.date, ow.optional.string),
+                deployment: ow.optional.any(
+                    ow.string.oneOf([...STANDBY_DEPLOYMENTS]),
+                    ow.array.ofType(ow.string.oneOf([...STANDBY_DEPLOYMENTS])),
+                ),
             }),
         );
 
@@ -92,4 +103,14 @@ export interface RunCollectionListOptions extends PaginationOptions {
      * @since Added in 2.18.0
      */
     startedAfter?: Date | string;
+    /**
+     * Filter Actor Standby runs by the pool that serves them. Requires `status` with only non-terminal
+     * statuses (`READY`, `RUNNING`, `TIMING-OUT` or `ABORTING`).
+     */
+    deployment?: StandbyDeployment | StandbyDeployment[];
 }
+
+/**
+ * The pool that serves an Actor Standby run.
+ */
+export type StandbyDeployment = (typeof STANDBY_DEPLOYMENTS)[number];
