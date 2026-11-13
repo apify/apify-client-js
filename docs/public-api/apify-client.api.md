@@ -3938,6 +3938,7 @@ export class RunCollectionClient extends ResourceCollectionClient {
 
 // @public (undocumented)
 export interface RunCollectionListOptions extends PaginationOptions, TimeoutOptions {
+    deployment?: StandbyDeployment | StandbyDeployment[];
     // (undocumented)
     desc?: boolean;
     startedAfter?: Date | string;
@@ -4194,6 +4195,9 @@ export interface SourceCodeFile extends GeneratedSourceCodeFile {
 // @public
 export interface SourceCodeFolder extends GeneratedSourceCodeFolder {
 }
+
+// @public
+export type StandbyDeployment = 'SINGLE_TENANT' | 'MULTI_TENANT_OWNER_PAID' | 'MULTI_TENANT_FREE_USERS' | 'MULTI_TENANT_PAYING_USERS';
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
