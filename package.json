@@ -115,7 +115,7 @@
         "express": "^5.3.0",
         "oxfmt": "0.77.0",
         "oxlint": "1.93.0",
-        "oxlint-tsgolint": "7.0.2006",
+        "oxlint-tsgolint": "7.0.2007",
         "puppeteer": "^25.16.0",
         "rimraf": "^6.1.4",
         "rolldown": "^1.2.16",
