@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+<!-- git-cliff-unreleased-start -->
+## 2.26.1 - **not yet released**
+
+### 🐛 Bug Fixes
+
+- Bump axios to 1.21.1 for Cloudflare Workers support (#1216) ([16e613c](https://github.com/apify/apify-client-js/commit/16e613cb2a7b951b341c2b2f702e587dcc267ac0))
+
+
+<!-- git-cliff-unreleased-end -->
 ## [2.26.0](https://github.com/apify/apify-client-js/releases/tag/v2.26.0) (2026-11-10)
 
 ### 🚀 Features
