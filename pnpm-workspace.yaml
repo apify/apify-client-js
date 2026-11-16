@@ -23,8 +23,6 @@ allowBuilds:
   esbuild: true
   puppeteer: true
 
-overrides:
-  markdown-it: ^15.0.0
 
 nodeLinker: hoisted
 linkWorkspacePackages: true
