@@ -8,7 +8,7 @@ const RETRYABLE_CODES = new Set(['ECONNREFUSED', 'ECONNRESET', 'EPIPE', 'ETIMEDO
 
 class FetchHttpClient extends HttpClient {
     override async sendRequest(request: HttpRequest): Promise<HttpResponse> {
-        const { method, url, headers, body, timeoutMillis, stream, signal } = request;
+        const { method, url, headers, body, timeoutMillis, stream, followRedirects, signal } = request;
 
         const signals = signal ? [signal] : [];
         if (timeoutMillis !== undefined) signals.push(AbortSignal.timeout(timeoutMillis));
@@ -18,6 +18,7 @@ class FetchHttpClient extends HttpClient {
             headers,
             // `fetch` in Node.js streams a `Readable` body, which the DOM `BodyInit` type doesn't list.
             body: body as BodyInit | undefined,
+            redirect: followRedirects ? 'follow' : 'manual',
             signal: AbortSignal.any(signals),
             ...(body instanceof Readable ? { duplex: 'half' } : {}),
         });
