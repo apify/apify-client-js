@@ -6,6 +6,8 @@ import type { ActorServerRequestOptions } from 'apify-client';
 import { ApifyClient } from 'apify-client';
 import { afterAll, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { Browser } from './_helper';
+
 const ACTOR_ID = 'test-actor-id';
 const ACTOR_PATH = `/v2/actors/${ACTOR_ID}`;
 const SERVER_PREFIX = '/server';
@@ -197,6 +199,63 @@ describe('ActorServerClient', () => {
         }
 
         expect(redirected).toBe(false);
+    });
+
+    test('request() in the browser fails on a redirect of the server instead of following it', async () => {
+        let redirected = false;
+        const otherServer = http.createServer((_req, res) => {
+            redirected = true;
+            res.end();
+        });
+        await new Promise<void>((done) => {
+            otherServer.listen(0, '127.0.0.1', done);
+        });
+        const location = `http://127.0.0.1:${(otherServer.address() as AddressInfo).port}/`;
+        const redirectServer = http.createServer((_req, res) => {
+            res.writeHead(302, { location });
+            res.end();
+        });
+        await new Promise<void>((done) => {
+            redirectServer.listen(0, '127.0.0.1', done);
+        });
+        actor = serverActor({ standbyUrl: `http://127.0.0.1:${(redirectServer.address() as AddressInfo).port}` });
+
+        const browser = new Browser();
+        await browser.start();
+        try {
+            const page = await browser.getInjectedPage(baseUrl, { token: 'test-token' });
+            const result = await page.evaluate(async (actorId) => {
+                try {
+                    const response = await (window as any).client.actor(actorId).server().request('/');
+                    return { status: response.status };
+                } catch (err) {
+                    return { message: (err as Error).message };
+                }
+            }, ACTOR_ID);
+
+            expect(result).toEqual({ message: expect.stringContaining('redirect') });
+        } finally {
+            await browser.cleanUpBrowser();
+            await new Promise((done) => {
+                otherServer.close(done);
+            });
+            await new Promise((done) => {
+                redirectServer.close(done);
+            });
+        }
+
+        expect(redirected).toBe(false);
+    });
+
+    test('request() outside Node.js leaves the User-Agent header to the runtime', async () => {
+        vi.stubGlobal('BROWSER_BUILD', true);
+        try {
+            await client.actor(ACTOR_ID).server().request('/search');
+        } finally {
+            vi.unstubAllGlobals();
+        }
+
+        expect(serverRequests()[0].headers['user-agent']).not.toMatch(/^axios\//);
     });
 
     test('request() reuses the server URL fetched by the first call on the same Actor client', async () => {
