@@ -1,5 +1,5 @@
 {
-    "extends": ["config:recommended", ":semanticCommitTypeAll(chore)"],
+    "extends": ["config:recommended", ":semanticCommitTypeAll(chore)", "helpers:pinGitHubActionDigests"],
     "rangeStrategy": "replace",
     "separateMajorMinor": false,
     "dependencyDashboard": false,
@@ -13,6 +13,11 @@
         "automergeType": "branch"
     },
     "packageRules": [
+        {
+            "matchManagers": ["github-actions"],
+            "matchPackageNames": ["apify/**"],
+            "pinDigests": false
+        },
         {
             "matchUpdateTypes": ["patch", "minor"],
             "matchCurrentVersion": "!/^0/",
