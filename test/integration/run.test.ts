@@ -296,7 +296,8 @@ test('metamorph() transforms a started run into another Actor, keeping the run i
     // Hello-world replaces the waiting Actor, so the run finishes on its own.
     const finalRun = await runClient.waitForFinish();
     expect(finalRun.status).toBe('SUCCEEDED');
-    expect(finalRun.metamorphs).not.toHaveLength(0);
+    const helloWorld = await client.actor(HELLO_WORLD_ACTOR).get();
+    expect(finalRun.metamorphs).toEqual([expect.objectContaining({ actorId: helloWorld?.id })]);
 }, 600_000);
 
 test('reboot() restarts the container of a running Actor, keeping the run id', async () => {
