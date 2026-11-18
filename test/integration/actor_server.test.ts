@@ -1,9 +1,8 @@
 import { afterAll, beforeAll, expect, test } from 'vitest';
 
 import type { ApifyClient } from 'apify-client';
-import { ActorSourceType } from 'apify-client';
 
-import { makeClient } from './_fixtures.js';
+import { createBuiltActor, makeClient } from './_fixtures.js';
 import { getRandomResourceName } from './_utils.js';
 
 const OPENAPI_SPEC = {
@@ -31,7 +30,7 @@ http.createServer((req, res) => {
 `;
 
 const DOCKERFILE = `
-FROM node:22-alpine
+FROM node:26-alpine
 COPY main.js ./
 CMD ["node", "main.js"]
 `;
@@ -50,27 +49,16 @@ beforeAll(async () => {
         usesStandbyMode: true,
         webServerSchema: OPENAPI_SPEC,
     };
-    const actor = await client.actors().create({
-        name: actorName,
-        versions: [
-            {
-                versionNumber: '0.0',
-                sourceType: ActorSourceType.SourceFiles,
-                buildTag: 'latest',
-                sourceFiles: [
-                    { name: 'Dockerfile', format: 'TEXT', content: DOCKERFILE },
-                    { name: 'main.js', format: 'TEXT', content: ECHO_SERVER_SOURCE },
-                    { name: '.actor/actor.json', format: 'TEXT', content: JSON.stringify(actorJson) },
-                ],
-            },
+    serverActorId = await createBuiltActor(
+        client,
+        actorName,
+        [
+            { name: 'Dockerfile', format: 'TEXT', content: DOCKERFILE },
+            { name: 'main.js', format: 'TEXT', content: ECHO_SERVER_SOURCE },
+            { name: '.actor/actor.json', format: 'TEXT', content: JSON.stringify(actorJson) },
         ],
-        actorStandby: { isEnabled: true, memoryMbytes: 256, idleTimeoutSecs: 60 },
-    });
-    serverActorId = actor.id;
-
-    const build = await client.actor(serverActorId).build('0.0');
-    const finishedBuild = await client.build(build.id).waitForFinish({ waitSecs: 300 });
-    expect(finishedBuild.status).toBe('SUCCEEDED');
+        { actorStandby: { isEnabled: true, memoryMbytes: 256, idleTimeoutSecs: 60 } },
+    );
 }, 360_000);
 
 afterAll(async () => {
