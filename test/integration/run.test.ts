@@ -14,7 +14,7 @@ const LIVE_ITEM_COUNT = 10;
 
 /** Source of an Actor that pushes `LIVE_ITEM_COUNT` items tagged with its run ID to its dataset, one per second. */
 const LIVE_ITEMS_SOURCE_FILES = [
-    { name: 'Dockerfile', format: 'TEXT', content: 'FROM apify/actor-node:22\nCOPY . ./\nCMD ["node", "main.mjs"]\n' },
+    { name: 'Dockerfile', format: 'TEXT', content: 'FROM apify/actor-node:26\nCOPY . ./\nCMD ["node", "main.mjs"]\n' },
     {
         name: 'main.mjs',
         format: 'TEXT',
@@ -36,7 +36,7 @@ for (let index = 0; index < ${LIVE_ITEM_COUNT}; index++) {
 
 /** Source of an Actor that stores its run token under `TOKEN` in its key-value store, then waits for 60 seconds. */
 const METAMORPH_SOURCE_FILES = [
-    { name: 'Dockerfile', format: 'TEXT', content: 'FROM apify/actor-node:22\nCOPY . ./\nCMD ["node", "main.js"]\n' },
+    { name: 'Dockerfile', format: 'TEXT', content: 'FROM apify/actor-node:26\nCOPY . ./\nCMD ["node", "main.js"]\n' },
     {
         name: 'main.js',
         format: 'TEXT',

@@ -30,7 +30,7 @@ http.createServer((req, res) => {
 `;
 
 const DOCKERFILE = `
-FROM node:22-alpine
+FROM node:26-alpine
 COPY main.js ./
 CMD ["node", "main.js"]
 `;
