@@ -182,6 +182,8 @@ export class RunClient extends ResourceClient {
      * and resource allocation. The run effectively becomes a run of the target Actor with new input.
      * This is useful for chaining Actor executions or implementing complex workflows.
      *
+     * A run can only metamorph itself: the API rejects the call unless the client uses the run's own token.
+     *
      * @param targetActorId - ID or username/name of the target Actor
      * @param input - Input for the target Actor: an object or array serialized to JSON, or raw bytes sent as they
      *                are. Omit it to metamorph without input.

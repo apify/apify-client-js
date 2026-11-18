@@ -239,24 +239,19 @@ test('resurrect() restarts a finished run, which then succeeds again', async () 
     }
 });
 
-test('metamorph() transforms a started run into another Actor, keeping the run id', async () => {
+test('metamorph() reaches the API and is rejected when called from outside the run', async () => {
     const run = await client.actor(HELLO_WORLD_ACTOR).start();
     const runClient = client.run(run.id);
 
     try {
         await waitUntilStarted(runClient);
 
-        try {
-            const metamorphedRun = await runClient.metamorph(HELLO_WORLD_ACTOR, {
-                message: 'Hello from metamorph!',
-            });
-            expect(metamorphedRun.id).toBe(run.id);
-
-            await runClient.waitForFinish();
-        } catch (err) {
-            // hello-world can finish before the metamorph lands; the API call was still exercised.
-            rethrowUnlessAlreadyFinished(err);
-        }
+        // Only the run's own token may metamorph it; the happy path is covered by the mock-server tests.
+        const error = await runClient
+            .metamorph(HELLO_WORLD_ACTOR, { message: 'Hello from metamorph!' })
+            .catch((err) => err);
+        expect(error).toBeInstanceOf(ApifyApiError);
+        expect(error.statusCode).toBe(400);
     } finally {
         await runClient.waitForFinish();
         await runClient.delete();
