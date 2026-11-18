@@ -34,7 +34,7 @@ for (let index = 0; index < ${LIVE_ITEM_COUNT}; index++) {
     },
 ] as const;
 
-/** Source of an Actor that stores its run token under `TOKEN` in its key-value store, then waits for 60 seconds. */
+/** Source of an Actor that stores its run token under `TOKEN` in its key-value store, then waits for 240 seconds. */
 const METAMORPH_SOURCE_FILES = [
     { name: 'Dockerfile', format: 'TEXT', content: 'FROM apify/actor-node:26\nCOPY . ./\nCMD ["node", "main.js"]\n' },
     {
@@ -44,7 +44,7 @@ const METAMORPH_SOURCE_FILES = [
 const { Actor } = require('apify');
 Actor.main(async () => {
     await Actor.setValue('TOKEN', process.env.APIFY_TOKEN, { contentType: 'text/plain' });
-    await new Promise((resolve) => setTimeout(resolve, 60000));
+    await new Promise((resolve) => setTimeout(resolve, 240_000));
 });
 `,
     },
@@ -281,7 +281,7 @@ test('metamorph() transforms a started run into another Actor, keeping the run i
         return undefined;
     };
 
-    // A fixed short interval, so the token is read well within the 60 seconds the Actor waits after storing it.
+    // A fixed short interval, so the token is read well within the 240 seconds the Actor waits after storing it.
     const runToken = await pollUntilCondition(getRunToken, (token) => token !== undefined, {
         timeoutSecs: 120,
         pollIntervalSecs: 2,
