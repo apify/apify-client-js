@@ -3,7 +3,7 @@ import { beforeAll, expect, test } from 'vitest';
 import { Log, LogLevel } from '@apify/log';
 
 import type { ApifyClient, Run, RunClient, RunListItem } from 'apify-client';
-import { ActorSourceType, ApifyApiError } from 'apify-client';
+import { ApifyApiError } from 'apify-client';
 
 import { createBuiltActor, makeClient } from './_fixtures.js';
 import { getRandomResourceName, LISTING_POLL_OPTIONS, NO_LOG_REDIRECT, pollUntilCondition } from './_utils.js';
@@ -30,6 +30,22 @@ for (let index = 0; index < ${LIVE_ITEM_COUNT}; index++) {
     if (!response.ok) throw new Error(\`Pushing item \${index} failed with \${response.status}\`);
     await new Promise((resolve) => setTimeout(resolve, 1000));
 }
+`,
+    },
+] as const;
+
+/** Source of an Actor that stores its run token under `TOKEN` in its key-value store, then waits for 60 seconds. */
+const METAMORPH_SOURCE_FILES = [
+    { name: 'Dockerfile', format: 'TEXT', content: 'FROM apify/actor-node:22\nCOPY . ./\nCMD ["node", "main.js"]\n' },
+    {
+        name: 'main.js',
+        format: 'TEXT',
+        content: `
+const { Actor } = require('apify');
+Actor.main(async () => {
+    await Actor.setValue('TOKEN', process.env.APIFY_TOKEN, { contentType: 'text/plain' });
+    await new Promise((resolve) => setTimeout(resolve, 60000));
+});
 `,
     },
 ] as const;
@@ -240,61 +256,52 @@ test('resurrect() restarts a finished run, which then succeeds again', async () 
 });
 
 test('metamorph() transforms a started run into another Actor, keeping the run id', async () => {
-    // Metamorphing the run from outside is not allowed, so we cheat a bit: the Actor stores its own run token in its key-value store,
-    // and we construct a new client with this token, and test that.
-    const actor = await client.actors().create({
-        name: getRandomResourceName('actor'),
-        versions: [
-            {
-                versionNumber: '0.0',
-                sourceType: ActorSourceType.SourceFiles,
-                buildTag: 'latest',
-                sourceFiles: [
-                    {
-                        name: 'Dockerfile',
-                        format: 'TEXT',
-                        content: 'FROM apify/actor-node:22\nCOPY . ./\nCMD ["node", "main.js"]\n',
-                    },
-                    {
-                        name: 'main.js',
-                        format: 'TEXT',
-                        content: `
-                            const { Actor } = require('apify');
-                            Actor.main(async () => {
-                                await Actor.setValue('TOKEN', process.env.APIFY_TOKEN, { contentType: 'text/plain' });
-                                await new Promise((resolve) => setTimeout(resolve, 60000));
-                            });
-`,
-                    },
-                ],
-            },
-        ],
-    });
-    const actorClient = client.actor(actor.id);
+    const actorId = await createBuiltActor(client, getRandomResourceName('actor'), [...METAMORPH_SOURCE_FILES]);
+    const actorClient = client.actor(actorId);
     let runClient: RunClient | undefined;
 
     try {
-        await client.build((await actorClient.build('0.0')).id).waitForFinish();
-        const run = await actorClient.start();
+        const run = await actorClient.start(undefined, { memory: 256, runTimeoutSecs: 300 });
         runClient = client.run(run.id);
+        const startedRunClient = runClient;
 
-        // Only the run's own API token may metamorph it, so take it from the Actor's key-value store.
-        const record = await pollUntilCondition(
-            async () => client.keyValueStore(run.defaultKeyValueStoreId).getRecord('TOKEN'),
-            (rec) => rec !== undefined,
-            { timeoutSecs: 120, backoffFactor: 2 },
-        );
-        const runTokenClient = makeClient(record!.value as string);
+        // A metamorph needs the run's own token, which the Actor stores in its key-value store.
+        const getRunToken = async (): Promise<string | undefined> => {
+            const record = await client.keyValueStore(run.defaultKeyValueStoreId).getRecord('TOKEN');
+            if (record) return record.value as string;
+            const currentRun = await startedRunClient.get();
+            expect(['READY', 'RUNNING'], `The run ended as ${currentRun?.status} without a token.`).toContain(
+                currentRun?.status,
+            );
+            return undefined;
+        };
 
-        const metamorphedRun = await runTokenClient.run(run.id).metamorph(HELLO_WORLD_ACTOR);
+        // A fixed short interval, so the token is read well within the 60 seconds the Actor waits after storing it.
+        const runToken = await pollUntilCondition(getRunToken, (token) => token !== undefined, {
+            timeoutSecs: 120,
+            pollIntervalSecs: 2,
+        });
+        expect(runToken).toBeTruthy();
+
+        const metamorphedRun = await makeClient(runToken)
+            .run(run.id)
+            .metamorph(HELLO_WORLD_ACTOR, { message: 'Hello from metamorph!' });
         expect(metamorphedRun.id).toBe(run.id);
+
+        // Hello-world replaces the waiting Actor, so the run finishes on its own.
+        const finalRun = await runClient.waitForFinish();
+        expect(finalRun.status).toBe('SUCCEEDED');
+        expect(finalRun.metamorphs).not.toHaveLength(0);
     } finally {
-        await runClient?.abort();
-        await runClient?.waitForFinish();
-        await runClient?.delete();
+        if (runClient) {
+            const currentRun = await runClient.get();
+            if (currentRun?.status === 'READY' || currentRun?.status === 'RUNNING') await runClient.abort();
+            await runClient.waitForFinish();
+            await runClient.delete();
+        }
         await actorClient.delete();
     }
-});
+}, 600_000);
 
 test('reboot() restarts the container of a running Actor, keeping the run id', async () => {
     const run = await client.actor(HELLO_WORLD_ACTOR).start();
