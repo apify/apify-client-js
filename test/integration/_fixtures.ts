@@ -23,7 +23,8 @@ export function makeClient(token?: string): ApifyClient {
 /**
  * Create an Actor from source files and build it, returning its ID.
  *
- * The caller deletes the Actor. If the build does not succeed, the Actor is deleted here and the call throws.
+ * The caller deletes the Actor. If the build does not succeed, the call tries to delete the Actor and throws the
+ * build error.
  */
 export async function createBuiltActor(
     client: ApifyClient,
@@ -50,7 +51,8 @@ export async function createBuiltActor(
         const finishedBuild = await client.build(build.id).waitForFinish({ waitSecs: 300 });
         expect(finishedBuild.status).toBe('SUCCEEDED');
     } catch (err) {
-        await actorClient.delete();
+        // A failed delete would hide the build failure, which is the error worth reporting.
+        await actorClient.delete().catch(() => {});
         throw err;
     }
     return actor.id;

@@ -1,4 +1,4 @@
-import { beforeAll, expect, test } from 'vitest';
+import { beforeAll, expect, onTestFinished, test } from 'vitest';
 
 import { Log, LogLevel } from '@apify/log';
 
@@ -258,49 +258,45 @@ test('resurrect() restarts a finished run, which then succeeds again', async () 
 test('metamorph() transforms a started run into another Actor, keeping the run id', async () => {
     const actorId = await createBuiltActor(client, getRandomResourceName('actor'), [...METAMORPH_SOURCE_FILES]);
     const actorClient = client.actor(actorId);
-    let runClient: RunClient | undefined;
+    // Registered first, so it runs last, after the run cleanup below.
+    onTestFinished(async () => actorClient.delete());
 
-    try {
-        const run = await actorClient.start(undefined, { memory: 256, runTimeoutSecs: 300 });
-        runClient = client.run(run.id);
-        const startedRunClient = runClient;
+    const run = await actorClient.start(undefined, { memory: 256, runTimeoutSecs: 300 });
+    const runClient = client.run(run.id);
+    onTestFinished(async () => {
+        // Aborting a finished run returns it unchanged.
+        await runClient.abort();
+        await runClient.waitForFinish();
+        await runClient.delete();
+    });
 
-        // A metamorph needs the run's own token, which the Actor stores in its key-value store.
-        const getRunToken = async (): Promise<string | undefined> => {
-            const record = await client.keyValueStore(run.defaultKeyValueStoreId).getRecord('TOKEN');
-            if (record) return record.value as string;
-            const currentRun = await startedRunClient.get();
-            expect(['READY', 'RUNNING'], `The run ended as ${currentRun?.status} without a token.`).toContain(
-                currentRun?.status,
-            );
-            return undefined;
-        };
+    // A metamorph needs the run's own token, which the Actor stores in its key-value store.
+    const getRunToken = async (): Promise<string | undefined> => {
+        const record = await client.keyValueStore(run.defaultKeyValueStoreId).getRecord('TOKEN');
+        if (record) return record.value as string;
+        const currentRun = await runClient.get();
+        expect(['READY', 'RUNNING'], `The run ended as ${currentRun?.status} without a token.`).toContain(
+            currentRun?.status,
+        );
+        return undefined;
+    };
 
-        // A fixed short interval, so the token is read well within the 60 seconds the Actor waits after storing it.
-        const runToken = await pollUntilCondition(getRunToken, (token) => token !== undefined, {
-            timeoutSecs: 120,
-            pollIntervalSecs: 2,
-        });
-        expect(runToken).toBeTruthy();
+    // A fixed short interval, so the token is read well within the 60 seconds the Actor waits after storing it.
+    const runToken = await pollUntilCondition(getRunToken, (token) => token !== undefined, {
+        timeoutSecs: 120,
+        pollIntervalSecs: 2,
+    });
+    expect(runToken).toBeTruthy();
 
-        const metamorphedRun = await makeClient(runToken)
-            .run(run.id)
-            .metamorph(HELLO_WORLD_ACTOR, { message: 'Hello from metamorph!' });
-        expect(metamorphedRun.id).toBe(run.id);
+    const metamorphedRun = await makeClient(runToken)
+        .run(run.id)
+        .metamorph(HELLO_WORLD_ACTOR, { message: 'Hello from metamorph!' });
+    expect(metamorphedRun.id).toBe(run.id);
 
-        // Hello-world replaces the waiting Actor, so the run finishes on its own.
-        const finalRun = await runClient.waitForFinish();
-        expect(finalRun.status).toBe('SUCCEEDED');
-        expect(finalRun.metamorphs).not.toHaveLength(0);
-    } finally {
-        if (runClient) {
-            const currentRun = await runClient.get();
-            if (currentRun?.status === 'READY' || currentRun?.status === 'RUNNING') await runClient.abort();
-            await runClient.waitForFinish();
-            await runClient.delete();
-        }
-        await actorClient.delete();
-    }
+    // Hello-world replaces the waiting Actor, so the run finishes on its own.
+    const finalRun = await runClient.waitForFinish();
+    expect(finalRun.status).toBe('SUCCEEDED');
+    expect(finalRun.metamorphs).not.toHaveLength(0);
 }, 600_000);
 
 test('reboot() restarts the container of a running Actor, keeping the run id', async () => {
