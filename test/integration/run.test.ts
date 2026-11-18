@@ -5,7 +5,7 @@ import { Log, LogLevel } from '@apify/log';
 import type { ApifyClient, Run, RunClient, RunListItem } from 'apify-client';
 import { ActorSourceType, ApifyApiError } from 'apify-client';
 
-import { makeClient } from './_fixtures.js';
+import { createBuiltActor, makeClient } from './_fixtures.js';
 import { getRandomResourceName, LISTING_POLL_OPTIONS, NO_LOG_REDIRECT, pollUntilCondition } from './_utils.js';
 
 const HELLO_WORLD_ACTOR = 'apify/hello-world';
@@ -395,24 +395,11 @@ test('actor.runs().list() is async-iterable and yields only that Actor runs', as
 });
 
 test('iterateDatasetItems() on lastRun() reads the run it resolved to, even after a newer run starts', async () => {
-    const actor = await client.actors().create({
-        name: getRandomResourceName('actor'),
-        versions: [
-            {
-                versionNumber: '0.0',
-                sourceType: ActorSourceType.SourceFiles,
-                buildTag: 'latest',
-                sourceFiles: [...LIVE_ITEMS_SOURCE_FILES],
-            },
-        ],
-    });
-    const actorClient = client.actor(actor.id);
+    const actorId = await createBuiltActor(client, getRandomResourceName('actor'), [...LIVE_ITEMS_SOURCE_FILES]);
+    const actorClient = client.actor(actorId);
     const runIds: string[] = [];
 
     try {
-        const build = await client.build((await actorClient.build('0.0')).id).waitForFinish();
-        expect(build.status).toBe('SUCCEEDED');
-
         const runOptions = { memory: 256, runTimeoutSecs: 120 };
         const firstRun = await actorClient.start(undefined, runOptions);
         runIds.push(firstRun.id);

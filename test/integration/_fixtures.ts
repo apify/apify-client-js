@@ -1,4 +1,7 @@
-import { ApifyClient } from 'apify-client';
+import { expect } from 'vitest';
+
+import type { ActorCollectionCreateOptions, VersionSourceFiles } from 'apify-client';
+import { ActorSourceType, ApifyClient } from 'apify-client';
 
 /** API token of the primary test user. Every test in this tier needs it. */
 const TOKEN_ENV_VAR = 'APIFY_TEST_USER_API_TOKEN';
@@ -15,4 +18,40 @@ export function makeClient(token?: string): ApifyClient {
 
     const baseUrl = process.env[API_URL_ENV_VAR];
     return new ApifyClient({ token, ...(baseUrl ? { baseUrl } : {}) });
+}
+
+/**
+ * Create an Actor from source files and build it, returning its ID.
+ *
+ * The caller deletes the Actor. If the build does not succeed, the Actor is deleted here and the call throws.
+ */
+export async function createBuiltActor(
+    client: ApifyClient,
+    name: string,
+    sourceFiles: VersionSourceFiles['sourceFiles'],
+    createOptions: Omit<ActorCollectionCreateOptions, 'name' | 'versions'> = {},
+): Promise<string> {
+    const actor = await client.actors().create({
+        name,
+        versions: [
+            {
+                versionNumber: '0.0',
+                sourceType: ActorSourceType.SourceFiles,
+                buildTag: 'latest',
+                sourceFiles,
+            },
+        ],
+        ...createOptions,
+    });
+    const actorClient = client.actor(actor.id);
+
+    try {
+        const build = await actorClient.build('0.0');
+        const finishedBuild = await client.build(build.id).waitForFinish({ waitSecs: 300 });
+        expect(finishedBuild.status).toBe('SUCCEEDED');
+    } catch (err) {
+        await actorClient.delete();
+        throw err;
+    }
+    return actor.id;
 }
