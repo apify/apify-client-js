@@ -1741,14 +1741,14 @@ export const CreateOrUpdateScheduleRequest = lazySchema(() => z.looseObject({
     actions: z.array(ScheduleCreateAction()).nullable().optional(),
 }));
 
-/** State of the schedule editor in Apify Console. It's removed when an API update changes `cronExpression` or `timezone`. */
+/** State of the schedule editor in Apify Console. It's removed when an API update changes `cronExpression` or `timezone`, after which it is `null`. */
 export const ScheduleUiState = lazySchema(() => z.looseObject({
     version: z.int().optional(),
     data: z.looseObject({
         cronExpression: z.string().optional(),
         timezone: z.string().optional(),
     }).optional(),
-}));
+}).nullable());
 
 export const ScheduleActionRunActor = lazySchema(() => z.looseObject({
     id: z.string(),
@@ -1963,6 +1963,19 @@ export const UserPrivateInfo = lazySchema(() => z.looseObject({
 
 export const UserPrivateInfoResponse = lazySchema(() => z.looseObject({
     data: UserPrivateInfo(),
+}));
+
+/** Reduced user data with only the fields Apify Proxy reads. */
+export const UserProxyInfo = lazySchema(() => z.looseObject({
+    plan: z.looseObject({
+        availableProxyGroups: AvailableProxyGroups(),
+    }),
+    effectivePlatformFeatures: EffectivePlatformFeatures(),
+    isPaying: z.boolean(),
+}));
+
+export const UserProxyInfoResponse = lazySchema(() => z.looseObject({
+    data: UserProxyInfo(),
 }));
 
 export const UsageCycle = lazySchema(() => z.looseObject({

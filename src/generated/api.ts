@@ -8975,7 +8975,7 @@ export interface components {
         };
         /**
          * ScheduleUiState
-         * @description State of the schedule editor in Apify Console. It's removed when an API update changes `cronExpression` or `timezone`.
+         * @description State of the schedule editor in Apify Console. It's removed when an API update changes `cronExpression` or `timezone`, after which it is `null`.
          */
         ScheduleUiState: {
             /**
@@ -8992,7 +8992,7 @@ export interface components {
             } & {
                 [key: string]: unknown;
             };
-        };
+        } | null;
         /** ScheduleActionRunActor */
         ScheduleActionRunActor: {
             /** @example c6KfSgoQzFhMk3etc */
@@ -9520,6 +9520,23 @@ export interface components {
         /** UserPrivateInfoResponse */
         UserPrivateInfoResponse: {
             data: components["schemas"]["UserPrivateInfo"];
+        };
+        /**
+         * UserProxyInfo
+         * @description Reduced user data with only the fields Apify Proxy reads.
+         */
+        UserProxyInfo: {
+            /** UserProxyPlan */
+            plan: {
+                availableProxyGroups: components["schemas"]["AvailableProxyGroups"];
+            };
+            effectivePlatformFeatures: components["schemas"]["EffectivePlatformFeatures"];
+            /** @example true */
+            isPaying: boolean;
+        };
+        /** UserProxyInfoResponse */
+        UserProxyInfoResponse: {
+            data: components["schemas"]["UserProxyInfo"];
         };
         /** UsageCycle */
         UsageCycle: {
@@ -22225,7 +22242,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UserPublicInfoResponse"] | components["schemas"]["UserPrivateInfoResponse"];
+                    "application/json": components["schemas"]["UserPublicInfoResponse"] | components["schemas"]["UserPrivateInfoResponse"] | components["schemas"]["UserProxyInfoResponse"];
                 };
             };
             400: components["responses"]["BadRequest"];
@@ -22249,7 +22266,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UserPrivateInfoResponse"];
+                    "application/json": components["schemas"]["UserPrivateInfoResponse"] | components["schemas"]["UserProxyInfoResponse"];
                 };
             };
             400: components["responses"]["BadRequest"];
