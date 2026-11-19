@@ -2300,7 +2300,7 @@ interface components {
             } & {
                 [key: string]: unknown;
             };
-        };
+        } | null;
         ScheduleActionRunActor: {
             id: string;
             type: "RUN_ACTOR";
@@ -2497,6 +2497,16 @@ interface components {
         };
         UserPrivateInfoResponse: {
             data: components["schemas"]["UserPrivateInfo"];
+        };
+        UserProxyInfo: {
+            plan: {
+                availableProxyGroups: components["schemas"]["AvailableProxyGroups"];
+            };
+            effectivePlatformFeatures: components["schemas"]["EffectivePlatformFeatures"];
+            isPaying: boolean;
+        };
+        UserProxyInfoResponse: {
+            data: components["schemas"]["UserProxyInfo"];
         };
         UsageCycle: {
             startAt: Date;
