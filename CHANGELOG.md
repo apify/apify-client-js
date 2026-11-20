@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 ### 🐛 Bug Fixes
 
 - Bump axios to 1.21.1 for Cloudflare Workers support (#1216) ([16e613c](https://github.com/apify/apify-client-js/commit/16e613cb2a7b951b341c2b2f702e587dcc267ac0))
+- Do not follow redirects of Server Actor requests in the browser (#1233) ([6a61708](https://github.com/apify/apify-client-js/commit/6a61708b82b9478a295543209f7d28e1ab2ad488))
 
 
 <!-- git-cliff-unreleased-end -->
