@@ -50,6 +50,9 @@ jobs:
         needs: [release_metadata, run_code_checks]
         name: Update changelog
         runs-on: ubuntu-latest
+        environment:
+            name: npm
+            deployment: false
         outputs:
             changelog_commitish: ${{ steps.commit.outputs.commit_long_sha }}
 
@@ -115,6 +118,9 @@ jobs:
     version-docs:
         needs: [release_metadata, publish_to_npm]
         runs-on: ubuntu-latest
+        environment:
+            name: npm
+            deployment: false
 
         steps:
             - name: Checkout repository
