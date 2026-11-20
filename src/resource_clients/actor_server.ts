@@ -161,9 +161,9 @@ export class ActorServerClient extends ResourceClient {
      * Unavailable (503) response is retried with the client's retry settings, and the last one is returned once the
      * retries run out. The Actor's code can return these statuses too, and then it gets the request again. Network
      * errors and timeouts are not retried, since the Actor may have already handled the request. A redirect is
-     * returned as it is, since following it would send the token to a host the Actor's code picked. A browser follows
-     * redirects itself, though, so there the token goes with a redirect. Request bodies are sent uncompressed, since
-     * the Actor's server may not decode a compressed body.
+     * returned as it is, since following it would send the token to a host the Actor's code picked. In a browser the
+     * redirect response can't be read, so the request fails with an error instead. Request bodies are sent
+     * uncompressed, since the Actor's server may not decode a compressed body.
      *
      * @template T - Type of the parsed response body.
      * @param path - The path on the Actor's server, for example `/search`. It is always resolved against the server
@@ -231,6 +231,8 @@ export class ActorServerClient extends ResourceClient {
         // The token goes in `X-Apify-Authorization`, which the platform strips, and the client's default
         // `Authorization` header is dropped (`null`) so the caller's own one, if any, reaches the Actor.
         const authHeaders: Record<string, string | null> = { Authorization: null };
+        // The fetch adapter adds a `User-Agent` of its own otherwise, which a browser lists in the CORS preflight.
+        if (!isNode()) authHeaders['User-Agent'] = null;
         if (this.apifyClient.token) authHeaders['X-Apify-Authorization'] = `Bearer ${this.apifyClient.token}`;
         const requestHeaders = mergeHeaders(
             mergeHeaders(authHeaders, headers),
@@ -252,8 +254,17 @@ export class ActorServerClient extends ResourceClient {
         };
         if (responseType === 'buffer') config.forceBuffer = true;
         if (responseType === 'stream') config.responseType = 'stream';
+        // The browser follows the redirects of an XHR itself, while the fetch adapter honors `maxRedirects: 0`.
+        if (!isNode()) config.adapter = 'fetch';
 
-        return this.httpClient.call(config);
+        const response = await this.httpClient.call(config);
+
+        // `redirect: 'manual'` resolves to an opaque response with status 0 instead of the redirect.
+        if (!isNode() && response.status === 0) {
+            throw new Error(`${method} ${config.url} responded with a redirect, which the client does not follow.`);
+        }
+
+        return response;
     }
 
     /**
