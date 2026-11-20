@@ -9,6 +9,7 @@ import type { InternalAxiosRequestConfig } from 'axios';
 import { AxiosError } from 'axios';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { runtime } from '../src/runtime/node.js';
 import { Browser } from './_helper.js';
 import { mockServer } from './mock_server/server.js';
 
@@ -246,6 +247,23 @@ describe('AxiosHttpClient', () => {
         const request = mockServer.getLastRequest();
         expect(request?.headers['x-intercepted']).toBe('yes');
         expect(request?.headers.authorization).toBe('Bearer test_token');
+    });
+
+    test('sendRequest() without redirects outside Node.js leaves the User-Agent header to the runtime', async () => {
+        runtime.isNode = false;
+        try {
+            await new AxiosHttpClient().sendRequest({
+                method: 'GET',
+                url: `${baseUrl}/v2/users/me`,
+                headers: {},
+                stream: false,
+                followRedirects: false,
+            });
+        } finally {
+            runtime.isNode = true;
+        }
+
+        expect(mockServer.getLastRequest()?.headers['user-agent']).not.toMatch(/^axios\//);
     });
 
     test('close() destroys the keep-alive agent', async () => {

@@ -300,10 +300,16 @@ export interface HttpClientOptions {
  * import { ApifyClient, HttpClient } from 'apify-client';
  *
  * class FetchHttpClient extends HttpClient {
- *     async sendRequest({ method, url, headers, body, timeoutMillis, signal }) {
+ *     async sendRequest({ method, url, headers, body, timeoutMillis, followRedirects, signal }) {
  *         const signals = signal ? [signal] : [];
  *         if (timeoutMillis !== undefined) signals.push(AbortSignal.timeout(timeoutMillis));
- *         const response = await fetch(url, { method, headers, body, signal: AbortSignal.any(signals) });
+ *         const response = await fetch(url, {
+ *             method,
+ *             headers,
+ *             body,
+ *             redirect: followRedirects ? 'follow' : 'manual',
+ *             signal: AbortSignal.any(signals),
+ *         });
  *         return {
  *             status: response.status,
  *             headers: Object.fromEntries(response.headers),

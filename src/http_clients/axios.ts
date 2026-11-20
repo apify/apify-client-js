@@ -5,6 +5,7 @@ import type { AxiosInstance, AxiosInterceptorManager, InternalAxiosRequestConfig
 import axios, { AxiosError, AxiosHeaders } from 'axios';
 
 import { runtime } from '#runtime';
+import { ApifyClientError } from '../apify_client_error.js';
 import { isStream } from '../utils.js';
 import type { HttpClientOptions, HttpRequest, HttpResponse, HttpResponseBody, HttpResponseHeaders } from './base.js';
 import { HttpClient } from './base.js';
@@ -29,8 +30,9 @@ export interface AxiosHttpClientOptions extends HttpClientOptions {
  *
  * It inherits the request pipeline from {@link HttpClient} and adds the transport: in Node.js, keep-alive agents
  * that honor the `HTTP_PROXY`, `HTTPS_PROXY` and `NO_PROXY` environment variables; in the browser, the XHR
- * adapter of axios. Network errors are retried, timeouts included, and a stream body is sent without following
- * redirects, since the part of it already sent could not be replayed.
+ * adapter of axios, or its fetch adapter for a request that must not follow redirects. Network errors are retried,
+ * timeouts included, and a stream body is sent without following redirects, since the part of it already sent could
+ * not be replayed.
  */
 export class AxiosHttpClient extends HttpClient {
     /** The axios instance the requests go through. */
@@ -112,25 +114,34 @@ export class AxiosHttpClient extends HttpClient {
     /**
      * Sends the request through axios and hands the raw response back. A stream body is sent without following
      * redirects, since the part of it already sent could not be replayed, and so is a request with
-     * `followRedirects: false`. In the browser, the browser follows redirects itself.
+     * `followRedirects: false`. Outside Node.js, such a request goes through `fetch`, since the browser follows the
+     * redirects of an XHR itself, and a redirect response fails the request: `fetch` hides it from the page.
      */
     override async sendRequest(request: HttpRequest): Promise<HttpResponse> {
         await this.#ensureHttpAgents();
 
         const { method, url, headers, body, timeoutMillis, stream, followRedirects, signal } = request;
+        const useFetch = !followRedirects && !runtime.isNode;
         const response = await this.axios.request({
             method,
             url,
-            headers,
+            // The fetch adapter adds a `User-Agent` of its own otherwise, which a browser lists in the CORS preflight.
+            headers: useFetch ? { 'User-Agent': null, ...headers } : headers,
             data: body,
             // Axios reads 0 as no timeout.
             timeout: timeoutMillis ?? 0,
             signal,
             responseType: stream ? 'stream' : 'arraybuffer',
-            // See axios/axios#1045 for why axios must not buffer a stream body to follow redirects. The XHR adapter
-            // ignores `maxRedirects`, since the browser follows redirects itself.
+            // See axios/axios#1045 for why axios must not buffer a stream body to follow redirects. The fetch
+            // adapter turns this into `redirect: 'manual'`.
             ...(isStream(body) || !followRedirects ? { maxRedirects: 0 } : {}),
+            ...(useFetch ? { adapter: 'fetch' } : {}),
         });
+
+        // `redirect: 'manual'` resolves to an opaque response with status 0 instead of the redirect.
+        if (useFetch && response.status === 0) {
+            throw new ApifyClientError(`${method} ${url} responded with a redirect, which the client does not follow.`);
+        }
 
         return {
             status: response.status,
