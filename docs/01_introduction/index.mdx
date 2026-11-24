@@ -67,7 +67,7 @@ bun add apify-client
 </TabItem>
 </Tabs>
 
-The client sends its requests through a built-in [axios](https://axios-http.com) transport and compresses request bodies with brotli, so no optional packages are needed. For details, see [HTTP clients](../02_concepts/09_custom_http_clients.mdx) and [HTTP compression](../02_concepts/12_http_compression.mdx).
+The client sends its requests through the `fetch` of the runtime and compresses request bodies with brotli, so no optional packages are needed. For details, see [HTTP clients](../02_concepts/09_custom_http_clients.mdx) and [HTTP compression](../02_concepts/12_http_compression.mdx).
 
 ## Quick example
 
