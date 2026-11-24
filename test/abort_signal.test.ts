@@ -93,7 +93,7 @@ describe('AbortSignal in resource-client methods', () => {
         },
         {
             name: 'TaskClient',
-            call: (c: ApifyClient, signal: AbortSignal) => c.task('task-id').call(undefined, { signal }),
+            call: (c: ApifyClient, signal: AbortSignal) => c.task('task-id').call(undefined, { log: null, signal }),
             startPath: 'POST /v2/actor-tasks/task-id/runs',
         },
     ])('call() of $name stops polling the run and rejects with the reason', async ({ call, startPath }) => {

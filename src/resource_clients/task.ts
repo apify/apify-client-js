@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { ACT_JOB_STATUSES, META_ORIGINS } from '@apify/consts';
+import { Log } from '@apify/log';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceClient } from '../base/resource_client.js';
@@ -38,6 +39,7 @@ const callOptionsSchema = z.strictObject({
     webhooks: z.array(anyObjectSchema).optional(),
     maxItems: z.number().min(0).optional(),
     maxTotalChargeUsd: z.number().min(0).optional(),
+    log: z.union([z.null(), z.instanceof(Log), z.literal('default')]).optional(),
     restartOnError: z.boolean().optional(),
     waitForResources: z.union([z.boolean(), z.number().min(0)]).optional(),
     ...timeoutOptionsShape,
@@ -242,6 +244,7 @@ export class TaskClient extends ResourceClient {
      * @param options.memory - Memory in megabytes allocated for the run.
      * @param options.runTimeoutSecs - Timeout for the run in seconds.
      * @param options.waitSecs - Maximum time to wait for the run to finish, in seconds. If omitted, waits indefinitely.
+     * @param options.log - Log instance for streaming run logs. Use `'default'` for console output, `null` to disable logging, or provide a custom Log instance.
      * @param options.webhooks - Webhooks to trigger for specific Actor run events.
      * @param options.maxItems - Maximum number of dataset items (for pay-per-result Actors).
      * @param options.maxTotalChargeUsd - Maximum cost in USD (for pay-per-event Actors).
@@ -257,14 +260,20 @@ export class TaskClient extends ResourceClient {
         parseArgument(input, inputSchema);
         const parsed = parseArgument(options, callOptionsSchema, 'TaskCallOptions');
 
-        const { waitSecs, timeoutSecs = 'noTimeout', signal, ...startOptions } = parsed;
+        const { waitSecs, log, timeoutSecs = 'noTimeout', signal, ...startOptions } = parsed;
 
         const { id } = await this.start(input, { ...startOptions, timeoutSecs, signal });
 
         // Calling root client because we need access to top level API.
         // Creating a new instance of RunClient here would only allow
         // setting it up as a nested route under task API.
-        return this.apifyClient.run(id).waitForFinish({ waitSecs, timeoutSecs, signal });
+        const newRunClient = this.apifyClient.run(id);
+
+        const streamedLog = await newRunClient.getStreamedLog({ toLog: log, signal });
+        streamedLog?.start();
+        return newRunClient.waitForFinish({ waitSecs, timeoutSecs, signal }).finally(async () => {
+            await streamedLog?.stop();
+        });
     }
 
     /**
@@ -388,4 +397,11 @@ export type TaskStartOptions = Omit<ActorStartOptions, 'contentType' | 'forcePer
  */
 export interface TaskCallOptions extends Omit<TaskStartOptions, 'waitForFinish'> {
     waitSecs?: number;
+    /**
+     * `Log` instance that should be used to redirect Actor run logs to.
+     * If `undefined` or `'default'` the pre-defined `Log` will be created and used.
+     * If `null`, no log redirection will occur.
+     * @since Added in 2.26.0
+     */
+    log?: Log | null | 'default';
 }

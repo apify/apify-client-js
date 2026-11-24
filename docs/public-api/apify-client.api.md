@@ -4277,6 +4277,7 @@ export interface Task extends Omit<Schemas['Task'], keyof TaskRePointed>, TaskRe
 
 // @public
 export interface TaskCallOptions extends Omit<TaskStartOptions, 'waitForFinish'> {
+    log?: Log | null | 'default';
     // (undocumented)
     waitSecs?: number;
 }

@@ -1184,6 +1184,26 @@ describe('Run actor with redirected logs', () => {
         });
     });
 
+    describe('task.call - redirected logs', () => {
+        test.each(testCases)('logOptions:$logOptions', async ({ expectedPrefix, logOptions }) => {
+            const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+            await client.task('redirect-task-id').call(undefined, logOptions);
+
+            expect(logSpy.mock.calls).toEqual(MOCKED_ACTOR_LOGS_PROCESSED.map((item) => [expectedPrefix + item]));
+            logSpy.mockRestore();
+        });
+
+        test('logOptions:{ "log": null }', async () => {
+            const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+            await client.task('redirect-task-id').call(undefined, { log: null });
+
+            expect(logSpy.mock.calls).toEqual([]);
+            logSpy.mockRestore();
+        });
+    });
+
     describe('run.getStreamedLog - empty log stream', () => {
         test('reopens the log stream when the first one is empty', async () => {
             const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
