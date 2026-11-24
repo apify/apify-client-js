@@ -299,7 +299,7 @@ export interface HttpClientOptions {
  * ```javascript
  * import { ApifyClient, HttpClient } from 'apify-client';
  *
- * class FetchHttpClient extends HttpClient {
+ * class MyFetchHttpClient extends HttpClient {
  *     async sendRequest({ method, url, headers, body, timeoutMillis, followRedirects, signal }) {
  *         const signals = signal ? [signal] : [];
  *         if (timeoutMillis !== undefined) signals.push(AbortSignal.timeout(timeoutMillis));
@@ -323,7 +323,7 @@ export interface HttpClientOptions {
  *     }
  * }
  *
- * const client = ApifyClient.withCustomHttpClient({ token: 'my-token', httpClient: new FetchHttpClient() });
+ * const client = ApifyClient.withCustomHttpClient({ token: 'my-token', httpClient: new MyFetchHttpClient() });
  * ```
  */
 export abstract class HttpClient {

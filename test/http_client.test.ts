@@ -1,19 +1,17 @@
 import { randomBytes } from 'node:crypto';
-import http from 'node:http';
 import type { AddressInfo } from 'node:net';
 import os from 'node:os';
 import { gzipSync } from 'node:zlib';
 
-import { ApifyClient, AxiosHttpClient, GzipHttpCompressor } from 'apify-client';
-import type { InternalAxiosRequestConfig } from 'axios';
-import { AxiosError } from 'axios';
+import type { HttpRequest } from 'apify-client';
+import { ApifyClient, FetchHttpClient, GzipHttpCompressor } from 'apify-client';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { runtime } from '../src/runtime/node.js';
 import { Browser } from './_helper.js';
 import { mockServer } from './mock_server/server.js';
 
-describe('AxiosHttpClient', () => {
+describe('FetchHttpClient', () => {
     let baseUrl: string;
     const browser = new Browser();
 
@@ -54,9 +52,9 @@ describe('AxiosHttpClient', () => {
 
         const page = await browser.getInjectedPage(baseUrl, { timeoutShortSecs: 1 });
         try {
-            await expect(page.evaluate((rId) => client.task(rId).get(), resourceId)).rejects.toThrow();
-            // this is failing after axios upgrade, the error is returned with a wrong name and message
-            // expect(err.message).toMatch('timeout of 1000ms exceeded');
+            await expect(page.evaluate((rId) => client.task(rId).get(), resourceId)).rejects.toThrow(
+                'timeout of 1000ms exceeded',
+            );
         } finally {
             page.close().catch(() => {});
         }
@@ -92,66 +90,6 @@ describe('AxiosHttpClient', () => {
             'The requested timeout of 10s exceeds timeoutMaxSecs (1s) and is capped at it. Raise timeoutMaxSecs on the client to allow longer request timeouts.',
             'The requested timeout of 5s exceeds timeoutMaxSecs (1s) and is capped at it. Raise timeoutMaxSecs on the client to allow longer request timeouts.',
         ]);
-    });
-
-    test('requests go through the proxy named in HTTP_PROXY, and skip it for hosts in NO_PROXY', async () => {
-        const proxied: string[] = [];
-        // A forward proxy: the agent puts the absolute target URL on the request line, so relay it as it is.
-        const proxy = http.createServer((req, res) => {
-            proxied.push(req.url!);
-            const upstream = http.request(new URL(req.url!), { method: req.method, headers: req.headers }, (r) => {
-                res.writeHead(r.statusCode!, r.headers);
-                r.pipe(res);
-            });
-            // An unhandled 'error' here would take the worker down instead of failing the test.
-            upstream.on('error', () => res.destroy());
-            req.pipe(upstream);
-        });
-        await new Promise<void>((done) => proxy.listen(0, '127.0.0.1', done));
-        const proxyUrl = `http://127.0.0.1:${(proxy.address() as AddressInfo).port}`;
-        // `proxy-from-env` reads the lowercase name first, and a developer machine may exempt localhost in NO_PROXY.
-        for (const name of ['HTTP_PROXY', 'http_proxy']) vi.stubEnv(name, proxyUrl);
-        for (const name of ['NO_PROXY', 'no_proxy']) vi.stubEnv(name, '');
-
-        try {
-            const res = await client.user('me').get();
-            expect(res?.id).toBe('get-user');
-            expect(proxied).toEqual([`${baseUrl}/v2/users/me`]);
-
-            // A fresh client for the exempted host, because the first one keeps its socket to the proxy alive
-            // and would reuse it without consulting the environment again.
-            for (const name of ['NO_PROXY', 'no_proxy']) vi.stubEnv(name, 'localhost');
-            const direct = await new ApifyClient({ baseUrl, timeoutShortSecs: 1, maxRetries: 0 }).user('me').get();
-            expect(direct?.id).toBe('get-user');
-            expect(proxied).toHaveLength(1);
-        } finally {
-            vi.unstubAllEnvs();
-            await new Promise<void>((done) => proxy.close(() => done()));
-        }
-    });
-
-    test('an https request tunnels through the proxy named in HTTPS_PROXY', async () => {
-        const tunneled: string[] = [];
-        // The tunnel is answered by dropping the socket: reaching for it at all is what separates an https
-        // origin from the plain forward-proxy path above, while speaking through it would need a certificate.
-        const proxy = http.createServer();
-        proxy.on('connect', (req, socket) => {
-            tunneled.push(req.url!);
-            socket.destroy();
-        });
-        await new Promise<void>((done) => proxy.listen(0, '127.0.0.1', done));
-        const proxyUrl = `http://127.0.0.1:${(proxy.address() as AddressInfo).port}`;
-        for (const name of ['HTTPS_PROXY', 'https_proxy']) vi.stubEnv(name, proxyUrl);
-        for (const name of ['NO_PROXY', 'no_proxy']) vi.stubEnv(name, '');
-
-        try {
-            const secure = new ApifyClient({ baseUrl: 'https://api.apify.test', timeoutShortSecs: 1, maxRetries: 0 });
-            await expect(secure.user('me').get()).rejects.toThrow();
-            expect(tunneled).toEqual(['api.apify.test:443']);
-        } finally {
-            vi.unstubAllEnvs();
-            await new Promise<void>((done) => proxy.close(() => done()));
-        }
     });
 
     test.each([
@@ -230,14 +168,39 @@ describe('AxiosHttpClient', () => {
         expect(request?.body).toEqual(payload);
     });
 
-    test('runs the request interceptors passed to the client', async () => {
-        const httpClient = new AxiosHttpClient({
-            requestInterceptors: [
-                (config) => {
-                    config.headers.set('X-Intercepted', 'yes');
-                    return config;
-                },
-            ],
+    test('a timed-out request fails with a TimeoutError', async () => {
+        const call = client.actor(delayedResourceId(1500)).get({ timeoutSecs: 0.2 });
+
+        await expect(call).rejects.toMatchObject({ name: 'TimeoutError', message: 'timeout of 200ms exceeded' });
+    });
+
+    test('the timeout starts over with every chunk of the response body', async () => {
+        const trickle = async () => {
+            const encoder = new TextEncoder();
+            const chunks = ['{"data":', '{"id":', '"slow"}}'];
+            return new Response(
+                new ReadableStream<Uint8Array>({
+                    async pull(controller) {
+                        await new Promise((done) => setTimeout(done, 150));
+                        const chunk = chunks.shift();
+                        if (chunk === undefined) controller.close();
+                        else controller.enqueue(encoder.encode(chunk));
+                    },
+                }),
+                { headers: { 'content-type': 'application/json' } },
+            );
+        };
+        const httpClient = new FetchHttpClient({ fetch: trickle, maxRetries: 0 });
+
+        // The body takes 600 ms in all, with no more than 150 ms between two chunks.
+        const response = await httpClient.call({ url: `${baseUrl}/v2/x`, method: 'GET', timeoutSecs: 0.4 });
+
+        expect(response.data).toEqual({ data: { id: 'slow' } });
+    });
+
+    test('sends the requests through the fetch function passed to the client', async () => {
+        const httpClient = new FetchHttpClient({
+            fetch: async (input, init) => fetch(input, { ...init, headers: { ...init?.headers, 'X-Wrapped': 'yes' } }),
         });
         const custom = ApifyClient.withCustomHttpClient({ baseUrl, token: 'test_token', httpClient });
 
@@ -245,60 +208,137 @@ describe('AxiosHttpClient', () => {
 
         expect(user?.id).toBe('get-user');
         const request = mockServer.getLastRequest();
-        expect(request?.headers['x-intercepted']).toBe('yes');
+        expect(request?.headers['x-wrapped']).toBe('yes');
         expect(request?.headers.authorization).toBe('Bearer test_token');
     });
 
-    test('sendRequest() without redirects outside Node.js leaves the User-Agent header to the runtime', async () => {
-        runtime.isNode = false;
-        try {
-            await new AxiosHttpClient().sendRequest({
-                method: 'GET',
-                url: `${baseUrl}/v2/users/me`,
-                headers: {},
-                stream: false,
-                followRedirects: false,
-            });
-        } finally {
-            runtime.isNode = true;
-        }
+    test('retries a request whose connection failed', async () => {
+        const networkError = () => new TypeError('fetch failed', { cause: failure('ECONNRESET') });
+        const fetchMock = vi
+            .fn<typeof fetch>()
+            .mockRejectedValueOnce(networkError())
+            .mockRejectedValueOnce(networkError())
+            .mockResolvedValue(Response.json({ data: { id: 'test-id' } }));
+        const httpClient = new FetchHttpClient({ fetch: fetchMock, minDelayBetweenRetriesMillis: 1 });
 
-        expect(mockServer.getLastRequest()?.headers['user-agent']).not.toMatch(/^axios\//);
+        const response = await httpClient.call({ url: `${baseUrl}/v2/x`, method: 'GET' });
+
+        expect(response.data).toEqual({ data: { id: 'test-id' } });
+        expect(fetchMock).toHaveBeenCalledTimes(3);
     });
 
-    test('close() destroys the keep-alive agent', async () => {
-        const httpClient = client.httpClient as AxiosHttpClient;
-        await client.user('me').get();
-        const destroy = vi.spyOn(httpClient.httpAgent!, 'destroy');
+    test('does not retry a request that could not be sent', async () => {
+        const httpClient = new FetchHttpClient({ minDelayBetweenRetriesMillis: 1 });
+        const sendRequest = vi.spyOn(httpClient, 'sendRequest');
 
-        await httpClient.close();
-
-        expect(destroy).toHaveBeenCalled();
+        await expect(httpClient.call({ url: 'http://', method: 'GET' })).rejects.toThrow(TypeError);
+        expect(sendRequest).toHaveBeenCalledTimes(1);
     });
 
-    test('close() before any request has nothing to destroy', async () => {
-        await expect(new AxiosHttpClient().close()).resolves.toBeUndefined();
+    test('hands back every Set-Cookie header of the response', async () => {
+        const headers = new Headers([
+            ['set-cookie', 'a=1; Expires=Wed, 21 Oct 2026 07:28:00 GMT'],
+            ['set-cookie', 'b=2'],
+        ]);
+        const httpClient = new FetchHttpClient({ fetch: async () => new Response('', { headers }) });
+
+        const response = await httpClient.call({ url: `${baseUrl}/v2/x`, method: 'GET' });
+
+        expect(response.headers['set-cookie']).toEqual(['a=1; Expires=Wed, 21 Oct 2026 07:28:00 GMT', 'b=2']);
     });
 
     test.each([
-        { name: 'an aborted request', error: new AxiosError('timeout', AxiosError.ECONNABORTED), expected: true },
-        { name: 'a clarified timeout', error: new AxiosError('timeout', AxiosError.ETIMEDOUT), expected: true },
-        { name: 'a TimeoutError', error: Object.assign(new Error('late'), { name: 'TimeoutError' }), expected: true },
-        { name: 'a network error', error: new AxiosError('reset', AxiosError.ERR_NETWORK), expected: false },
+        { name: 'a TimeoutError', error: new DOMException('late', 'TimeoutError'), expected: true },
+        {
+            name: 'a headers timeout of Node.js',
+            error: new TypeError('fetch failed', { cause: failure('UND_ERR_HEADERS_TIMEOUT') }),
+            expected: true,
+        },
+        {
+            name: 'a connection reset',
+            error: new TypeError('fetch failed', { cause: failure('ECONNRESET') }),
+            expected: false,
+        },
         { name: 'a plain error', error: new Error('boom'), expected: false },
     ])('isTimeoutError() classifies $name', ({ error, expected }) => {
-        expect(new AxiosHttpClient().isTimeoutError(error)).toBe(expected);
+        expect(new FetchHttpClient().isTimeoutError(error)).toBe(expected);
     });
 
-    test('isRetryableTransportError() retries axios errors raised while a request was in flight', () => {
-        const httpClient = new AxiosHttpClient();
-        const config = { headers: {} } as any;
-        const inFlight = new AxiosError('reset', AxiosError.ERR_NETWORK, config, {});
-        const beforeRequest = new AxiosError('bad url', AxiosError.ERR_BAD_OPTION, config);
+    test('isRetryableTransportError() retries the network failures of fetch', () => {
+        const httpClient = new FetchHttpClient();
+        const withCause = (code: string) => new TypeError('fetch failed', { cause: failure(code) });
 
-        expect(httpClient.isRetryableTransportError(inFlight)).toBe(true);
-        expect(httpClient.isRetryableTransportError(beforeRequest)).toBe(false);
+        expect(httpClient.isRetryableTransportError(withCause('ECONNRESET'))).toBe(true);
+        expect(httpClient.isRetryableTransportError(withCause('UND_ERR_SOCKET'))).toBe(true);
+        expect(httpClient.isRetryableTransportError(withCause('UND_ERR_BODY_TIMEOUT'))).toBe(true);
+        expect(httpClient.isRetryableTransportError(new DOMException('late', 'TimeoutError'))).toBe(true);
+        expect(httpClient.isRetryableTransportError(withCause('ERR_INVALID_URL'))).toBe(false);
+        expect(httpClient.isRetryableTransportError(new TypeError('invalid header value'))).toBe(false);
         expect(httpClient.isRetryableTransportError(new Error('boom'))).toBe(false);
+    });
+
+    test('isRetryableTransportError() retries every TypeError outside Node.js, where fetch gives no detail', () => {
+        runtime.isNode = false;
+        try {
+            expect(new FetchHttpClient().isRetryableTransportError(new TypeError('Failed to fetch'))).toBe(true);
+        } finally {
+            runtime.isNode = true;
+        }
+    });
+
+    describe('with a proxy in the environment', () => {
+        const failingClient = () => {
+            const failing = new ApifyClient({ baseUrl, maxRetries: 1, minDelayBetweenRetriesMillis: 1 });
+            return { failing, warningOnce: vi.spyOn(failing.logger, 'warningOnce') };
+        };
+
+        beforeEach(() => {
+            for (const name of ['HTTP_PROXY', 'HTTPS_PROXY', 'http_proxy', 'https_proxy', 'NODE_USE_ENV_PROXY']) {
+                vi.stubEnv(name, '');
+            }
+            vi.stubEnv('NODE_OPTIONS', '');
+            vi.stubGlobal(
+                'fetch',
+                vi.fn(async () => {
+                    throw new TypeError('fetch failed', { cause: failure('ECONNREFUSED') });
+                }),
+            );
+        });
+        afterEach(() => {
+            vi.unstubAllEnvs();
+            vi.unstubAllGlobals();
+        });
+
+        test('a failed connection warns once that Node.js is not using the proxy', async () => {
+            vi.stubEnv('HTTPS_PROXY', 'http://proxy.example.com:3128');
+            const { failing, warningOnce } = failingClient();
+
+            await expect(failing.user('me').get()).rejects.toThrow('fetch failed');
+
+            const warnings = warningOnce.mock.calls.map(([message]) => message);
+            expect(warnings).toHaveLength(2);
+            expect(new Set(warnings).size).toBe(1);
+            expect(warnings[0]).toMatch('the proxy set in HTTPS_PROXY was not used');
+            expect(warnings[0]).toMatch('NODE_USE_ENV_PROXY=1');
+        });
+
+        test('a failed connection does not warn once Node.js reads the proxy from the environment', async () => {
+            vi.stubEnv('HTTPS_PROXY', 'http://proxy.example.com:3128');
+            vi.stubEnv('NODE_USE_ENV_PROXY', '1');
+            const { failing, warningOnce } = failingClient();
+
+            await expect(failing.user('me').get()).rejects.toThrow('fetch failed');
+
+            expect(warningOnce).not.toHaveBeenCalled();
+        });
+
+        test('a failed connection does not warn without a proxy', async () => {
+            const { failing, warningOnce } = failingClient();
+
+            await expect(failing.user('me').get()).rejects.toThrow('fetch failed');
+
+            expect(warningOnce).not.toHaveBeenCalled();
+        });
     });
 
     test('sends a string body with an explicit content type as it is', async () => {
@@ -318,26 +358,23 @@ describe('AxiosHttpClient', () => {
 
     describe('timeout across retries', () => {
         /**
-         * Routes the client's axios instance to an in-process adapter that fails `failures` times with a 500 and
-         * then succeeds, recording the timeout of every attempt. No network, so no timing to get right.
+         * Replaces the transport of the client with one that fails `failures` times with a 500 and then succeeds,
+         * recording the timeout of every attempt. No network, so no timing to get right.
          */
         const recordAttemptTimeouts = (retryingClient: ApifyClient, failures: number) => {
-            const timeouts: number[] = [];
-            const { axios } = retryingClient.httpClient as AxiosHttpClient;
-            axios.defaults.adapter = async (config: InternalAxiosRequestConfig) => {
-                timeouts.push(config.timeout!);
+            const timeouts: (number | undefined)[] = [];
+            vi.spyOn(retryingClient.httpClient, 'sendRequest').mockImplementation(async (request: HttpRequest) => {
+                timeouts.push(request.timeoutMillis);
                 const failed = timeouts.length <= failures;
                 const body = failed
                     ? { error: { type: 'internal-server-error', message: 'boom' } }
                     : { data: { id: 'test-id' } };
                 return {
                     status: failed ? 500 : 200,
-                    statusText: failed ? 'Internal Server Error' : 'OK',
                     headers: { 'content-type': 'application/json; charset=utf-8' },
-                    data: Buffer.from(JSON.stringify(body)),
-                    config,
+                    body: Buffer.from(JSON.stringify(body)),
                 };
-            };
+            });
             return timeouts;
         };
 
@@ -370,7 +407,12 @@ describe('AxiosHttpClient', () => {
 
             await retryingClient.httpClient.call({ url: `${baseUrl}/v2/x`, method: 'GET', timeoutSecs: 'noTimeout' });
 
-            expect(timeouts).toEqual([0, 0, 0]);
+            expect(timeouts).toEqual([undefined, undefined, undefined]);
         });
     });
 });
+
+/** An error shaped like the ones Node.js names as the cause of a failed fetch. */
+function failure(code: string): Error {
+    return Object.assign(new Error(code), { code });
+}

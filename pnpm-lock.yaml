@@ -184,15 +184,9 @@ importers:
       ansi-colors:
         specifier: ^4.1.3
         version: 4.1.3
-      axios:
-        specifier: ^1.21.1
-        version: 1.21.1(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)
       content-type:
         specifier: ^3.1.1
         version: 3.1.1
-      proxy-agent:
-        specifier: ^8.0.3
-        version: 8.0.3(supports-color@10.2.2)
       tslib:
         specifier: ^2.9.1
         version: 2.9.1
@@ -236,6 +230,9 @@ importers:
       ajv:
         specifier: ^8.20.0
         version: 8.20.0
+      axios:
+        specifier: ^1.21.1
+        version: 1.21.1(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)
       body-parser:
         specifier: ^2.4.0
         version: 2.4.0(supports-color@10.2.2)
@@ -14832,15 +14829,16 @@ snapshots:
 
   agent-base@7.1.4: {}
 
-  agent-base@9.0.0: {}
+  agent-base@9.0.0:
+    optional: true
 
   aggregate-error@3.1.0:
     dependencies:
       clean-stack: 2.2.0
       indent-string: 4.0.0
 
-  ajv-formats@3.0.1:
-    dependencies:
+  ajv-formats@3.0.1(ajv@8.20.0):
+    optionalDependencies:
       ajv: 8.20.0
 
   ajv-keywords@3.5.2(ajv@6.15.0):
@@ -14970,6 +14968,7 @@ snapshots:
   ast-types@0.13.4:
     dependencies:
       tslib: 2.9.1
+    optional: true
 
   astring@1.9.0: {}
 
@@ -15075,7 +15074,8 @@ snapshots:
 
   baseline-browser-mapping@2.11.39: {}
 
-  basic-ftp@6.2.6: {}
+  basic-ftp@6.2.6:
+    optional: true
 
   batch@0.6.1: {}
 
@@ -15796,7 +15796,8 @@ snapshots:
 
   csv-stringify@6.9.0: {}
 
-  data-uri-to-buffer@8.0.0: {}
+  data-uri-to-buffer@8.0.0:
+    optional: true
 
   dayjs@1.11.9: {}
 
@@ -15869,6 +15870,7 @@ snapshots:
       escodegen: 2.1.0
       esprima: 4.0.1
       quickjs-wasi: 3.7.0
+    optional: true
 
   delayed-stream@1.0.0: {}
 
@@ -16126,10 +16128,13 @@ snapshots:
       esutils: 2.0.3
     optionalDependencies:
       source-map: 0.6.1
+    optional: true
 
-  esprima@4.0.1: {}
+  esprima@4.0.1:
+    optional: true
 
-  estraverse@5.3.0: {}
+  estraverse@5.3.0:
+    optional: true
 
   estree-util-attach-comments@3.0.0:
     dependencies:
@@ -16528,6 +16533,7 @@ snapshots:
       debug: 4.4.3(supports-color@10.2.2)
     transitivePeerDependencies:
       - supports-color
+    optional: true
 
   github-slugger@1.5.0: {}
 
@@ -16970,6 +16976,7 @@ snapshots:
     transitivePeerDependencies:
       - kerberos
       - supports-color
+    optional: true
 
   http-proxy-middleware@2.0.12(@types/express@4.17.25)(debug@4.4.3(supports-color@10.2.2)):
     dependencies:
@@ -17042,6 +17049,7 @@ snapshots:
     transitivePeerDependencies:
       - kerberos
       - supports-color
+    optional: true
 
   human-signals@2.1.0: {}
 
@@ -17469,7 +17477,8 @@ snapshots:
     dependencies:
       yallist: 3.1.1
 
-  lru-cache@7.18.3: {}
+  lru-cache@7.18.3:
+    optional: true
 
   lunr@2.3.9: {}
 
@@ -18220,7 +18229,8 @@ snapshots:
     dependencies:
       content-type: 2.1.0
 
-  netmask@2.1.2: {}
+  netmask@2.1.2:
+    optional: true
 
   no-case@3.0.4:
     dependencies:
@@ -18449,12 +18459,14 @@ snapshots:
     transitivePeerDependencies:
       - kerberos
       - supports-color
+    optional: true
 
   pac-resolver@9.0.2(quickjs-wasi@3.7.0):
     dependencies:
       degenerator: 7.0.2(quickjs-wasi@3.7.0)
       netmask: 2.1.2
       quickjs-wasi: 3.7.0
+    optional: true
 
   package-json-from-dist@1.0.1: {}
 
@@ -19280,7 +19292,8 @@ snapshots:
       forwarded: 0.2.0
       ipaddr.js: 1.9.1
 
-  proxy-agent-negotiate@1.1.0: {}
+  proxy-agent-negotiate@1.1.0:
+    optional: true
 
   proxy-agent@8.0.3(supports-color@10.2.2):
     dependencies:
@@ -19295,6 +19308,7 @@ snapshots:
     transitivePeerDependencies:
       - kerberos
       - supports-color
+    optional: true
 
   proxy-chain@2.7.1(supports-color@10.2.2):
     dependencies:
@@ -19382,7 +19396,8 @@ snapshots:
 
   quick-lru@7.3.0: {}
 
-  quickjs-wasi@3.7.0: {}
+  quickjs-wasi@3.7.0:
+    optional: true
 
   randombytes@2.1.0:
     dependencies:
@@ -19926,7 +19941,7 @@ snapshots:
     dependencies:
       '@types/json-schema': 7.0.15
       ajv: 8.20.0
-      ajv-formats: 3.0.1
+      ajv-formats: 3.0.1(ajv@8.20.0)
       ajv-keywords: 5.1.0(ajv@8.20.0)
     optionalDependencies:
       webpack: 5.113.0(@swc/core@1.16.22(@swc/helpers@0.5.24))(@swc/html@1.16.22)(clean-css@5.3.3)(cssnano@6.1.2(postcss@8.5.33))(csso@5.0.5)(esbuild@0.28.2)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@3.3.5)(webpack-cli@7.3.1)
@@ -20196,6 +20211,7 @@ snapshots:
       socks: 2.8.11
     transitivePeerDependencies:
       - supports-color
+    optional: true
 
   socks-proxy-agent@8.0.5(supports-color@10.2.2):
     dependencies:

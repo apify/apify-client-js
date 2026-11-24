@@ -6,13 +6,20 @@ import type { ApifyRequestConfig, ApifyResponse, HttpRequest, HttpResponse } fro
 import {
     ApifyClient,
     ArgumentValidationError,
-    AxiosHttpClient,
+    FetchHttpClient,
     HttpClient,
     InvalidResponseBodyError,
     NotFoundError,
     ServerError,
 } from 'apify-client';
+import { AxiosHttpClient } from 'apify-client/axios';
 import { afterAll, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
+
+/** The built-in transports, for the tests that hold for both of them. */
+const builtInClients = [
+    { name: 'FetchHttpClient', Client: FetchHttpClient },
+    { name: 'AxiosHttpClient', Client: AxiosHttpClient },
+];
 
 /** A custom client that replaces `call()` entirely and records what the resource clients hand it. */
 class FakeHttpClient extends HttpClient {
@@ -207,10 +214,10 @@ describe('pluggable HTTP client', () => {
     });
 
     describe('ApifyClient default client', () => {
-        test('is an AxiosHttpClient created once, on first access', () => {
+        test('is a FetchHttpClient created once, on first access', () => {
             const client = new ApifyClient({ token: 'test_token' });
 
-            expect(client.httpClient).toBeInstanceOf(AxiosHttpClient);
+            expect(client.httpClient).toBeInstanceOf(FetchHttpClient);
             expect(client.httpClient).toBe(client.httpClient);
             expect(client.httpClient.stats).toBe(client.stats);
         });
@@ -274,8 +281,8 @@ describe('pluggable HTTP client', () => {
             ).toBe(false);
         });
 
-        test('AxiosHttpClient is an HttpClient', () => {
-            expect(new AxiosHttpClient()).toBeInstanceOf(HttpClient);
+        test.each(builtInClients)('$name is an HttpClient', ({ Client }) => {
+            expect(new Client()).toBeInstanceOf(HttpClient);
         });
 
         test.each([
@@ -555,8 +562,8 @@ describe('pluggable HTTP client', () => {
             expect(sendRequest).toHaveBeenCalledTimes(1);
         });
 
-        test('AxiosHttpClient ends the request in flight when the signal aborts', async () => {
-            const httpClient = new AxiosHttpClient();
+        test.each(builtInClients)('$name ends the request in flight when the signal aborts', async ({ Client }) => {
+            const httpClient = new Client();
             const controller = new AbortController();
             onStalled = () => controller.abort();
 
@@ -776,14 +783,17 @@ describe('pluggable HTTP client', () => {
             expect(sendRequest).toHaveBeenCalledTimes(1);
         });
 
-        test('AxiosHttpClient throws the error of a failing Blob without a circular cause chain', async () => {
+        test.each(builtInClients)('$name throws the error of a failing Blob as it is', async ({ Client }) => {
             const sourceError = new Error('file changed on disk');
-            const httpClient = new AxiosHttpClient({ minDelayBetweenRetriesMillis: 1 });
+            const httpClient = new Client({ minDelayBetweenRetriesMillis: 1 });
 
             const call = httpClient.call({ url: `${baseUrl}/echo`, method: 'PUT', data: failingBlob(sourceError) });
 
             await expect(call).rejects.toBe(sourceError);
-            expect(sourceError.cause).toBeUndefined();
+            // The transport error is linked as the cause, unless it already wraps the error of the blob.
+            for (let link = sourceError.cause; link instanceof Error; link = link.cause) {
+                expect(link).not.toBe(sourceError);
+            }
             await httpClient.close();
         });
 
@@ -796,9 +806,9 @@ describe('pluggable HTTP client', () => {
             expect((sendRequest.mock.calls[0][0].body as Readable).destroyed).toBe(true);
         });
 
-        test('AxiosHttpClient sends a Blob body again after a server error', async () => {
+        test.each(builtInClients)('$name sends a Blob body again after a server error', async ({ Client }) => {
             failuresLeft = 2;
-            const httpClient = new AxiosHttpClient({ minDelayBetweenRetriesMillis: 1 });
+            const httpClient = new Client({ minDelayBetweenRetriesMillis: 1 });
 
             const response = await httpClient.call({
                 url: `${baseUrl}/flaky`,

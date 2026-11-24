@@ -1,5 +1,5 @@
-import type http from 'node:http';
-import type { Socket } from 'node:net';
+import http from 'node:http';
+import https from 'node:https';
 import os from 'node:os';
 import { Readable } from 'node:stream';
 import { brotliCompress, constants, gzip, zstdCompress } from 'node:zlib';
@@ -35,12 +35,8 @@ export const runtime: Runtime = {
     },
 
     async createHttpAgents({ timeoutMillis }) {
-        // Loaded on the first request rather than with the client: the proxy support pulls in a sizeable
-        // dependency tree that a client which never sends a request should not pay for.
-        const { ProxyAgent } = await import('proxy-agent');
-
         // We want to keep sockets alive for better performance.
-        const agentOptions: http.AgentOptions & { scheduling?: 'lifo' | 'fifo' } = {
+        const agentOptions: http.AgentOptions & { noDelay: boolean } = {
             keepAlive: true,
             // Timeout for inactive sockets
             // Prevents socket leaks from idle connections
@@ -53,18 +49,38 @@ export const runtime: Runtime = {
             maxFreeSockets: 256,
             // LIFO scheduling - reuse most recently used sockets for better performance
             scheduling: 'lifo',
+            // Disable Nagle's algorithm for lower latency. The agent hands the option to `net.createConnection()`.
+            noDelay: true,
         };
 
-        // ProxyAgent picks the proxy up from the environment variables and supports CONNECT tunneling.
-        const agent = new ProxyAgent(agentOptions);
+        return { httpAgent: new http.Agent(agentOptions), httpsAgent: new https.Agent(agentOptions) };
+    },
 
-        // Disable Nagle's algorithm for lower latency
-        // This sends data immediately instead of buffering small packets
-        agent.on('socket', (socket: Socket) => {
-            socket.setNoDelay(true);
-        });
+    readableFromWeb(body) {
+        if (!body) return Readable.from([]);
+        return Readable.fromWeb(body as Parameters<typeof Readable.fromWeb>[0]);
+    },
 
-        return { httpAgent: agent, httpsAgent: agent };
+    unusedProxyHint() {
+        const names = ['HTTP_PROXY', 'HTTPS_PROXY', 'http_proxy', 'https_proxy'].filter((name) => process.env[name]);
+        if (names.length === 0) return undefined;
+        // Bun and Deno resolve the `node` condition too, and their `fetch` reads these variables on its own.
+        if (process.versions.bun || process.versions.deno) return undefined;
+
+        const flags = [...process.execArgv, ...(process.env.NODE_OPTIONS ?? '').split(/\s+/)];
+        if (process.env.NODE_USE_ENV_PROXY === '1' || flags.includes('--use-env-proxy')) return undefined;
+
+        const [major, minor] = process.versions.node.split('.').map(Number);
+        const supported = major >= 24 || (major === 22 && minor >= 21);
+        const fix = supported
+            ? 'Start Node.js with NODE_USE_ENV_PROXY=1 or --use-env-proxy to send the requests through it.'
+            : `Node.js ${process.versions.node} cannot route fetch() through it: upgrade to Node.js 22.21 or 24, ` +
+              'then start it with NODE_USE_ENV_PROXY=1 or --use-env-proxy.';
+        return (
+            `The request failed, and the proxy set in ${names[0]} was not used, since fetch() in Node.js ignores the ` +
+            `proxy environment variables by default. ${fix} ` +
+            'See https://docs.apify.com/api/client/js/docs/concepts/custom-http-clients#proxies for the other options.'
+        );
     },
 
     openBlobBody(blob, onSourceError) {

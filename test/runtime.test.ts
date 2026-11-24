@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import http from 'node:http';
+import https from 'node:https';
 import os from 'node:os';
 import { resolve } from 'node:path';
 import { Readable } from 'node:stream';
@@ -7,7 +8,7 @@ import type * as Zlib from 'node:zlib';
 import { brotliDecompressSync, gunzipSync } from 'node:zlib';
 
 import { build } from 'esbuild';
-import { describe, expect, test, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { runtime as nodeRuntime } from '../src/runtime/node.js';
 import { runtime as webRuntime } from '../src/runtime/web.js';
@@ -49,14 +50,66 @@ describe('Node.js runtime', () => {
         }
     });
 
-    test('creates one keep-alive agent for both http and https', async () => {
+    test('creates a keep-alive agent for each of http and https', async () => {
         const agents = await nodeRuntime.createHttpAgents({ timeoutMillis: 1000 });
         // `options` is where an agent keeps its constructor options; the Node.js types leave it undeclared.
         const agent = agents!.httpAgent as http.Agent & { options: http.AgentOptions };
         expect(agent).toBeInstanceOf(http.Agent);
-        expect(agents!.httpsAgent).toBe(agent);
+        expect(agents!.httpsAgent).toBeInstanceOf(https.Agent);
         expect(agent.options).toMatchObject({ keepAlive: true, timeout: 1000 });
         agent.destroy();
+        agents!.httpsAgent.destroy();
+    });
+
+    test('wraps the body of a fetch response in a Readable', async () => {
+        const body = nodeRuntime.readableFromWeb(new Response('streamed').body);
+        expect(body).toBeInstanceOf(Readable);
+        expect(Buffer.concat(await body.toArray()).toString()).toBe('streamed');
+        expect(await nodeRuntime.readableFromWeb(null).toArray()).toEqual([]);
+    });
+
+    describe('unusedProxyHint()', () => {
+        beforeEach(() => {
+            for (const name of ['HTTP_PROXY', 'HTTPS_PROXY', 'http_proxy', 'https_proxy', 'NODE_USE_ENV_PROXY']) {
+                vi.stubEnv(name, '');
+            }
+            vi.stubEnv('NODE_OPTIONS', '');
+        });
+        afterEach(() => {
+            vi.unstubAllEnvs();
+        });
+
+        test('is empty without a proxy in the environment', () => {
+            expect(nodeRuntime.unusedProxyHint()).toBeUndefined();
+        });
+
+        test('names the variable and the switch that makes Node.js read it', () => {
+            vi.stubEnv('http_proxy', 'http://proxy.example.com:3128');
+            const hint = nodeRuntime.unusedProxyHint();
+            expect(hint).toMatch('the proxy set in http_proxy was not used');
+            expect(hint).toMatch('NODE_USE_ENV_PROXY=1 or --use-env-proxy');
+        });
+
+        test.each([
+            { name: 'NODE_USE_ENV_PROXY=1', env: { NODE_USE_ENV_PROXY: '1' } },
+            { name: '--use-env-proxy in NODE_OPTIONS', env: { NODE_OPTIONS: '--no-warnings --use-env-proxy' } },
+        ])('is empty with $name', ({ env }) => {
+            vi.stubEnv('HTTPS_PROXY', 'http://proxy.example.com:3128');
+            for (const [name, value] of Object.entries(env)) vi.stubEnv(name, value);
+            expect(nodeRuntime.unusedProxyHint()).toBeUndefined();
+        });
+
+        test('asks for an upgrade where Node.js cannot route fetch() through a proxy', () => {
+            vi.stubEnv('HTTPS_PROXY', 'http://proxy.example.com:3128');
+            const versions = vi
+                .spyOn(process, 'versions', 'get')
+                .mockReturnValue({ ...process.versions, node: '22.15.0' });
+            try {
+                expect(nodeRuntime.unusedProxyHint()).toMatch('Node.js 22.15.0 cannot route fetch() through it');
+            } finally {
+                versions.mockRestore();
+            }
+        });
     });
 
     test('opens a Blob body as a fresh Readable over its bytes every time', async () => {

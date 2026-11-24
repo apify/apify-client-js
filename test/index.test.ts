@@ -1,4 +1,4 @@
-import { ApifyClient, AxiosHttpClient } from 'apify-client';
+import { ApifyClient, FetchHttpClient } from 'apify-client';
 import { describe, expect, test } from 'vitest';
 
 describe('ApifyClient', () => {
@@ -23,7 +23,7 @@ describe('ApifyClient', () => {
     test('withCustomHttpClient accepts baseUrl with the API version', () => {
         const client = ApifyClient.withCustomHttpClient({
             baseUrl: 'https://example.com/v2',
-            httpClient: new AxiosHttpClient(),
+            httpClient: new FetchHttpClient(),
         });
         expect(client.baseUrl).toBe('https://example.com/v2');
     });

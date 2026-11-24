@@ -8,11 +8,6 @@ import type { ACT_JOB_STATUSES } from '@apify/consts';
 import { ACTOR_JOB_STATUSES } from '@apify/consts';
 import { ACTOR_PERMISSION_LEVEL } from '@apify/consts';
 import { ArgumentValidationError } from '@apify/validations';
-import type { AxiosInstance } from 'axios';
-import type { AxiosInterceptorManager } from 'axios';
-import type http from 'node:http';
-import type https from 'node:https';
-import type { InternalAxiosRequestConfig } from 'axios';
 import type { JsonValue } from 'type-fest';
 import type { LiteralUnion } from 'type-fest';
 import { Log } from '@apify/log';
@@ -512,23 +507,6 @@ export interface ApifyResponse<T = any> {
 export type ApifyResponseType = 'parsed' | 'buffer' | 'stream';
 
 export { ArgumentValidationError }
-
-// @public
-export class AxiosHttpClient extends HttpClient {
-    constructor(options?: AxiosHttpClientOptions);
-    axios: AxiosInstance;
-    close(): Promise<void>;
-    httpAgent?: http.Agent;
-    httpsAgent?: https.Agent;
-    isRetryableTransportError(error: unknown): boolean;
-    isTimeoutError(error: unknown): boolean;
-    sendRequest(request: HttpRequest): Promise<HttpResponse>;
-}
-
-// @public
-export interface AxiosHttpClientOptions extends HttpClientOptions {
-    requestInterceptors?: RequestInterceptorFunction[];
-}
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
@@ -2917,6 +2895,22 @@ export interface ExampleRunInput extends GeneratedExampleRunInput {
 }
 
 // @public
+export type FetchFunction = typeof globalThis.fetch;
+
+// @public
+export class FetchHttpClient extends HttpClient {
+    constructor(options?: FetchHttpClientOptions);
+    isRetryableTransportError(error: unknown): boolean;
+    isTimeoutError(error: unknown): boolean;
+    sendRequest(request: HttpRequest): Promise<HttpResponse>;
+}
+
+// @public
+export interface FetchHttpClientOptions extends HttpClientOptions {
+    fetch?: FetchFunction;
+}
+
+// @public
 export type FinalVersion = Version & {
     buildTag: NonNullable<Version['buildTag']>;
 };
@@ -3649,9 +3643,6 @@ interface ProxyResourceRePointed {
 // @public
 export class RateLimitError extends ApifyApiError {
 }
-
-// @public
-export type RequestInterceptorFunction = Parameters<AxiosInterceptorManager<InternalAxiosRequestConfig>['use']>[0];
 
 // @public
 export interface RequestLockInfo extends GeneratedRequestLockInfo {
