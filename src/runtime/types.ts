@@ -36,6 +36,11 @@ export interface Runtime {
      */
     isNode: boolean;
     /**
+     * Whether a failed `fetch` rejects with a `TypeError` that names the network error as its `cause`, which is
+     * what Node.js does. Bun and Deno resolve the `node` condition too, and their `fetch` does not.
+     */
+    fetchFailsWithCause: boolean;
+    /**
      * The platform part of the `User-Agent` header, or `undefined` where the runtime does not let a client
      * set that header (browsers).
      */

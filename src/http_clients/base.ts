@@ -775,8 +775,11 @@ export abstract class HttpClient {
 
     #onRequestRetry(error: unknown, attempt: number): void {
         if (attempt === Math.round(this.maxRetries / 2)) {
+            // A failed `fetch` names the network error only in its `cause`, and Bun gives its errors no stack.
+            const { stack, cause } = error as Error;
+            const causedBy = cause instanceof Error ? `\nCaused by: ${cause.stack ?? cause}` : '';
             this.logger.warning(
-                `API request failed ${attempt} times. Max attempts: ${this.maxRetries + 1}.\nCause:${(error as Error).stack}`,
+                `API request failed ${attempt} times. Max attempts: ${this.maxRetries + 1}.\nCause:${stack ?? error}${causedBy}`,
             );
         }
     }

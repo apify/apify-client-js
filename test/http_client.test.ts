@@ -1,5 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import type { AddressInfo } from 'node:net';
+import { createServer } from 'node:net';
 import os from 'node:os';
 import { gzipSync } from 'node:zlib';
 
@@ -227,6 +228,25 @@ describe('FetchHttpClient', () => {
         expect(fetchMock).toHaveBeenCalledTimes(3);
     });
 
+    test('the retry warning names the network error behind a failed fetch', async () => {
+        const server = createServer((socket) => socket.on('data', () => socket.destroy())).listen(0);
+        const retrying = new ApifyClient({
+            baseUrl: `http://127.0.0.1:${(server.address() as AddressInfo).port}`,
+            maxRetries: 2,
+            minDelayBetweenRetriesMillis: 1,
+        });
+        const warning = vi.spyOn(retrying.logger, 'warning').mockImplementation(() => {});
+
+        try {
+            await expect(retrying.user('me').get()).rejects.toThrow('fetch failed');
+        } finally {
+            server.close();
+        }
+
+        expect(warning).toHaveBeenCalledTimes(1);
+        expect(warning.mock.calls[0][0]).toMatch('Caused by: SocketError: other side closed');
+    });
+
     test('does not retry a request that could not be sent', async () => {
         const httpClient = new FetchHttpClient({ minDelayBetweenRetriesMillis: 1 });
         const sendRequest = vi.spyOn(httpClient, 'sendRequest');
@@ -277,12 +297,20 @@ describe('FetchHttpClient', () => {
         expect(httpClient.isRetryableTransportError(new Error('boom'))).toBe(false);
     });
 
-    test('isRetryableTransportError() retries every TypeError outside Node.js, where fetch gives no detail', () => {
-        runtime.isNode = false;
+    test('isRetryableTransportError() retries the network failures of a fetch that names no cause', () => {
+        const httpClient = new FetchHttpClient();
+        runtime.fetchFailsWithCause = false;
         try {
-            expect(new FetchHttpClient().isRetryableTransportError(new TypeError('Failed to fetch'))).toBe(true);
+            // Browsers and Deno.
+            expect(httpClient.isRetryableTransportError(new TypeError('Failed to fetch'))).toBe(true);
+            // Bun.
+            expect(httpClient.isRetryableTransportError(failure('ConnectionRefused'))).toBe(true);
+            expect(httpClient.isRetryableTransportError(failure('ECONNRESET'))).toBe(true);
+            const invalidUrl = Object.assign(new TypeError('fetch() URL is invalid'), { code: 'ERR_INVALID_URL' });
+            expect(httpClient.isRetryableTransportError(invalidUrl)).toBe(false);
+            expect(httpClient.isRetryableTransportError(new Error('boom'))).toBe(false);
         } finally {
-            runtime.isNode = true;
+            runtime.fetchFailsWithCause = true;
         }
     });
 

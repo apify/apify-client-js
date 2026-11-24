@@ -30,7 +30,7 @@ const TIMEOUT_ERROR_CODES = new Set([
     'UND_ERR_BODY_TIMEOUT',
 ]);
 
-/** Error codes of a request that Node.js refused to send, so sending it again fails the same way. */
+/** Error codes of a request that Node.js or Bun refused to send, so sending it again fails the same way. */
 const INVALID_REQUEST_ERROR_CODES = new Set([
     'ERR_INVALID_URL',
     'ERR_INVALID_ARG_TYPE',
@@ -73,16 +73,15 @@ export class FetchHttpClient extends HttpClient {
     /**
      * A network failure is the `TypeError` that `fetch` rejects with: a connection that could not be made, dropped
      * mid-way or timed out. In Node.js it carries the failure as its `cause`, which tells it apart from a request
-     * that was never sent, such as one with an invalid URL.
+     * that was never sent, such as one with an invalid URL. Bun rejects with an `Error` that has a `code` instead.
      */
     override isRetryableTransportError(error: unknown): boolean {
         if (this.isTimeoutError(error)) return true;
-        if (!(error instanceof TypeError)) return false;
-        // Browsers give no detail about a failed request, so every `TypeError` passes for a network failure.
-        if (!runtime.isNode) return true;
-        if (error.cause === undefined) return false;
-        const code = causeCode(error);
-        return code === undefined || !INVALID_REQUEST_ERROR_CODES.has(code);
+        const code = causeCode(error) ?? errorCode(error);
+        if (code !== undefined && INVALID_REQUEST_ERROR_CODES.has(code)) return false;
+        if (runtime.fetchFailsWithCause) return error instanceof TypeError && error.cause !== undefined;
+        // Browsers and Deno fail with a bare `TypeError` whatever the reason, and Bun with an error that has a `code`.
+        return error instanceof TypeError || code !== undefined;
     }
 
     /**
@@ -178,7 +177,10 @@ function toResponseHeaders(headers: Headers): HttpResponseHeaders {
 
 /** Reads the `code` of the error that caused a `fetch` failure, which is where Node.js puts the network error. */
 function causeCode(error: unknown): string | undefined {
-    const cause = error instanceof Error ? error.cause : undefined;
-    const code = (cause as { code?: unknown } | undefined)?.code;
+    return errorCode(error instanceof Error ? error.cause : undefined);
+}
+
+function errorCode(error: unknown): string | undefined {
+    const code = (error as { code?: unknown } | null | undefined)?.code;
     return typeof code === 'string' ? code : undefined;
 }

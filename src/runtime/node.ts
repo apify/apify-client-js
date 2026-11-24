@@ -6,12 +6,16 @@ import { brotliCompress, constants, gzip, zstdCompress } from 'node:zlib';
 
 import type { Runtime } from './types.js';
 
+const isBunOrDeno = Boolean(process.versions.bun || process.versions.deno);
+
 /**
  * The Node.js implementation of {@link Runtime}. Deno and Bun resolve the `node` condition too and
  * provide the built-ins it uses.
  */
 export const runtime: Runtime = {
     isNode: true,
+
+    fetchFailsWithCause: !isBunOrDeno,
 
     platform: `${os.platform()}; Node/${process.version}`,
 
@@ -64,14 +68,16 @@ export const runtime: Runtime = {
     unusedProxyHint() {
         const names = ['HTTP_PROXY', 'HTTPS_PROXY', 'http_proxy', 'https_proxy'].filter((name) => process.env[name]);
         if (names.length === 0) return undefined;
-        // Bun and Deno resolve the `node` condition too, and their `fetch` reads these variables on its own.
-        if (process.versions.bun || process.versions.deno) return undefined;
-
-        const flags = [...process.execArgv, ...(process.env.NODE_OPTIONS ?? '').split(/\s+/)];
-        if (process.env.NODE_USE_ENV_PROXY === '1' || flags.includes('--use-env-proxy')) return undefined;
+        // The `fetch` of Bun and Deno reads these variables on its own.
+        if (isBunOrDeno) return undefined;
 
         const [major, minor] = process.versions.node.split('.').map(Number);
         const supported = major >= 24 || (major === 22 && minor >= 21);
+        const flags = [...process.execArgv, ...(process.env.NODE_OPTIONS ?? '').split(/\s+/)];
+        const enabled = process.env.NODE_USE_ENV_PROXY === '1' || flags.includes('--use-env-proxy');
+        // An older Node.js ignores the switch, so the proxy stays unused there even with it set.
+        if (supported && enabled) return undefined;
+
         const fix = supported
             ? 'Start Node.js with NODE_USE_ENV_PROXY=1 or --use-env-proxy to send the requests through it.'
             : `Node.js ${process.versions.node} cannot route fetch() through it: upgrade to Node.js 22.21 or 24, ` +

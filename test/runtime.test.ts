@@ -110,6 +110,19 @@ describe('Node.js runtime', () => {
                 versions.mockRestore();
             }
         });
+
+        test('asks for an upgrade there even with NODE_USE_ENV_PROXY=1, which that Node.js ignores', () => {
+            vi.stubEnv('HTTPS_PROXY', 'http://proxy.example.com:3128');
+            vi.stubEnv('NODE_USE_ENV_PROXY', '1');
+            const versions = vi
+                .spyOn(process, 'versions', 'get')
+                .mockReturnValue({ ...process.versions, node: '22.15.0' });
+            try {
+                expect(nodeRuntime.unusedProxyHint()).toMatch('Node.js 22.15.0 cannot route fetch() through it');
+            } finally {
+                versions.mockRestore();
+            }
+        });
     });
 
     test('opens a Blob body as a fresh Readable over its bytes every time', async () => {

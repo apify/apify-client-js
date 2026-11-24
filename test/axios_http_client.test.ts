@@ -62,6 +62,7 @@ describe('AxiosHttpClient', () => {
         const request = mockServer.getLastRequest();
         expect(request?.headers['x-intercepted']).toBe('yes');
         expect(request?.headers.authorization).toBe('Bearer test_token');
+        await httpClient.close();
     });
 
     test('sendRequest() without redirects outside Node.js leaves the User-Agent header to the runtime', async () => {

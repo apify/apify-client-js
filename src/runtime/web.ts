@@ -6,6 +6,8 @@ import type { Runtime } from './types.js';
 export const runtime: Runtime = {
     isNode: false,
 
+    fetchFailsWithCause: false,
+
     // Browsers do not let a page set the `User-Agent` header.
     platform: undefined,
 
