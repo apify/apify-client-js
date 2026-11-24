@@ -11,6 +11,7 @@ Thank you for your interest in contributing to the official JavaScript/TypeScrip
 - [Testing](#testing)
 - [Pull Request Guidelines](#pull-request-guidelines)
 - [Adding New Resource Clients](#adding-new-resource-clients)
+- [GitHub Actions](#github-actions)
 
 ## Development Setup
 
@@ -383,6 +384,10 @@ export type { MyResource, MyResourceCreate, MyResourceUpdate } from './resource_
 ### 5. Add Tests
 
 Create `test/my_resource.test.ts` with comprehensive tests and add mock routes in `test/mock_server/routes/`.
+
+## GitHub Actions
+
+Workflows reference actions by version tag (`actions/checkout@v7.0.1`), never by commit SHA. [`.github/workflows/actions.lock`](.github/workflows/actions.lock) pins every tag, including those called by composite actions, to its commit. After adding or changing a `uses:` line, run `gh actions-lock` ([extension](https://github.com/github/gh-actions-lock)) and commit the lockfile. Prefer composite actions from `apify/actions` over reusable workflows from `apify/workflows`, which the lockfile can't pin.
 
 ## Questions?
 
