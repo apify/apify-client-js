@@ -15,6 +15,8 @@ import {
 import { AxiosHttpClient } from 'apify-client/axios';
 import { afterAll, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { usesAxios } from './_helper.js';
+
 /** The built-in transports, for the tests that hold for both of them. */
 const builtInClients = [
     { name: 'FetchHttpClient', Client: FetchHttpClient },
@@ -214,7 +216,7 @@ describe('pluggable HTTP client', () => {
     });
 
     describe('ApifyClient default client', () => {
-        test('is a FetchHttpClient created once, on first access', () => {
+        test.skipIf(usesAxios)('is a FetchHttpClient created once, on first access', () => {
             const client = new ApifyClient({ token: 'test_token' });
 
             expect(client.httpClient).toBeInstanceOf(FetchHttpClient);

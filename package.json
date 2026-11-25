@@ -66,6 +66,7 @@
         "prepublishOnly": "(test $CI || (echo \"Publishing is reserved to CI!\"; exit 1))",
         "clean": "rimraf dist tsconfig.tsbuildinfo",
         "test": "pnpm build && vitest run --project unit",
+        "test:axios": "pnpm build && vitest run --project unit-axios",
         "test:integration": "vitest run --project integration",
         "test:all": "pnpm build && vitest run",
         "test:bundling": "pnpm build && pnpm --prefix=./test/bundling run bundle:all",

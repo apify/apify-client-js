@@ -8,7 +8,7 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, expectTyp
 
 import { STORAGE_OWNERSHIP_FILTER } from '@apify/consts';
 
-import { DEFAULT_OPTIONS, asBrowserResult, Browser, validateRequest } from './_helper.js';
+import { DEFAULT_OPTIONS, asBrowserResult, Browser, usesAxios, validateRequest } from './_helper.js';
 import * as fixtures from './mock_server/fixtures.js';
 import { mockServer } from './mock_server/server.js';
 
@@ -159,7 +159,7 @@ describe('Request Queue methods', () => {
             } catch (e: any) {
                 errorMessage = e.toString();
             }
-            expect(errorMessage).toEqual('TimeoutError: timeout of 1ms exceeded');
+            expect(errorMessage).toEqual(`${usesAxios ? 'AxiosError' : 'TimeoutError'}: timeout of 1ms exceeded`);
         });
 
         test('addRequest() works with forefront param', async () => {
@@ -236,7 +236,7 @@ describe('Request Queue methods', () => {
             } catch (e: any) {
                 errorMessage = e.toString();
             }
-            expect(errorMessage).toEqual('TimeoutError: timeout of 1ms exceeded');
+            expect(errorMessage).toEqual(`${usesAxios ? 'AxiosError' : 'TimeoutError'}: timeout of 1ms exceeded`);
         });
 
         test('deleteRequest() works', async () => {
@@ -265,7 +265,7 @@ describe('Request Queue methods', () => {
             } catch (e: any) {
                 errorMessage = e.toString();
             }
-            expect(errorMessage).toEqual('TimeoutError: timeout of 1ms exceeded');
+            expect(errorMessage).toEqual(`${usesAxios ? 'AxiosError' : 'TimeoutError'}: timeout of 1ms exceeded`);
         });
 
         test('updateRequest() works with forefront', async () => {
@@ -327,7 +327,7 @@ describe('Request Queue methods', () => {
             } catch (e: any) {
                 errorMessage = e.toString();
             }
-            expect(errorMessage).toEqual('TimeoutError: timeout of 1ms exceeded');
+            expect(errorMessage).toEqual(`${usesAxios ? 'AxiosError' : 'TimeoutError'}: timeout of 1ms exceeded`);
         });
 
         test('listHead() works', async () => {
@@ -355,7 +355,7 @@ describe('Request Queue methods', () => {
             } catch (e: any) {
                 errorMessage = e.toString();
             }
-            expect(errorMessage).toEqual('TimeoutError: timeout of 1ms exceeded');
+            expect(errorMessage).toEqual(`${usesAxios ? 'AxiosError' : 'TimeoutError'}: timeout of 1ms exceeded`);
         });
 
         test.each(['addRequest', 'updateRequest', 'deleteRequest'] as const)(

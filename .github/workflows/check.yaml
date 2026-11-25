@@ -52,6 +52,10 @@ jobs:
             - name: Run Tests
               run: pnpm test
 
+            # The same suite with the opt-in axios client as the default one, so the two keep behaving alike.
+            - name: Run Tests with the axios HTTP client
+              run: pnpm exec vitest run --project unit-axios
+
     integration_tests:
         name: Integration tests (Node ${{ matrix.node-version }})
         # These run against the live Apify API with real credentials, so they are skipped for fork PRs,
