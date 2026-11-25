@@ -3241,7 +3241,7 @@ export interface HttpResponse {
 }
 
 // @public
-export type HttpResponseBody = Buffer | ArrayBuffer | Readable | undefined;
+export type HttpResponseBody = Uint8Array | ArrayBuffer | Readable | ReadableStream<Uint8Array> | undefined;
 
 // @public
 export type HttpResponseHeaders = Record<string, string | string[] | undefined>;

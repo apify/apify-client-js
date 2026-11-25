@@ -379,19 +379,19 @@ describe('Key-Value Store methods', () => {
             expect(res).toEqual(expectedResult);
             validateRequest({ query: { attachment: 'true' }, params: { storeId, key } });
 
-            try {
-                await page.evaluate(
-                    async (id, k, opts) => {
-                        return client.keyValueStore(id).getRecord(k, opts);
-                    },
-                    storeId,
-                    key,
-                    options,
-                );
-                throw new Error('wrong error');
-            } catch (err: any) {
-                expect(err.message).toMatch('The stream option can only be used in Node.js environment.');
-            }
+            const browserRes = await page.evaluate(
+                async (id, k, opts) => {
+                    const record = await client.keyValueStore(id).getRecord(k, opts);
+                    const stream = record!.value as unknown as ReadableStream<Uint8Array>;
+                    const isWebStream = stream instanceof ReadableStream;
+                    return { ...record, isWebStream, value: await new Response(stream).text() };
+                },
+                storeId,
+                key,
+                options,
+            );
+            expect(browserRes).toEqual({ ...expectedResult, isWebStream: true });
+            validateRequest({ query: { attachment: 'true' }, params: { storeId, key } });
         });
 
         test('getRecord() correctly passes signature', async () => {

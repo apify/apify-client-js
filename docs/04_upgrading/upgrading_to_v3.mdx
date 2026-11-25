@@ -595,9 +595,9 @@ Members that v2 declared `private` are declared with a `#` in v3, so the JavaScr
 
 ## Node.js-only features follow the bundler's target
 
-Some features need Node.js APIs: log redirection with <ApiLink to="class/RunClient#getStreamedLog">`RunClient.getStreamedLog()`</ApiLink>, the `stream` option of <ApiLink to="class/KeyValueStoreClient#getRecord">`KeyValueStoreClient.getRecord()`</ApiLink>, request body compression, and the `User-Agent` header.
+Some features need Node.js APIs: log redirection with <ApiLink to="class/RunClient#getStreamedLog">`RunClient.getStreamedLog()`</ApiLink>, request body compression, and the `User-Agent` header. The type of a streamed response and of raw bytes depends on them too.
 
-In v2 the client detected the runtime when one of them was used, so a Node.js application bundled for a browser or a neutral target kept them all. In v3 the implementation is picked when the import is resolved, so the bundler's conditions decide. Without the `node` condition, `getRecord({ stream: true })` throws, `getStreamedLog()` returns `undefined`, and requests go out uncompressed and without the client's `User-Agent` header.
+In v2 the client detected the runtime when one of them was used, so a Node.js application bundled for a browser or a neutral target kept them all. In v3 the implementation is picked when the import is resolved, so the bundler's conditions decide. Without the `node` condition, `getStreamedLog()` returns `undefined`, requests go out uncompressed and without the client's `User-Agent` header, and streams and raw bytes come back as their web types, as described below.
 
 Enable the `node` condition when you bundle for Node.js. esbuild sets it through `platform: 'node'`, webpack through `resolve.conditionNames`, and Vite through `resolve.conditions` for a client build. A Vite SSR build includes `node` already.
 
@@ -611,7 +611,20 @@ export default {
 };
 ```
 
-Running on Node.js without a bundler is unaffected, and the pre-built browser bundle leaves these features out, as in v2. For what bundling for a non-Node.js target takes, see [Bundled environments](../02_concepts/13_bundled_environments.mdx).
+Running on Node.js without a bundler is unaffected, and the pre-built browser bundle leaves log redirection, compression and the `User-Agent` header out, as in v2. For what bundling for a non-Node.js target takes, see [Bundled environments](../02_concepts/13_bundled_environments.mdx).
+
+### Streamed responses work outside Node.js
+
+In v2, <ApiLink to="class/KeyValueStoreClient#getRecord">`getRecord({ stream: true })`</ApiLink> threw outside Node.js, and <ApiLink to="class/LogClient#stream">`LogClient.stream()`</ApiLink> was documented as working in Node.js only. In v3 they resolve to a web [`ReadableStream`](https://developer.mozilla.org/docs/Web/API/ReadableStream) of `Uint8Array` chunks in the browser bundle and wherever the `node` condition is not set, and so do the new `stream` option of <ApiLink to="class/DatasetClient#downloadItems">`DatasetClient.downloadItems()`</ApiLink> and `responseType: 'stream'`. With the `node` condition they still resolve to a `Readable`, which is what the types declare, so TypeScript code for another runtime casts the value to `ReadableStream<Uint8Array>`.
+
+### Raw bytes outside Node.js are a `Uint8Array`
+
+In v2, a binary response in the browser was an `ArrayBuffer`: a key-value store record with a binary content type, the result of the `buffer` option of `getRecord()`, and of `DatasetClient.downloadItems()`. In v3 it's a `Uint8Array` in the browser bundle and wherever the `node` condition is not set. With the `node` condition it's still a `Buffer`, which is a `Uint8Array` too, so the same code now reads the bytes in every runtime. Code that needs the `ArrayBuffer`, for a `DataView` for example, gets it from the view:
+
+```ts
+const { value } = await client.keyValueStore('my-store').getRecord('image.png', { buffer: true });
+const view = new DataView(value.buffer, value.byteOffset, value.byteLength);
+```
 
 ### Response bodies are decoded by `TextDecoder`
 

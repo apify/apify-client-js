@@ -716,6 +716,50 @@ describe('pluggable HTTP client', () => {
             expect(response.data).toEqual(Buffer.from([1, 2, 3]));
         });
 
+        test.each([
+            { name: 'an ArrayBuffer', body: new Uint8Array([1, 2, 3]).buffer },
+            { name: 'a view into a larger buffer', body: new Uint8Array([0, 1, 2, 3, 4]).subarray(1, 4) },
+        ])('hands back $name from the transport as a Buffer', async ({ body }) => {
+            const httpClient = new NodeHttpClient();
+            vi.spyOn(httpClient, 'sendRequest').mockResolvedValue({ status: 200, headers: {}, body });
+
+            const raw = await httpClient.call({ url: `${baseUrl}/binary`, method: 'GET', responseType: 'buffer' });
+            const parsed = await httpClient.call({ url: `${baseUrl}/binary`, method: 'GET' });
+
+            for (const { data } of [raw, parsed]) {
+                expect(Buffer.isBuffer(data)).toBe(true);
+                expect(data).toEqual(Buffer.from([1, 2, 3]));
+            }
+        });
+
+        test('hands back a web stream from the transport unread for responseType stream', async () => {
+            const httpClient = new NodeHttpClient();
+            const { body } = new Response('streamed');
+            vi.spyOn(httpClient, 'sendRequest').mockResolvedValue({ status: 200, headers: {}, body: body! });
+
+            const response = await httpClient.call({ url: `${baseUrl}/echo`, method: 'GET', responseType: 'stream' });
+
+            expect(response.data).toBe(body);
+        });
+
+        test('reads the error body of a web stream into the ApifyApiError', async () => {
+            const httpClient = new NodeHttpClient();
+            const error = { error: { type: 'record-not-found', message: 'Not here' } };
+            vi.spyOn(httpClient, 'sendRequest').mockResolvedValue({
+                status: 404,
+                headers: { 'content-type': 'application/json' },
+                body: new Response(JSON.stringify(error)).body!,
+            });
+
+            const call = httpClient.call({ url: `${baseUrl}/echo`, method: 'GET', responseType: 'stream' });
+
+            await expect(call).rejects.toMatchObject({
+                statusCode: 404,
+                type: 'record-not-found',
+                message: 'Not here',
+            });
+        });
+
         test('gives up on a request whose body is a stream, since part of it is already consumed', async () => {
             const httpClient = new RetryingHttpClient({ minDelayBetweenRetriesMillis: 1 });
             const sendRequest = vi.spyOn(httpClient, 'sendRequest').mockRejectedValue(new Error('socket hang up'));

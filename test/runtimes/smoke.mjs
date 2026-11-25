@@ -168,6 +168,7 @@ const checks = {
     },
     'downloads a buffer': async () => {
         const { data } = await call({ url: `${baseUrl}/download`, responseType: 'buffer' });
+        assert.ok(Buffer.isBuffer(data));
         assert.equal(sha256(data), sha256(PAYLOAD));
     },
     'downloads a stream': async () => {

@@ -278,6 +278,13 @@ function isTagged(value: unknown, tag: string): boolean {
     return Object.prototype.toString.call(value) === `[object ${tag}]`;
 }
 
+/**
+ * Whether a value is a web `ReadableStream`, which is what a streamed response is outside Node.js.
+ */
+export function isWebStream(value: unknown): value is ReadableStream<Uint8Array> {
+    return isTagged(value, 'ReadableStream');
+}
+
 export function isStream(value: unknown): value is Readable {
     if (value === null || typeof value !== 'object') return false;
     const { on, pipe } = value as Partial<Readable>;

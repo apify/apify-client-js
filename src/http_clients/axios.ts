@@ -38,7 +38,8 @@ export interface AxiosHttpClientOptions extends HttpClientOptions {
  * next to the client.
  *
  * It inherits the request pipeline from {@link HttpClient} and adds the transport: in Node.js, keep-alive agents;
- * in the browser, the XHR adapter of axios, or its fetch adapter for a request that must not follow redirects.
+ * in the browser, the XHR adapter of axios, or its fetch adapter for a request that must not follow redirects or
+ * that asks for a streamed response.
  * Network errors are retried, timeouts included, and a stream body is sent without following redirects, since the
  * part of it already sent could not be replayed. The proxy environment variables are not read: pass a proxy agent
  * in {@link AxiosHttpClientOptions.httpAgent} and {@link AxiosHttpClientOptions.httpsAgent} instead.
@@ -134,13 +135,14 @@ export class AxiosHttpClient extends HttpClient {
      * Sends the request through axios and hands the raw response back. A stream body is sent without following
      * redirects, since the part of it already sent could not be replayed, and so is a request with
      * `followRedirects: false`. Outside Node.js, such a request goes through `fetch`, since the browser follows the
-     * redirects of an XHR itself, and a redirect response fails the request: `fetch` hides it from the page.
+     * redirects of an XHR itself, and a redirect response fails the request: `fetch` hides it from the page. A
+     * request for a streamed response goes through `fetch` there too, since an XHR cannot stream one.
      */
     override async sendRequest(request: HttpRequest): Promise<HttpResponse> {
         await this.#ensureHttpAgents();
 
         const { method, url, headers, body, timeoutMillis, stream, followRedirects, signal } = request;
-        const useFetch = !followRedirects && !runtime.isNode;
+        const useFetch = (!followRedirects || stream) && !runtime.isNode;
         const response = await this.axios.request({
             method,
             url,

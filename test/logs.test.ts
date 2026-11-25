@@ -78,9 +78,9 @@ describe('Log methods', () => {
 
             const browserRes = await page.evaluate(async (id) => {
                 const buffer = await client.log(id).get({ buffer: true });
-                return { isArrayBuffer: buffer instanceof ArrayBuffer, text: new TextDecoder().decode(buffer) };
+                return { isUint8Array: buffer instanceof Uint8Array, text: new TextDecoder().decode(buffer) };
             }, logId);
-            expect(browserRes).toEqual({ isArrayBuffer: true, text: 'get-log' });
+            expect(browserRes).toEqual({ isUint8Array: true, text: 'get-log' });
             validateRequest({ query: {}, params: { logId } });
         });
 
@@ -118,6 +118,13 @@ describe('Log methods', () => {
             const id = Buffer.concat(chunks).toString();
             expect(id).toBe('get-log');
             validateRequest({ query: { stream: true }, params: { logId } });
+
+            const browserRes = await page.evaluate(async (id) => {
+                const stream = (await client.log(id).stream()) as unknown as ReadableStream<Uint8Array>;
+                return { isWebStream: stream instanceof ReadableStream, text: await new Response(stream).text() };
+            }, logId);
+            expect(browserRes).toEqual({ isWebStream: true, text: 'get-log' });
+            validateRequest({ query: { stream: true }, params: { logId } });
         });
 
         test('stream() returns undefined on 404 status code', async () => {
@@ -126,6 +133,9 @@ describe('Log methods', () => {
             const res = await client.log(logId).stream();
             expect(res).toBeUndefined();
             validateRequest({ query: { stream: true }, params: { logId } });
+
+            const browserRes = await page.evaluate((id) => client.log(id).stream(), logId);
+            expect(browserRes).toBeUndefined();
         });
     });
 });

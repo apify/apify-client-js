@@ -388,21 +388,22 @@ export class KeyValueStoreClient extends ResourceClient {
     /**
      * By default, the value is parsed by the record's content type: `application/json` is parsed into a value,
      * `text/*` and `application/*xml` are decoded to a string, and anything else is returned as a Buffer (Node.js)
-     * or ArrayBuffer (browser). A record whose body does not parse as its content type claims, such as a non-JSON
+     * or Uint8Array (browser). A record whose body does not parse as its content type claims, such as a non-JSON
      * string stored under `application/json`, makes the call throw an {@link InvalidResponseBodyError}, which
      * carries the raw body in `error.response`.
      *
      * You can use the `buffer` option to get the value in a Buffer (Node.js)
-     * or ArrayBuffer (browser) format, which skips the parsing. In Node.js (not in browser) you can also
-     * use the `stream` option to get a Readable stream.
+     * or Uint8Array (browser) format, which skips the parsing. You can also use the `stream` option to get
+     * the value unread, as a Readable stream (Node.js) or a web ReadableStream (browser).
      *
      * When the record does not exist, the function resolves to `undefined`. It does
      * NOT resolve to a `KeyValueStoreRecord` with an `undefined` value.
      *
      * @param key - The record key
      * @param options - Retrieval options
-     * @param options.buffer - If `true`, the value is returned as a Buffer (Node.js) or ArrayBuffer (browser).
-     * @param options.stream - If `true`, the value is returned as a Readable stream. Node.js only.
+     * @param options.buffer - If `true`, the value is returned as a Buffer (Node.js) or Uint8Array (browser).
+     * @param options.stream - If `true`, the value is returned as a Readable stream (Node.js) or a web
+     *                         ReadableStream (browser).
      * @param options.signature - Signature of a public URL, for reading a record without a token.
      * @param options.timeoutSecs - Timeout for the API request. Default is `'long'`.
      * @see https://docs.apify.com/api/v2/key-value-store-record-get
@@ -420,10 +421,6 @@ export class KeyValueStoreClient extends ResourceClient {
     ): Promise<KeyValueStoreRecord<unknown> | undefined> {
         parseArgument(key, keySchema);
         const parsed = parseArgument(options, getRecordOptionsSchema, 'KeyValueClientGetRecordOptions');
-
-        if (parsed.stream && !runtime.isNode) {
-            throw new Error('The stream option can only be used in Node.js environment.');
-        }
 
         if ('disableRedirect' in parsed) {
             log.deprecated(
@@ -731,7 +728,7 @@ export interface KeyValueStoreRecordOptions extends TimeoutOptions {
  * Helper type to determine the return type based on getRecord options.
  *
  * Returns Readable if stream option is true, Buffer if buffer option is true,
- * otherwise returns JsonValue.
+ * otherwise returns JsonValue. Outside Node.js, the stream is a web ReadableStream and the bytes a Uint8Array.
  * @since Added in 2.0.6
  */
 export type ReturnTypeFromOptions<Options extends KeyValueClientGetRecordOptions> = Options['stream'] extends true

@@ -82,6 +82,25 @@ describe('AxiosHttpClient', () => {
         expect(mockServer.getLastRequest()?.headers['user-agent']).not.toMatch(/^axios\//);
     });
 
+    test('sendRequest() streams a response outside Node.js as a web stream', async () => {
+        runtime.isNode = false;
+        try {
+            const response = await new AxiosHttpClient().sendRequest({
+                method: 'GET',
+                url: `${baseUrl}/v2/users/me`,
+                headers: {},
+                stream: true,
+                followRedirects: true,
+            });
+
+            expect(response.body).toBeInstanceOf(ReadableStream);
+            const user = await new Response(response.body as ReadableStream).json();
+            expect(user.data.id).toBe('get-user');
+        } finally {
+            runtime.isNode = true;
+        }
+    });
+
     test('close() destroys the keep-alive agents', async () => {
         const httpClient = new AxiosHttpClient();
         await clientWith(httpClient).user('me').get();

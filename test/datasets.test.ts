@@ -394,14 +394,21 @@ describe('Dataset methods', () => {
             expect(Buffer.concat(chunks).toString()).toBe(body);
             validateRequest({ query: { format, bom: 0, delimiter: ';', fields: 'a,b' }, params: { datasetId } });
 
-            await expect(
-                page.evaluate(
-                    async (id, f, opts) => client.dataset(id).downloadItems(f, { ...opts, stream: true }),
-                    datasetId,
-                    format,
-                    options,
-                ),
-            ).rejects.toThrow('The stream option can only be used in Node.js environment.');
+            const browserRes = await page.evaluate(
+                async (id, f, opts) => {
+                    const stream = await client.dataset(id).downloadItems(f, { ...opts, stream: true });
+                    const webStream = stream as unknown as ReadableStream<Uint8Array>;
+                    return {
+                        isWebStream: webStream instanceof ReadableStream,
+                        text: await new Response(webStream).text(),
+                    };
+                },
+                datasetId,
+                format,
+                options,
+            );
+            expect(browserRes).toEqual({ isWebStream: true, text: body });
+            validateRequest({ query: { format, bom: 0, delimiter: ';', fields: 'a,b' }, params: { datasetId } });
         });
 
         test('downloadItems() with stream throws an ApifyApiError with the parsed error body', async () => {

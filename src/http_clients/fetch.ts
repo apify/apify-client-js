@@ -136,7 +136,7 @@ export class FetchHttpClient extends HttpClient {
                 status: response.status,
                 headers: toResponseHeaders(response.headers),
                 // The timeout covers a streamed response only until its headers, and the caller's signal throughout.
-                body: stream ? runtime.readableFromWeb(response.body) : await readBody(response, restartTimeout),
+                body: stream ? runtime.streamFromWeb(response.body) : await readBody(response, restartTimeout),
             };
         } catch (error) {
             if (!this.#fetch && this.isRetryableTransportError(error)) this.#warnAboutUnusedProxy();
@@ -180,7 +180,7 @@ async function* withProgress(body: AsyncIterable<unknown>, onChunk: () => void):
 /**
  * Reads the response body chunk by chunk, so that a large download counts as alive for as long as bytes arrive.
  */
-async function readBody(response: Response, onChunk: () => void): Promise<Buffer | ArrayBuffer> {
+async function readBody(response: Response, onChunk: () => void): Promise<Uint8Array> {
     const chunks: Uint8Array[] = [];
     let length = 0;
     const reader = response.body?.getReader();
@@ -196,7 +196,7 @@ async function readBody(response: Response, onChunk: () => void): Promise<Buffer
         bytes.set(chunk, offset);
         offset += chunk.byteLength;
     }
-    return runtime.isNode ? Buffer.from(bytes.buffer) : bytes.buffer;
+    return bytes;
 }
 
 function toResponseHeaders(headers: Headers): HttpResponseHeaders {

@@ -14,7 +14,6 @@ import type { ActorResource } from '../models.js';
 import type { TimeoutOptions } from '../timeouts.js';
 import * as schemas from '../schemas.js';
 import { timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
-import { runtime } from '#runtime';
 import { parseArgument, parseResponse } from '../utils.js';
 import { BuildClient } from './build.js';
 import { BuildCollectionClient } from './build_collection.js';
@@ -205,7 +204,8 @@ export class ActorServerClient extends ResourceClient {
      * the resulting `Content-Encoding`.
      * @param options.responseType - How to return the response body: `'parsed'` by its content type, `'buffer'` as
      * raw bytes, or `'stream'` as a Readable stream with the body unread. A stream holds its connection open until
-     * you consume it to the end or destroy it. Node.js only. Default is `'parsed'`.
+     * you consume it to the end or destroy it. Outside Node.js, the stream is a web ReadableStream and the raw bytes
+     * a Uint8Array. Default is `'parsed'`.
      * @param options.timeoutSecs - Timeout for the HTTP request. Default is `'long'`. With `'stream'`, it bounds the
      * wait for the server to start responding.
      * @returns The response of the Actor's server, with the body in the form `responseType` asks for. An error
@@ -246,10 +246,6 @@ export class ActorServerClient extends ResourceClient {
             timeoutSecs = 'long',
             signal,
         } = parseArgument(options, requestOptionsSchema, 'ActorServerRequestOptions');
-
-        if (responseType === 'stream' && !runtime.isNode) {
-            throw new Error("The 'stream' response type can only be used in Node.js environment.");
-        }
 
         const serverUrl = await this.getUrl({ signal });
         const serverPath = path.split('#')[0].replace(/^\/+/, '');
@@ -325,7 +321,8 @@ export interface ActorServerRequestOptions extends TimeoutOptions {
     compression?: HttpCompressionAlgorithm | HttpCompressor;
     /**
      * How to return the response body: `'parsed'` by its content type, `'buffer'` as raw bytes, or `'stream'` as a
-     * Readable stream with the body unread. Node.js only.
+     * Readable stream with the body unread. Outside Node.js, the stream is a web ReadableStream and the raw bytes a
+     * Uint8Array.
      * @default 'parsed'
      */
     responseType?: ApifyResponseType;

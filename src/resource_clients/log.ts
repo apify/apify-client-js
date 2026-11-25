@@ -70,13 +70,13 @@ export class LogClient extends ResourceClient {
     /**
      * Retrieves the log as a string.
      *
-     * The `buffer` option only selects the return type: the bytes come back as a Buffer (Node.js) or ArrayBuffer
+     * The `buffer` option only selects the return type: the bytes come back as a Buffer (Node.js) or Uint8Array
      * (browser), not decoded to a string. Either way the whole log is downloaded in one response; to read it
      * incrementally, use {@link LogClient.stream}.
      *
      * @param options - Log retrieval options.
      * @param options.raw - If `true`, returns raw log content without any processing. Default is `false`.
-     * @param options.buffer - If `true`, the log is returned as a Buffer (Node.js) or ArrayBuffer (browser) instead of a
+     * @param options.buffer - If `true`, the log is returned as a Buffer (Node.js) or Uint8Array (browser) instead of a
      * string. It does not change how the log is fetched.
      * @param options.timeoutSecs - Timeout for the API request. Default is `'long'`.
      * @returns The log content, or `undefined` if it does not exist. A chained client such as `run.log()` throws an
@@ -118,7 +118,7 @@ export class LogClient extends ResourceClient {
     }
 
     /**
-     * Retrieves the log as a Readable stream. Only works in Node.js.
+     * Retrieves the log as a Readable stream, or as a web ReadableStream outside Node.js.
      *
      * @param options - Log retrieval options.
      * @param options.raw - If `true`, returns raw log content without any processing. Default is `false`.
@@ -168,7 +168,7 @@ export interface LogOptions extends TimeoutOptions {
  */
 export interface LogGetOptions extends LogOptions {
     /**
-     * If `true`, the log is returned as a Buffer (Node.js) or ArrayBuffer (browser) instead of a string. It only selects
+     * If `true`, the log is returned as a Buffer (Node.js) or Uint8Array (browser) instead of a string. It only selects
      * the return type; to read the log incrementally, use {@link LogClient.stream}.
      * @default false
      */
