@@ -4251,7 +4251,7 @@ export interface StoreCollectionListOptions extends PaginationOptions, TimeoutOp
     pricingModel?: string;
     // (undocumented)
     search?: string;
-    // (undocumented)
+    // @deprecated (undocumented)
     sortBy?: string;
     // (undocumented)
     username?: string;
