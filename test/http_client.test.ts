@@ -283,10 +283,12 @@ describe('FetchHttpClient', () => {
     test('sendRequest() with a web stream body of one large chunk stays alive while it uploads', async () => {
         const size = 32 * 1024 * 1024;
         let received = 0;
-        // Reads the upload slowly, so that it takes far longer than the timeout.
+        // Reads the first half slowly, which alone takes far longer than the timeout. The rest is read at once, so
+        // that what the socket still holds after the last piece was handed over does not outlast the timeout.
         const server = createHttpServer((req, res) => {
             req.on('data', (chunk: Buffer) => {
                 received += chunk.byteLength;
+                if (received > size / 2) return;
                 req.pause();
                 setTimeout(() => req.resume(), 5);
             });
