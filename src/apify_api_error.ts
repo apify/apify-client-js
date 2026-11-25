@@ -1,6 +1,7 @@
 import { ApifyClientError } from './apify_client_error.js';
 import type { ApifyResponse } from './http_clients/base.js';
 import type { ErrorType } from './models.js';
+import type { AnyString } from './utils.js';
 import { isBuffer } from './utils.js';
 
 export type { ErrorType } from './models.js';
@@ -57,7 +58,7 @@ export class ApifyApiError extends ApifyClientError {
      * The type of the error, as returned by the API. Typed as the known {@link ErrorType}
      * values for autocompletion, while still accepting any string the API may return.
      */
-    type?: ErrorType | (string & Record<never, never>);
+    type?: ErrorType | AnyString;
 
     /**
      * Number of the API call attempt.

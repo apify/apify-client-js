@@ -321,6 +321,9 @@ export type ActorVersionListResult = Pick<PaginatedList<FinalVersion>, 'total' |
 // @public
 export type ActorVersionUpdateData = Partial<Version>;
 
+// @public
+export type AnyString = string & {};
+
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
 abstract class ApiClient {
@@ -398,7 +401,7 @@ export class ApifyApiError extends ApifyClientError {
     originalStack: string;
     path?: string;
     statusCode: number;
-    type?: ErrorType | (string & Record<never, never>);
+    type?: ErrorType | AnyString;
 }
 
 // @public
@@ -3257,18 +3260,9 @@ export class InvalidResponseBodyError extends ApifyClientError {
 }
 
 // @public
-export type JsonArray = JsonValue[] | readonly JsonValue[];
-
-// @public
-export type JsonObject = {
+export type JsonValue = string | number | boolean | null | {
     [Key in string]: JsonValue;
-};
-
-// @public
-export type JsonPrimitive = string | number | boolean | null;
-
-// @public
-export type JsonValue = JsonPrimitive | JsonObject | JsonArray;
+} | JsonValue[] | readonly JsonValue[];
 
 // @public
 export interface KeyValueClientCreateKeysUrlOptions extends Omit<KeyValueClientListKeysOptions, 'chunkSize' | 'signature'> {

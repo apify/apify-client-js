@@ -521,17 +521,30 @@ export async function sleep(millis: number, signal?: AbortSignal): Promise<void>
     });
 }
 
-/** Any JSON primitive value. */
-export type JsonPrimitive = string | number | boolean | null;
-
-/** Any JSON object. */
-export type JsonObject = { [Key in string]: JsonValue };
-
-/** Any JSON array. */
-export type JsonArray = JsonValue[] | readonly JsonValue[];
+/** Any string, written so that a union with string literals keeps suggesting the literals. */
+export type AnyString = string & {};
 
 /** Any valid JSON value. */
-export type JsonValue = JsonPrimitive | JsonObject | JsonArray;
+export type JsonValue =
+    | string
+    | number
+    | boolean
+    | null
+    | { [Key in string]: JsonValue }
+    | JsonValue[]
+    | readonly JsonValue[];
+
+/**
+ * Any JSON object.
+ * @internal
+ */
+export type JsonObject = { [Key in string]: JsonValue };
+
+/**
+ * Any JSON array.
+ * @internal
+ */
+export type JsonArray = JsonValue[] | readonly JsonValue[];
 
 /** Any typed array, such as `Uint8Array` or `Float64Array`. */
 export type TypedArray =

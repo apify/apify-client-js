@@ -34,13 +34,5 @@ export * from './response_validation_error.js';
 export * from './invalid_response_body_error.js';
 export * from './http_clients/index.js';
 export * from './http_compressors/index.js';
-export type {
-    PaginatedList,
-    Dictionary,
-    JsonArray,
-    JsonObject,
-    JsonPrimitive,
-    JsonValue,
-    TypedArray,
-} from './utils.js';
+export type { AnyString, PaginatedList, Dictionary, JsonValue, TypedArray } from './utils.js';
 export type { Timeout, TimeoutOptions, TimeoutTier } from './timeouts.js';
