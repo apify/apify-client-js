@@ -157,8 +157,17 @@ const checks = {
         });
         assert.equal(data.sha256, sha256(Buffer.concat(parts)));
     },
+    'uploads a stream of strings': async () => {
+        const { data } = await call({
+            method: 'PUT',
+            url: `${baseUrl}/echo`,
+            data: Readable.from(['žluťoučký ', 'kůň']),
+            headers: { 'content-type': 'text/plain' },
+        });
+        assert.equal(data.sha256, sha256('žluťoučký kůň'));
+    },
     'downloads a buffer': async () => {
-        const { data } = await call({ url: `${baseUrl}/download`, responseType: 'arraybuffer', forceBuffer: true });
+        const { data } = await call({ url: `${baseUrl}/download`, responseType: 'buffer' });
         assert.equal(sha256(data), sha256(PAYLOAD));
     },
     'downloads a stream': async () => {

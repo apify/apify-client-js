@@ -1,7 +1,9 @@
 import { randomBytes } from 'node:crypto';
+import { createServer as createHttpServer } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { createServer } from 'node:net';
 import os from 'node:os';
+import { Readable } from 'node:stream';
 import { gzipSync } from 'node:zlib';
 
 import type { HttpRequest } from 'apify-client';
@@ -197,6 +199,102 @@ describe('FetchHttpClient', () => {
         const response = await httpClient.call({ url: `${baseUrl}/v2/x`, method: 'GET', timeoutSecs: 0.4 });
 
         expect(response.data).toEqual({ data: { id: 'slow' } });
+    });
+
+    test.each([
+        {
+            name: 'a stream body that keeps being read restarts the timeout',
+            gapMillis: 150,
+            chunks: 6,
+            timesOut: false,
+        },
+        { name: 'a stream body that stalls times out', gapMillis: 900, chunks: 2, timesOut: true },
+    ])('$name', async ({ gapMillis, chunks, timesOut }) => {
+        const body = Readable.from(
+            (async function* () {
+                // The first chunk comes at once, so a stall is one that follows a restart of the timeout.
+                for (let index = 0; index < chunks; index++) {
+                    yield Buffer.from(`chunk ${index}\n`);
+                    await new Promise((done) => setTimeout(done, gapMillis));
+                }
+            })(),
+        );
+
+        // The upload takes 900 ms or more in all, against a timeout of 400 ms.
+        const upload = client
+            .keyValueStore('some-id')
+            .setRecord({ key: 'some-key', value: body, contentType: 'text/plain' }, { timeoutSecs: 0.4 });
+
+        if (timesOut) await expect(upload).rejects.toMatchObject({ name: 'TimeoutError' });
+        else await expect(upload).resolves.toBeUndefined();
+    });
+
+    test('a stream body still being sent does not time out a streamed response', async () => {
+        // Answers at once, echoes the upload and keeps the response open for longer than the timeout.
+        const server = createHttpServer((req, res) => {
+            res.writeHead(200, { 'content-type': 'text/plain' });
+            res.flushHeaders();
+            req.on('data', (chunk) => res.write(chunk));
+            req.on('end', () => setTimeout(() => res.end('done'), 700));
+        }).listen(0);
+        const body = Readable.from(
+            (async function* () {
+                for (let index = 0; index < 3; index++) {
+                    await new Promise((done) => setTimeout(done, 150));
+                    yield Buffer.from(`chunk ${index}\n`);
+                }
+            })(),
+        );
+
+        try {
+            const response = await client.httpClient.call<Readable>({
+                url: `http://127.0.0.1:${(server.address() as AddressInfo).port}`,
+                method: 'PUT',
+                data: body,
+                headers: { 'content-type': 'text/plain' },
+                responseType: 'stream',
+                timeoutSecs: 0.4,
+            });
+
+            const received = Buffer.concat(await response.data.toArray()).toString();
+            expect(received).toBe('chunk 0\nchunk 1\nchunk 2\ndone');
+        } finally {
+            server.close();
+        }
+    });
+
+    test.each([
+        { name: 'in one part', partBytes: 24 * 1024 * 1024 },
+        { name: 'in 64 kB parts', partBytes: 64 * 1024 },
+    ])('a Blob body held in memory $name restarts the timeout while it is sent', async ({ partBytes }) => {
+        const totalBytes = 24 * 1024 * 1024;
+        // Reads the first half at about 8 MB/s, which alone takes three times the timeout.
+        let received = 0;
+        const server = createHttpServer((req, res) => {
+            req.on('data', (chunk: Buffer) => {
+                received += chunk.byteLength;
+                if (received > totalBytes / 2) return;
+                req.pause();
+                setTimeout(() => req.resume(), chunk.byteLength / 8000);
+            });
+            req.on('end', () => res.end());
+        }).listen(0);
+        const parts = Array.from({ length: totalBytes / partBytes }, () => Buffer.alloc(partBytes, 1));
+
+        try {
+            const response = await client.httpClient.call({
+                url: `http://127.0.0.1:${(server.address() as AddressInfo).port}`,
+                method: 'PUT',
+                data: new Blob(parts, { type: 'application/octet-stream' }),
+                timeoutSecs: 0.5,
+            });
+
+            expect(response.status).toBe(200);
+            expect(received).toBe(totalBytes);
+        } finally {
+            server.closeAllConnections();
+            server.close();
+        }
     });
 
     test('sends the requests through the fetch function passed to the client', async () => {

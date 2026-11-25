@@ -16,7 +16,7 @@ export interface FetchHttpClientOptions extends HttpClientOptions {
     /**
      * The `fetch` implementation the requests go through. Pass a wrapper around the global `fetch` to adjust every
      * request, or the `fetch` of another library, such as `undici` with a dispatcher of your own, to control the
-     * connections.
+     * connections. A stream body reaches it as an async iterable of byte chunks, or as the stream itself in Bun.
      * @default globalThis.fetch
      */
     fetch?: FetchFunction;
@@ -46,7 +46,7 @@ const INVALID_REQUEST_ERROR_CODES = new Set([
  * It inherits the request pipeline from {@link HttpClient} and adds the transport. Network errors are retried,
  * timeouts included, and a stream body is sent without following redirects, since the part of it already sent could
  * not be replayed. The timeout of a request runs until the response headers arrive and starts over with every chunk
- * of the body, so a large download does not time out while it makes progress.
+ * of the response body and of a stream body, so a large download or upload does not time out while it makes progress.
  *
  * In Node.js, `fetch` keeps connections alive on its own, and goes through a proxy only when Node.js is told to
  * read the `HTTP_PROXY`, `HTTPS_PROXY` and `NO_PROXY` environment variables: start it with `NODE_USE_ENV_PROXY=1`
@@ -95,9 +95,11 @@ export class FetchHttpClient extends HttpClient {
         // `AbortSignal.timeout()` could neither be restarted nor called off.
         const timeout = new AbortController();
         let timer: ReturnType<typeof setTimeout> | undefined;
+        let settled = false;
         const restartTimeout = () => {
             clearTimeout(timer);
-            if (timeoutMillis === undefined) return;
+            // The transport may still read a stream body after the response arrived.
+            if (timeoutMillis === undefined || settled) return;
             timer = setTimeout(
                 () => timeout.abort(new DOMException(`timeout of ${timeoutMillis}ms exceeded`, 'TimeoutError')),
                 timeoutMillis,
@@ -115,8 +117,8 @@ export class FetchHttpClient extends HttpClient {
             const response = await (this.#fetch ?? globalThis.fetch)(url, {
                 method,
                 headers,
-                // Node.js reads a `Readable` as an async iterable, which the DOM types do not know about.
-                body: body as BodyInit | undefined,
+                // Node.js reads an async iterable, which the DOM types do not know about.
+                body: (isStream(body) && !isBun ? withProgress(body, restartTimeout) : body) as BodyInit | undefined,
                 redirect: followRedirects && !isStream(body) ? 'follow' : 'manual',
                 signal: signal ? AbortSignal.any([signal, timeout.signal]) : timeout.signal,
                 // Required for a stream body, and ignored for any other.
@@ -140,6 +142,7 @@ export class FetchHttpClient extends HttpClient {
             if (!this.#fetch && this.isRetryableTransportError(error)) this.#warnAboutUnusedProxy();
             throw error;
         } finally {
+            settled = true;
             clearTimeout(timer);
         }
     }
@@ -148,6 +151,29 @@ export class FetchHttpClient extends HttpClient {
     #warnAboutUnusedProxy(): void {
         const hint = runtime.unusedProxyHint();
         if (hint) this.logger.warningOnce(hint);
+    }
+}
+
+/** Bun reads a stream body ahead of sending it, so reading it there says nothing about the progress. */
+const isBun = 'Bun' in globalThis;
+
+/** A larger chunk of a stream body is passed on in pieces, since a `Blob` held in memory arrives as a single one. */
+const MAX_BODY_CHUNK_BYTES = 64 * 1024;
+
+/** Passes a stream body on piece by piece, so that a large upload counts as alive for as long as it is being read. */
+async function* withProgress(body: AsyncIterable<unknown>, onChunk: () => void): AsyncGenerator<unknown> {
+    for await (const chunk of body) {
+        // Deno refuses the string chunks of a stream with an encoding.
+        const bytes = typeof chunk === 'string' ? new TextEncoder().encode(chunk) : chunk;
+        if (!(bytes instanceof Uint8Array) || bytes.byteLength <= MAX_BODY_CHUNK_BYTES) {
+            onChunk();
+            yield bytes;
+            continue;
+        }
+        for (let offset = 0; offset < bytes.byteLength; offset += MAX_BODY_CHUNK_BYTES) {
+            onChunk();
+            yield bytes.subarray(offset, offset + MAX_BODY_CHUNK_BYTES);
+        }
     }
 }
 

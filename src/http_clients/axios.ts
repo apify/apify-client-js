@@ -24,11 +24,11 @@ export interface AxiosHttpClientOptions extends HttpClientOptions {
     /** @default [] */
     requestInterceptors?: RequestInterceptorFunction[];
     /**
-     * Agent for plain HTTP requests in Node.js, in place of the built-in keep-alive one. This is where a proxy
-     * agent goes. The client does not destroy an agent it was given.
+     * Agent for plain HTTP requests in Node.js, in place of the built-in keep-alive one. A proxy agent goes here
+     * and in {@link httpsAgent}. The client does not destroy an agent it was given.
      */
     httpAgent?: http.Agent;
-    /** Agent for HTTPS requests in Node.js, in place of the built-in keep-alive one. */
+    /** Agent for HTTPS requests in Node.js, in place of the built-in keep-alive one. Requests to the Apify API use it. */
     httpsAgent?: https.Agent;
 }
 
