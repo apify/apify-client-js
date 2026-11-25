@@ -32,7 +32,7 @@ You configure the default client through the <ApiLink to="class/ApifyClient">`Ap
     {DefaultHttpClientExample}
 </CodeBlock>
 
-Anything beyond those options is configured on a <ApiLink to="class/FetchHttpClient">`FetchHttpClient`</ApiLink> instance that you plug in yourself. Its `fetch` option takes the function the requests go through: a wrapper around the global `fetch` for a header computed per request, or the `fetch` of another library. A stream body reaches that function as an async iterable of byte chunks, or outside Node.js as the web `ReadableStream` it was passed as. Retries, timeouts and compression then live on the HTTP client too:
+Anything beyond those options is configured on a <ApiLink to="class/FetchHttpClient">`FetchHttpClient`</ApiLink> instance that you plug in yourself. Its `fetch` option takes the function the requests go through: a wrapper around the global `fetch` for a header computed per request, or the `fetch` of another library. A stream body reaches that function as an async iterable of byte chunks, or in a browser or an edge runtime as a web `ReadableStream` when it was passed as one. Retries, timeouts and compression then live on the HTTP client too:
 
 <CodeBlock className="language-ts">
     {CustomFetchExample}

@@ -492,11 +492,17 @@ export abstract class HttpClient {
         const { headers, body } = await this.prepareRequest(config);
         const url = this.buildUrl(config.url, config.params);
 
-        return this.#retryWithExpBackoff(
-            async (stopRetrying, attempt) =>
-                this.#makeRequest<T>({ config, url, headers, body, attempt, stopRetrying }),
-            config.signal,
-        );
+        try {
+            return await this.#retryWithExpBackoff(
+                async (stopRetrying, attempt) =>
+                    this.#makeRequest<T>({ config, url, headers, body, attempt, stopRetrying }),
+                config.signal,
+            );
+        } catch (error) {
+            // A transport may leave the `Readable` opened over a web stream unread, and the stream locked for good.
+            if (isWebStream(config.data) && isStream(body)) body.destroy();
+            throw error;
+        }
     }
 
     /**

@@ -52,6 +52,9 @@ export const runtime: Runtime = {
  * never reads the `duplex` option and sends the stream converted to a string, under a text content type.
  */
 function canSendStreamBody(): boolean {
+    // Cloudflare Workers, Deno and Bun stream such a body too, without ever reading `duplex`.
+    if (/^(Cloudflare-Workers$|Deno\/|Bun\/)/.test(globalThis.navigator?.userAgent ?? '')) return true;
+
     let duplexRead = false;
     try {
         const request = new Request('https://api.apify.com', {

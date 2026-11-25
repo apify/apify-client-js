@@ -727,6 +727,27 @@ describe('pluggable HTTP client', () => {
             expect(sendRequest).not.toHaveBeenCalled();
         });
 
+        test.each(builtInClients)(
+            '$name cancels a web stream body when the connection cannot be made',
+            async ({ Client }) => {
+                const closed = http.createServer();
+                await new Promise<void>((done) => closed.listen(0, '127.0.0.1', done));
+                const { port } = closed.address() as AddressInfo;
+                await new Promise((done) => closed.close(done));
+                const cancel = vi.fn();
+                const data = new ReadableStream<Uint8Array>({ cancel });
+
+                const call = new Client({ maxRetries: 0 }).call({
+                    url: `http://127.0.0.1:${port}`,
+                    method: 'PUT',
+                    data,
+                });
+
+                await expect(call).rejects.toThrow();
+                await vi.waitFor(() => expect(cancel).toHaveBeenCalled());
+            },
+        );
+
         test('lets per-request headers override the defaults regardless of casing', async () => {
             const httpClient = new NodeHttpClient({ token: 'default_token', headers: { 'X-Custom': 'default' } });
 

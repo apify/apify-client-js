@@ -63,6 +63,20 @@ describe('AxiosHttpClient', () => {
         await httpClient.close();
     });
 
+    test('sendRequest() sends a web stream body', async () => {
+        const response = await new AxiosHttpClient().sendRequest({
+            method: 'PUT',
+            url: `${baseUrl}/v2/key-value-stores/some-id/records/some-key`,
+            headers: { 'content-type': 'text/plain' },
+            body: new Response('streamed').body!,
+            stream: false,
+            followRedirects: true,
+        });
+
+        expect(response.status).toBe(200);
+        expect(mockServer.getLastRequest()?.body).toBe('streamed');
+    });
+
     test('sendRequest() outside Node.js sends a web stream body through fetch', async () => {
         runtime.isNode = false;
         try {

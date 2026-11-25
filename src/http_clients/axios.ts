@@ -143,8 +143,9 @@ export class AxiosHttpClient extends HttpClient {
     override async sendRequest(request: HttpRequest): Promise<HttpResponse> {
         await this.#ensureHttpAgents();
 
-        const { method, url, headers, body, timeoutMillis, stream, followRedirects, signal } = request;
-        // An XHR cannot send a web stream either, which only reaches the transport outside Node.js.
+        const { method, url, headers, timeoutMillis, stream, followRedirects, signal } = request;
+        // The Node.js adapter of axios refuses a web stream, and an XHR cannot send one either.
+        const body = runtime.isNode && isWebStream(request.body) ? runtime.openStreamBody(request.body) : request.body;
         const useFetch = (!followRedirects || stream || isWebStream(body)) && !runtime.isNode;
 
         // The fetch adapter keeps the axios timeout running until a streamed response is read to its end.

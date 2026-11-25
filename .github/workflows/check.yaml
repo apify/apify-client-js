@@ -129,15 +129,18 @@ jobs:
         name: Smoke test (${{ matrix.runtime }})
         runs-on: ubuntu-latest
 
-        # The unit tests only run in Node.js, while Bun and Deno each ship a `fetch` of their own.
+        # The unit tests only run in Node.js, while Bun, Deno and Cloudflare Workers each ship a `fetch` of their own.
         strategy:
             fail-fast: false
             matrix:
                 include:
                     - runtime: Bun
-                      command: bun
+                      command: bun test/runtimes/smoke.mjs
                     - runtime: Deno
-                      command: deno run --allow-all --node-modules-dir=manual
+                      command: deno run --allow-all --node-modules-dir=manual test/runtimes/smoke.mjs
+                    # Node.js only drives the test here: the client runs in `workerd`, through Miniflare.
+                    - runtime: Cloudflare Workers
+                      command: node test/runtimes/workers.mjs
 
         steps:
             - uses: actions/checkout@v7.0.1
@@ -165,7 +168,7 @@ jobs:
               run: pnpm build:node
 
             - name: Run the smoke test
-              run: ${{ matrix.command }} test/runtimes/smoke.mjs
+              run: ${{ matrix.command }}
 
     lint:
         name: Lint

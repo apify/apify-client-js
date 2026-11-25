@@ -54,4 +54,4 @@ A request body can be a stream too: <ApiLink to="class/KeyValueStoreClient#setRe
 
 A stream can be sent only once, so the client neither retries such a request nor follows a redirect with it. To upload a file with retries, pass a `Blob` instead. For details, see [Retry a request body read from a file](./04_retries.mdx#retry-a-request-body-read-from-a-file).
 
-Node.js, Bun and Deno send a stream of either type. A browser sends a web `ReadableStream` only if it supports streaming request bodies, and only over HTTP/2 or later. In a browser without that support, such as Firefox and Safari, the call throws a `TypeError`, so read the stream into a `Blob` first, for example with `await new Response(stream).blob()`.
+Node.js, Bun and Deno send a stream of either type, and Cloudflare Workers send a web `ReadableStream`. A browser sends a web `ReadableStream` only if it supports streaming request bodies, and only over HTTP/2 or later. In a browser without that support, such as Firefox and Safari, the call throws a `TypeError`, so read the stream into a `Blob` first, for example with `await new Response(stream).blob()`.

@@ -221,6 +221,25 @@ describe('Web API runtime', () => {
         }
     });
 
+    test.each(['Cloudflare-Workers', 'Deno/2.8.0', 'Bun/1.3.3'])(
+        'hands a web stream body over in a runtime that never reads `duplex`: %s',
+        (userAgent) => {
+            vi.stubGlobal('navigator', { userAgent });
+            vi.stubGlobal(
+                'Request',
+                class {
+                    headers = new Headers();
+                },
+            );
+            try {
+                const stream = new Response('streamed').body!;
+                expect(webRuntime.openStreamBody(stream)).toBe(stream);
+            } finally {
+                vi.unstubAllGlobals();
+            }
+        },
+    );
+
     test('hands a Blob body over as it is', () => {
         const blob = new Blob(['blob bytes']);
         expect(webRuntime.openBlobBody(blob, vi.fn())).toBe(blob);

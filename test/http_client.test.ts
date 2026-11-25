@@ -263,6 +263,61 @@ describe('FetchHttpClient', () => {
         expect(fetch.mock.calls[0][1]?.body).toBeInstanceOf(ReadableStream);
     });
 
+    test('sendRequest() cancels a web stream body that fetch refused to send', async () => {
+        const cancel = vi.fn();
+        const body = new ReadableStream<Uint8Array>({ cancel });
+
+        const upload = new FetchHttpClient().sendRequest({
+            method: 'PUT',
+            url: `${baseUrl}/v2/key-value-stores/some-id/records/some-key`,
+            headers: { 'invalid header': 'value' },
+            body,
+            stream: false,
+            followRedirects: true,
+        });
+
+        await expect(upload).rejects.toThrow(TypeError);
+        await vi.waitFor(() => expect(cancel).toHaveBeenCalled());
+    });
+
+    test('sendRequest() with a web stream body of one large chunk stays alive while it uploads', async () => {
+        const size = 32 * 1024 * 1024;
+        let received = 0;
+        // Reads the upload slowly, so that it takes far longer than the timeout.
+        const server = createHttpServer((req, res) => {
+            req.on('data', (chunk: Buffer) => {
+                received += chunk.byteLength;
+                req.pause();
+                setTimeout(() => req.resume(), 5);
+            });
+            req.on('end', () => res.end());
+        });
+        await new Promise<void>((done) => server.listen(0, '127.0.0.1', done));
+        const body = new ReadableStream<Uint8Array>({
+            start(controller) {
+                controller.enqueue(new Uint8Array(size));
+                controller.close();
+            },
+        });
+
+        try {
+            const response = await new FetchHttpClient().sendRequest({
+                method: 'PUT',
+                url: `http://127.0.0.1:${(server.address() as AddressInfo).port}`,
+                headers: { 'content-type': 'application/octet-stream' },
+                body,
+                timeoutMillis: 400,
+                stream: false,
+                followRedirects: true,
+            });
+
+            expect(response.status).toBe(200);
+            expect(received).toBe(size);
+        } finally {
+            server.close();
+        }
+    });
+
     test('a stream body still being sent does not time out a streamed response', async () => {
         // Answers at once, echoes the upload and keeps the response open for longer than the timeout.
         const server = createHttpServer((req, res) => {
