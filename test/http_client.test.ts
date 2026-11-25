@@ -255,6 +255,21 @@ describe('FetchHttpClient', () => {
         expect(sendRequest).toHaveBeenCalledTimes(1);
     });
 
+    test('does not retry an invalid URL where fetch reports it like a network failure', async () => {
+        // Browsers and Deno.
+        const fetch = vi.fn(async () => Promise.reject(new TypeError('Failed to fetch')));
+        const httpClient = new FetchHttpClient({ fetch, minDelayBetweenRetriesMillis: 1 });
+        const sendRequest = vi.spyOn(httpClient, 'sendRequest');
+        runtime.fetchFailsWithCause = false;
+        try {
+            await expect(httpClient.call({ url: 'http://', method: 'GET' })).rejects.toThrow('Invalid URL: http://');
+        } finally {
+            runtime.fetchFailsWithCause = true;
+        }
+        expect(sendRequest).toHaveBeenCalledTimes(1);
+        expect(fetch).not.toHaveBeenCalled();
+    });
+
     test('hands back every Set-Cookie header of the response', async () => {
         const headers = new Headers([
             ['set-cookie', 'a=1; Expires=Wed, 21 Oct 2026 07:28:00 GMT'],

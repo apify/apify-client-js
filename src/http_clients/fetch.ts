@@ -106,6 +106,12 @@ export class FetchHttpClient extends HttpClient {
         restartTimeout();
 
         try {
+            // Browsers and Deno reject an invalid URL with the same bare `TypeError` as a network failure.
+            const baseUrl = (globalThis as { location?: { href?: string } }).location?.href;
+            if (!runtime.fetchFailsWithCause && !URL.canParse(url, baseUrl)) {
+                throw Object.assign(new TypeError(`Invalid URL: ${url}`), { code: 'ERR_INVALID_URL' });
+            }
+
             const response = await (this.#fetch ?? globalThis.fetch)(url, {
                 method,
                 headers,
