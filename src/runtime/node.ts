@@ -60,9 +60,8 @@ export const runtime: Runtime = {
         return { httpAgent: new http.Agent(agentOptions), httpsAgent: new https.Agent(agentOptions) };
     },
 
-    readableFromWeb(body) {
-        if (!body) return Readable.from([]);
-        return Readable.fromWeb(body as Parameters<typeof Readable.fromWeb>[0]);
+    streamToWeb(stream) {
+        return Readable.toWeb(stream) as ReadableStream<Uint8Array>;
     },
 
     unusedProxyHint() {

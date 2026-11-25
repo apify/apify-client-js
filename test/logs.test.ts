@@ -1,5 +1,4 @@
 import type { AddressInfo } from 'node:net';
-import { Readable } from 'node:stream';
 
 import log, { Log } from '@apify/log';
 
@@ -70,17 +69,17 @@ describe('Log methods', () => {
             const logId = 'some-id';
 
             const res = await client.log(logId).get({ buffer: true });
-            expectTypeOf(res).toEqualTypeOf<Buffer | undefined>();
+            expectTypeOf(res).toEqualTypeOf<Uint8Array | undefined>();
             expectTypeOf(() => client.log(logId).get()).returns.resolves.toEqualTypeOf<string | undefined>();
             expect(res).toBeInstanceOf(Buffer);
-            expect(res!.toString()).toBe('get-log');
+            expect(new TextDecoder().decode(res)).toBe('get-log');
             validateRequest({ query: {}, params: { logId } });
 
             const browserRes = await page.evaluate(async (id) => {
                 const buffer = await client.log(id).get({ buffer: true });
-                return { isArrayBuffer: buffer instanceof ArrayBuffer, text: new TextDecoder().decode(buffer) };
+                return { isUint8Array: buffer instanceof Uint8Array, text: new TextDecoder().decode(buffer) };
             }, logId);
-            expect(browserRes).toEqual({ isArrayBuffer: true, text: 'get-log' });
+            expect(browserRes).toEqual({ isUint8Array: true, text: 'get-log' });
             validateRequest({ query: {}, params: { logId } });
         });
 
@@ -106,17 +105,16 @@ describe('Log methods', () => {
             const logId = 'some-id';
 
             const res = await client.log(logId).stream();
-            const chunks = [];
+            expectTypeOf(res).toEqualTypeOf<ReadableStream<Uint8Array> | undefined>();
+            expect(res).toBeInstanceOf(ReadableStream);
+            expect(await new Response(res).text()).toBe('get-log');
+            validateRequest({ query: { stream: true }, params: { logId } });
 
-            if (!res) {
-                throw new Error('Expected stream to be defined');
-            }
-
-            for await (const chunk of res) {
-                chunks.push(chunk);
-            }
-            const id = Buffer.concat(chunks).toString();
-            expect(id).toBe('get-log');
+            const browserRes = await page.evaluate(async (id) => {
+                const stream = await client.log(id).stream();
+                return { isWebStream: stream instanceof ReadableStream, text: await new Response(stream).text() };
+            }, logId);
+            expect(browserRes).toEqual({ isWebStream: true, text: 'get-log' });
             validateRequest({ query: { stream: true }, params: { logId } });
         });
 
@@ -126,6 +124,9 @@ describe('Log methods', () => {
             const res = await client.log(logId).stream();
             expect(res).toBeUndefined();
             validateRequest({ query: { stream: true }, params: { logId } });
+
+            const browserRes = await page.evaluate((id) => client.log(id).stream(), logId);
+            expect(browserRes).toBeUndefined();
         });
     });
 });
@@ -135,10 +136,34 @@ test('StreamedLog redirects the whole log when stop() lands while an empty log s
     const { promise: reopenedStreamGate, resolve: openReopenedStream } = Promise.withResolvers<void>();
     const stream = vi
         .fn()
-        .mockResolvedValueOnce(Readable.from([]))
+        .mockResolvedValueOnce(new Blob([]).stream())
         .mockImplementationOnce(async () => {
             await reopenedStreamGate;
-            return Readable.from(lines.map((line) => Buffer.from(line)));
+            return new Blob(lines).stream();
+        });
+    const logClient = { stream, get: vi.fn().mockResolvedValue(lines.join('')) } as unknown as LogClient;
+    const toLog = new Log();
+    const info = vi.spyOn(toLog, 'info').mockImplementation(() => {});
+
+    const streamedLog = new StreamedLog({ toLog, logClient });
+    streamedLog.start();
+    await vi.waitFor(() => expect(stream).toHaveBeenCalledTimes(2), { timeout: 5_000 });
+    const stopping = streamedLog.stop();
+    openReopenedStream();
+    await stopping;
+
+    expect(info.mock.calls).toEqual(lines.map((line) => [line.trim()]));
+});
+
+test('StreamedLog redirects the whole log when the stream opened during stop() has already failed', async () => {
+    const lines = [0, 1, 2].map((i) => `2025-01-01T00:00:0${i}.000Z line ${i}\n`);
+    const { promise: reopenedStreamGate, resolve: openReopenedStream } = Promise.withResolvers<void>();
+    const stream = vi
+        .fn()
+        .mockResolvedValueOnce(new Blob([]).stream())
+        .mockImplementationOnce(async () => {
+            await reopenedStreamGate;
+            return new ReadableStream({ start: (controller) => controller.error(new Error('socket hang up')) });
         });
     const logClient = { stream, get: vi.fn().mockResolvedValue(lines.join('')) } as unknown as LogClient;
     const toLog = new Log();
@@ -161,7 +186,7 @@ test('StreamedLog doubles the pause between empty log streams up to its cap', as
         const stream = vi.fn().mockImplementation(async () => {
             streamTimes.push(Date.now());
             const chunks = streamTimes.length <= 6 ? [] : [Buffer.from('2025-01-01T00:00:00.000Z line\n')];
-            return Readable.from(chunks);
+            return new Blob(chunks).stream();
         });
         const logClient = { stream, get: vi.fn() } as unknown as LogClient;
         const toLog = new Log();
@@ -213,7 +238,7 @@ test('StreamedLog neither reopens nor reads a log that does not exist', async ()
 });
 
 test('StreamedLog reports a failing one-shot log read and still stops', async () => {
-    const stream = vi.fn().mockImplementation(async () => Readable.from([]));
+    const stream = vi.fn().mockImplementation(async () => new Blob([]).stream());
     const get = vi.fn().mockRejectedValue(new Error('Simulated log read failure'));
     const logClient = { stream, get } as unknown as LogClient;
     const warning = vi.spyOn(log, 'warning').mockImplementation(() => {});

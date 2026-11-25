@@ -247,7 +247,7 @@ describe('FetchHttpClient', () => {
         );
 
         try {
-            const response = await client.httpClient.call<Readable>({
+            const response = await client.httpClient.call<ReadableStream<Uint8Array>>({
                 url: `http://127.0.0.1:${(server.address() as AddressInfo).port}`,
                 method: 'PUT',
                 data: body,
@@ -256,7 +256,7 @@ describe('FetchHttpClient', () => {
                 timeoutSecs: 0.4,
             });
 
-            const received = Buffer.concat(await response.data.toArray()).toString();
+            const received = await new Response(response.data).text();
             expect(received).toBe('chunk 0\nchunk 1\nchunk 2\ndone');
         } finally {
             server.close();

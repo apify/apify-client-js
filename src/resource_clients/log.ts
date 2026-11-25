@@ -1,6 +1,3 @@
-// eslint-disable-next-line max-classes-per-file
-import type { Readable } from 'node:stream';
-
 import c from 'ansi-colors';
 import { z } from 'zod';
 
@@ -70,13 +67,13 @@ export class LogClient extends ResourceClient {
     /**
      * Retrieves the log as a string.
      *
-     * The `buffer` option only selects the return type: the bytes come back as a Buffer (Node.js) or ArrayBuffer
-     * (browser), not decoded to a string. Either way the whole log is downloaded in one response; to read it
-     * incrementally, use {@link LogClient.stream}.
+     * The `buffer` option only selects the return type: the bytes come back as a Uint8Array, not decoded to a
+     * string. Either way the whole log is downloaded in one response; to read it incrementally, use
+     * {@link LogClient.stream}.
      *
      * @param options - Log retrieval options.
      * @param options.raw - If `true`, returns raw log content without any processing. Default is `false`.
-     * @param options.buffer - If `true`, the log is returned as a Buffer (Node.js) or ArrayBuffer (browser) instead of a
+     * @param options.buffer - If `true`, the log is returned as a Uint8Array instead of a
      * string. It does not change how the log is fetched.
      * @param options.timeoutSecs - Timeout for the API request. Default is `'long'`.
      * @returns The log content, or `undefined` if it does not exist. A chained client such as `run.log()` throws an
@@ -85,11 +82,11 @@ export class LogClient extends ResourceClient {
      */
     async get(options?: LogGetOptions & { buffer?: false }): Promise<string | undefined>;
 
-    async get(options: LogGetOptions & { buffer: true }): Promise<Buffer | undefined>;
+    async get(options: LogGetOptions & { buffer: true }): Promise<Uint8Array | undefined>;
 
-    async get(options?: LogGetOptions): Promise<string | Buffer | undefined>;
+    async get(options?: LogGetOptions): Promise<string | Uint8Array | undefined>;
 
-    async get(options: LogGetOptions = {}): Promise<string | Buffer | undefined> {
+    async get(options: LogGetOptions = {}): Promise<string | Uint8Array | undefined> {
         const {
             timeoutSecs = 'long',
             signal,
@@ -118,16 +115,16 @@ export class LogClient extends ResourceClient {
     }
 
     /**
-     * Retrieves the log as a Readable stream. Only works in Node.js.
+     * Retrieves the log as a web ReadableStream of Uint8Array chunks.
      *
      * @param options - Log retrieval options.
      * @param options.raw - If `true`, returns raw log content without any processing. Default is `false`.
      * @param options.timeoutSecs - Timeout for the API request. Default is `'long'`.
-     * @returns The log content as a Readable stream, or `undefined` if it does not exist. A chained client such as
+     * @returns The log content as a web ReadableStream, or `undefined` if it does not exist. A chained client such as
      * `run.log()` throws an `ApifyApiError` on a 404, since the run itself may be what is missing.
      * @see https://docs.apify.com/api/v2/log-get
      */
-    async stream(options: LogOptions = {}): Promise<Readable | undefined> {
+    async stream(options: LogOptions = {}): Promise<ReadableStream<Uint8Array> | undefined> {
         const { timeoutSecs = 'long', signal, raw } = parseArgument(options, logOptionsSchema, 'LogOptions');
 
         const params = {
@@ -168,7 +165,7 @@ export interface LogOptions extends TimeoutOptions {
  */
 export interface LogGetOptions extends LogOptions {
     /**
-     * If `true`, the log is returned as a Buffer (Node.js) or ArrayBuffer (browser) instead of a string. It only selects
+     * If `true`, the log is returned as a Uint8Array instead of a string. It only selects
      * the return type; to read the log incrementally, use {@link LogClient.stream}.
      * @default false
      */
@@ -293,7 +290,7 @@ export class StreamedLog {
                     );
                     break;
                 }
-                let logStream: Readable | undefined;
+                let logStream: ReadableStream<Uint8Array> | undefined;
                 try {
                     logStream = await this.#logClient.stream({ raw: true, signal });
                 } catch (err) {
@@ -306,7 +303,8 @@ export class StreamedLog {
                 }
                 // A stream opened during stop() would be cut after its first chunk, so read the log in one request.
                 if (this.#stopLogging) {
-                    logStream.destroy();
+                    // Cancelling a stream that has already failed rejects with its error.
+                    await logStream.cancel().catch(() => {});
                     continue;
                 }
                 lastChunkRemainder = await this.#logStreamChunks(logStream, signal);

@@ -23,8 +23,8 @@ export const runtime: Runtime = {
         return undefined;
     },
 
-    readableFromWeb(): never {
-        throw new Error('Streamed responses are only available in Node.js.');
+    streamToWeb(): never {
+        throw new Error('A Readable stream is only available in Node.js.');
     },
 
     // A browser applies the proxy settings of the system on its own.

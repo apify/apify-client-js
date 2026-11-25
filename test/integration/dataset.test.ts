@@ -403,13 +403,13 @@ describe('downloadItems()', () => {
             expect(downloaded.length).toBeGreaterThan(0);
 
             if (format === DownloadItemsFormat.JSON) {
-                expect(JSON.parse(downloaded.toString('utf8'))).toEqual(items);
+                expect(JSON.parse(new TextDecoder().decode(downloaded))).toEqual(items);
             } else if (format === DownloadItemsFormat.XLSX) {
                 // XLSX is a zip container, which always starts with the `PK` local file header.
-                expect(downloaded.subarray(0, 2).toString('latin1')).toBe('PK');
+                expect(new TextDecoder().decode(downloaded.subarray(0, 2))).toBe('PK');
             } else {
                 // Every text format embeds the field values somewhere in its output.
-                const decoded = downloaded.toString('utf8');
+                const decoded = new TextDecoder().decode(downloaded);
                 expect(decoded).toContain('first');
                 expect(decoded).toContain('second');
             }
@@ -432,12 +432,7 @@ test('downloadItems() with stream yields the serialized items as a readable stre
         await waitForItemCount(createdDataset.id, 2);
 
         const stream = await datasetClient.downloadItems(DownloadItemsFormat.JSONL, { stream: true });
-        const chunks: Buffer[] = [];
-        for await (const chunk of stream) {
-            chunks.push(chunk);
-        }
-
-        const lines = Buffer.concat(chunks).toString('utf8').trim().split('\n');
+        const lines = (await new Response(stream).text()).trim().split('\n');
         expect(lines.map((line) => JSON.parse(line))).toEqual(items);
     } finally {
         await datasetClient.delete();

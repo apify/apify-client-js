@@ -32,7 +32,7 @@ export interface Runtime {
     /**
      * Whether the Node.js implementation was selected, which the `node` condition settles when `#runtime` is
      * resolved - so a Node.js application bundled for a browser or a neutral target reports `false`. Log
-     * streaming, the `stream` record option and request body compression are gated on it.
+     * redirection and request body compression are gated on it.
      */
     isNode: boolean;
     /**
@@ -57,10 +57,10 @@ export interface Runtime {
      */
     createHttpAgents(options: { timeoutMillis: number }): Promise<HttpAgents | undefined>;
     /**
-     * Wraps the body of a `fetch` response in a `Readable`, an empty one for a response without a body. Throws
-     * where the runtime has no `Readable`, since streamed responses are a Node.js feature.
+     * Turns the `Readable` a transport returned for a streamed response into the web stream the callers get.
+     * Throws where the runtime has no `Readable`, since no transport can return one there.
      */
-    readableFromWeb(body: ReadableStream<Uint8Array> | null): Readable;
+    streamToWeb(stream: Readable): ReadableStream<Uint8Array>;
     /**
      * Explains how to make `fetch` use the proxy named in the environment variables, or returns `undefined` when
      * none is set, the runtime already honors them, or it has no environment to read.

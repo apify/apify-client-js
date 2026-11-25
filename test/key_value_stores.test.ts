@@ -370,28 +370,24 @@ describe('Key-Value Store methods', () => {
 
             const res = await client.keyValueStore(storeId).getRecord(key, options);
 
-            expect(res?.value).toBeInstanceOf(Readable);
-            const chunks: Buffer[] = [];
-            for await (const chunk of res!.value as unknown as Readable) {
-                chunks.push(chunk);
-            }
-            res!.value = Buffer.concat(chunks).toString();
+            expect(res?.value).toBeInstanceOf(ReadableStream);
+            res!.value = await new Response(res!.value as unknown as ReadableStream).text();
             expect(res).toEqual(expectedResult);
             validateRequest({ query: { attachment: 'true' }, params: { storeId, key } });
 
-            try {
-                await page.evaluate(
-                    async (id, k, opts) => {
-                        return client.keyValueStore(id).getRecord(k, opts);
-                    },
-                    storeId,
-                    key,
-                    options,
-                );
-                throw new Error('wrong error');
-            } catch (err: any) {
-                expect(err.message).toMatch('The stream option can only be used in Node.js environment.');
-            }
+            const browserRes = await page.evaluate(
+                async (id, k, opts) => {
+                    const record = await client.keyValueStore(id).getRecord(k, opts);
+                    const stream = record!.value as unknown as ReadableStream;
+                    const isWebStream = stream instanceof ReadableStream;
+                    return { ...record, isWebStream, value: await new Response(stream).text() };
+                },
+                storeId,
+                key,
+                options,
+            );
+            expect(browserRes).toEqual({ ...expectedResult, isWebStream: true });
+            validateRequest({ query: { attachment: 'true' }, params: { storeId, key } });
         });
 
         test('getRecord() correctly passes signature', async () => {
@@ -485,6 +481,18 @@ describe('Key-Value Store methods', () => {
             await expect(call).rejects.toThrow(ArgumentValidationError);
             await expect(call).rejects.toThrow('Expected a JSON-serializable value, binary data, or a stream');
         });
+
+        test.each([undefined, 'application/json', 'application/octet-stream'])(
+            'setRecord() rejects a web stream with content type %s',
+            async (contentType) => {
+                const requests = mockServer.requests.length;
+                const value = new Response('streamed').body as any;
+                const call = client.keyValueStore('some-id').setRecord({ key: 'some-key', value, contentType });
+
+                await expect(call).rejects.toThrow('A web ReadableStream cannot be stored as a record value');
+                expect(mockServer.requests.length).toBe(requests);
+            },
+        );
 
         test('setRecord() works with custom timeout options', async () => {
             const key = 'some-key';

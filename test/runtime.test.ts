@@ -61,11 +61,14 @@ describe('Node.js runtime', () => {
         agents!.httpsAgent.destroy();
     });
 
-    test('wraps the body of a fetch response in a Readable', async () => {
-        const body = nodeRuntime.readableFromWeb(new Response('streamed').body);
-        expect(body).toBeInstanceOf(Readable);
-        expect(Buffer.concat(await body.toArray()).toString()).toBe('streamed');
-        expect(await nodeRuntime.readableFromWeb(null).toArray()).toEqual([]);
+    test('turns a Readable into a web stream that destroys it when cancelled', async () => {
+        const stream = nodeRuntime.streamToWeb(Readable.from([Buffer.from('streamed')]));
+        expect(stream).toBeInstanceOf(ReadableStream);
+        expect(await new Response(stream).text()).toBe('streamed');
+
+        const readable = Readable.from([Buffer.from('unread')]);
+        await nodeRuntime.streamToWeb(readable).cancel();
+        expect(readable.destroyed).toBe(true);
     });
 
     describe('unusedProxyHint()', () => {
@@ -181,6 +184,7 @@ describe('Web API runtime', () => {
             'only available in Node.js',
         );
         await expect(webRuntime.createHttpAgents({ timeoutMillis: 1000 })).resolves.toBeUndefined();
+        expect(() => webRuntime.streamToWeb(Readable.from([]))).toThrow('only available in Node.js');
     });
 
     test('hands a Blob body over as it is', () => {

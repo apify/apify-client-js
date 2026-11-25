@@ -1,5 +1,4 @@
 import { Readable } from 'node:stream';
-import type { ReadableStream as NodeReadableStream } from 'node:stream/web';
 
 import { ApifyClient, HttpClient } from 'apify-client';
 import type { HttpRequest, HttpResponse } from 'apify-client';
@@ -26,10 +25,7 @@ class MyFetchHttpClient extends HttpClient {
         return {
             status: response.status,
             headers: Object.fromEntries(response.headers),
-            body:
-                stream && response.body
-                    ? Readable.fromWeb(response.body as NodeReadableStream)
-                    : Buffer.from(await response.arrayBuffer()),
+            body: stream && response.body ? response.body : await response.arrayBuffer(),
         };
     }
 

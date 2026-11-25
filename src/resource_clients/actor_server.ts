@@ -1,5 +1,3 @@
-import type { Readable } from 'node:stream';
-
 import { z } from 'zod';
 
 import { ApifyClientError } from '../apify_client_error.js';
@@ -14,7 +12,6 @@ import type { ActorResource } from '../models.js';
 import type { TimeoutOptions } from '../timeouts.js';
 import * as schemas from '../schemas.js';
 import { timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
-import { runtime } from '#runtime';
 import { parseArgument, parseResponse } from '../utils.js';
 import { BuildClient } from './build.js';
 import { BuildCollectionClient } from './build_collection.js';
@@ -204,8 +201,8 @@ export class ActorServerClient extends ResourceClient {
      * The body is compressed under the same conditions as for API calls. Set it only if the Actor's server decodes
      * the resulting `Content-Encoding`.
      * @param options.responseType - How to return the response body: `'parsed'` by its content type, `'buffer'` as
-     * raw bytes, or `'stream'` as a Readable stream with the body unread. A stream holds its connection open until
-     * you consume it to the end or destroy it. Node.js only. Default is `'parsed'`.
+     * raw bytes in a Uint8Array, or `'stream'` as a web ReadableStream with the body unread. A stream holds its
+     * connection open until you consume it to the end or cancel it. Default is `'parsed'`.
      * @param options.timeoutSecs - Timeout for the HTTP request. Default is `'long'`. With `'stream'`, it bounds the
      * wait for the server to start responding.
      * @returns The response of the Actor's server, with the body in the form `responseType` asks for. An error
@@ -224,12 +221,12 @@ export class ActorServerClient extends ResourceClient {
     async request(
         path: string,
         options: ActorServerRequestOptions & { responseType: 'buffer' },
-    ): Promise<ApifyResponse<Buffer>>;
+    ): Promise<ApifyResponse<Uint8Array>>;
 
     async request(
         path: string,
         options: ActorServerRequestOptions & { responseType: 'stream' },
-    ): Promise<ApifyResponse<Readable>>;
+    ): Promise<ApifyResponse<ReadableStream<Uint8Array>>>;
 
     async request(path?: string, options?: ActorServerRequestOptions): Promise<ApifyResponse>;
 
@@ -246,10 +243,6 @@ export class ActorServerClient extends ResourceClient {
             timeoutSecs = 'long',
             signal,
         } = parseArgument(options, requestOptionsSchema, 'ActorServerRequestOptions');
-
-        if (responseType === 'stream' && !runtime.isNode) {
-            throw new Error("The 'stream' response type can only be used in Node.js environment.");
-        }
 
         const serverUrl = await this.getUrl({ signal });
         const serverPath = path.split('#')[0].replace(/^\/+/, '');
@@ -324,8 +317,8 @@ export interface ActorServerRequestOptions extends TimeoutOptions {
      */
     compression?: HttpCompressionAlgorithm | HttpCompressor;
     /**
-     * How to return the response body: `'parsed'` by its content type, `'buffer'` as raw bytes, or `'stream'` as a
-     * Readable stream with the body unread. Node.js only.
+     * How to return the response body: `'parsed'` by its content type, `'buffer'` as raw bytes in a Uint8Array, or
+     * `'stream'` as a web ReadableStream with the body unread.
      * @default 'parsed'
      */
     responseType?: ApifyResponseType;
