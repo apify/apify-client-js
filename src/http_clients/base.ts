@@ -25,6 +25,7 @@ import { runtime } from '#runtime';
 import {
     asArray,
     getEnv,
+    isAnyStream,
     isBlob,
     isBuffer,
     isCompressibleContentType,
@@ -66,7 +67,7 @@ export const httpClientOptionsShape = {
 const httpClientOptionsSchema = z.looseObject(httpClientOptionsShape).partial();
 
 /** Objects whose payload does not live in their own enumerable keys, so JSON serialization loses it. */
-const UNSERIALIZABLE_OBJECT_TAGS = new Set(['FormData', 'ReadableStream']);
+const UNSERIALIZABLE_OBJECT_TAGS = new Set(['FormData']);
 
 /**
  * Response headers keyed by lowercase header name. A header the server sent more than once may arrive as an array.
@@ -77,8 +78,17 @@ export type HttpResponseHeaders = Record<string, string | string[] | undefined>;
  * A request body as the transport receives it: already serialized, and compressed when that paid off. A `Readable`
  * is passed through untouched and is only available in Node.js. A `Blob` body reaches a Node.js transport as a
  * fresh `Readable` over its bytes for every attempt, and a transport in any other runtime as the `Blob` itself.
+ * A web `ReadableStream` body reaches a Node.js transport as a `Readable` too, and a transport in any other
+ * runtime as the stream itself.
  */
-export type HttpRequestBody = string | Buffer | ArrayBuffer | ArrayBufferView | Readable | Blob;
+export type HttpRequestBody =
+    | string
+    | Buffer
+    | ArrayBuffer
+    | ArrayBufferView
+    | Readable
+    | ReadableStream<Uint8Array>
+    | Blob;
 
 /**
  * A response body as the transport hands it back: the raw bytes, a web `ReadableStream` or a `Readable` when the
@@ -116,10 +126,11 @@ export interface ApifyRequestConfig {
     /**
      * Request body. A plain object or array is serialized to JSON and sent as `application/json`, or form-encoded
      * when a `Content-Type: application/x-www-form-urlencoded` header asks for it. A string, binary value
-     * (`Buffer`, `ArrayBuffer`, typed array) or `Readable` is sent as it is, and `URLSearchParams` is sent
-     * form-encoded. A `Blob` or `File`, such as one from `fs.openAsBlob()`, is streamed without being held in
-     * memory, under its own `type` when no `Content-Type` header is set. A `FormData` or web `ReadableStream` is
-     * rejected with a `TypeError`, since serializing one would send an empty body.
+     * (`Buffer`, `ArrayBuffer`, typed array) or stream (`Readable`, web `ReadableStream`) is sent as it is, and
+     * `URLSearchParams` is sent form-encoded. A `Blob` or `File`, such as one from `fs.openAsBlob()`, is streamed
+     * without being held in memory, under its own `type` when no `Content-Type` header is set. A `FormData` is
+     * rejected with a `TypeError`, since serializing one would send an empty body, and so is a web `ReadableStream`
+     * in a browser that cannot send one.
      */
     data?: unknown;
     /**
@@ -462,11 +473,11 @@ export abstract class HttpClient {
      * Network errors the transport classifies as retryable, rate limits (HTTP 429) and server errors (HTTP 5xx)
      * are retried up to {@link maxRetries} times, and `config.retryStatusCodes` picks other statuses to retry. Any
      * other error status is thrown as {@link ApifyApiError} right away, or returned when `config.throwOnErrorStatus`
-     * is `false`. A request whose body is a `Readable` is never retried, since part of the stream has already been
-     * consumed by the time the failure shows. A `Blob` body is read again for every attempt, so it is retried like
-     * any other, unless reading the blob itself fails: that error is thrown right away, with the transport error
-     * as its `cause` when that error does not already wrap it. Aborting `config.signal` ends the attempt in flight,
-     * skips the remaining retries and rejects the call with the signal's `reason`.
+     * is `false`. A request whose body is a `Readable` or a web `ReadableStream` is never retried, since part of the
+     * stream has already been consumed by the time the failure shows. A `Blob` body is read again for every attempt,
+     * so it is retried like any other, unless reading the blob itself fails: that error is thrown right away, with
+     * the transport error as its `cause` when that error does not already wrap it. Aborting `config.signal` ends the
+     * attempt in flight, skips the remaining retries and rejects the call with the signal's `reason`.
      *
      * @template T - Type of the parsed response body.
      * @param config - The request to make.
@@ -624,7 +635,7 @@ export abstract class HttpClient {
         const { config, url, headers, body, attempt, stopRetrying } = options;
         this.stats.requests++;
 
-        const requestIsStream = isStream(config.data);
+        const requestIsStream = isAnyStream(config.data);
 
         // The transport reports a failure of the blob as an error of its own, which may pass as transient.
         let sourceFailure: { error: unknown } | undefined;
@@ -755,7 +766,7 @@ export abstract class HttpClient {
             return;
         }
 
-        if (isStream(config.data)) {
+        if (isAnyStream(config.data)) {
             this.#informAboutStreamNoRetry();
             stopRetrying();
         }
@@ -900,6 +911,7 @@ function serializeBody(
 ): HttpRequestBody | undefined {
     if (data === undefined || data === null) return undefined;
     if (isStream(data)) return data;
+    if (isWebStream(data)) return runtime.openStreamBody(data);
 
     if (isBlob(data)) {
         if (getHeader(headers, 'content-type') === undefined && data.type) headers['Content-Type'] = data.type;

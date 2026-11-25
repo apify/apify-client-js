@@ -202,15 +202,12 @@ describe('FetchHttpClient', () => {
     });
 
     test.each([
-        {
-            name: 'a stream body that keeps being read restarts the timeout',
-            gapMillis: 150,
-            chunks: 6,
-            timesOut: false,
-        },
+        { name: 'a stream body that keeps being read restarts the timeout', gapMillis: 150, chunks: 6 },
         { name: 'a stream body that stalls times out', gapMillis: 900, chunks: 2, timesOut: true },
-    ])('$name', async ({ gapMillis, chunks, timesOut }) => {
-        const body = Readable.from(
+        { name: 'a web stream body that keeps being read restarts the timeout', gapMillis: 150, chunks: 6, web: true },
+        { name: 'a web stream body that stalls times out', gapMillis: 900, chunks: 2, timesOut: true, web: true },
+    ])('$name', async ({ gapMillis, chunks, timesOut, web }) => {
+        const readable = Readable.from(
             (async function* () {
                 // The first chunk comes at once, so a stall is one that follows a restart of the timeout.
                 for (let index = 0; index < chunks; index++) {
@@ -219,6 +216,7 @@ describe('FetchHttpClient', () => {
                 }
             })(),
         );
+        const body = web ? (Readable.toWeb(readable) as ReadableStream<Uint8Array>) : readable;
 
         // The upload takes 900 ms or more in all, against a timeout of 400 ms.
         const upload = client
@@ -227,6 +225,42 @@ describe('FetchHttpClient', () => {
 
         if (timesOut) await expect(upload).rejects.toMatchObject({ name: 'TimeoutError' });
         else await expect(upload).resolves.toBeUndefined();
+    });
+
+    test.each([
+        { name: 'keeps being read restarts the timeout', gapMillis: 150, chunks: 6 },
+        { name: 'stalls times out', gapMillis: 900, chunks: 2, timesOut: true },
+    ])('sendRequest() with a web stream body that $name', async ({ gapMillis, chunks, timesOut }) => {
+        const sent: string[] = [];
+        const body = new ReadableStream<Uint8Array>({
+            async pull(controller) {
+                if (sent.length === chunks) return controller.close();
+                // The first chunk comes at once, so a stall is one that follows a restart of the timeout.
+                if (sent.length > 0) await new Promise((done) => setTimeout(done, gapMillis));
+                sent.push(`chunk ${sent.length}\n`);
+                controller.enqueue(new TextEncoder().encode(sent.at(-1)));
+            },
+        });
+        const fetch = vi.fn(globalThis.fetch);
+
+        const upload = new FetchHttpClient({ fetch }).sendRequest({
+            method: 'PUT',
+            url: `${baseUrl}/v2/key-value-stores/some-id/records/some-key`,
+            headers: { 'content-type': 'text/plain' },
+            body,
+            timeoutMillis: 400,
+            stream: false,
+            followRedirects: true,
+        });
+
+        if (timesOut) {
+            await expect(upload).rejects.toMatchObject({ name: 'TimeoutError' });
+        } else {
+            await expect(upload).resolves.toMatchObject({ status: 200 });
+            expect(mockServer.getLastRequest()?.body).toBe(sent.join(''));
+        }
+        expect(fetch.mock.calls[0][1]).toMatchObject({ duplex: 'half', redirect: 'manual' });
+        expect(fetch.mock.calls[0][1]?.body).toBeInstanceOf(ReadableStream);
     });
 
     test('a stream body still being sent does not time out a streamed response', async () => {

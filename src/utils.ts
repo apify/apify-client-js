@@ -278,7 +278,8 @@ function isTagged(value: unknown, tag: string): boolean {
 }
 
 /**
- * Whether a value is a web `ReadableStream`, which is what the callers get for a streamed response.
+ * Whether a value is a web `ReadableStream`, which is what the callers get for a streamed response and may pass
+ * on as a request body.
  */
 export function isWebStream(value: unknown): value is ReadableStream<Uint8Array> {
     return isTagged(value, 'ReadableStream');
@@ -288,6 +289,13 @@ export function isStream(value: unknown): value is Readable {
     if (value === null || typeof value !== 'object') return false;
     const { on, pipe } = value as Partial<Readable>;
     return typeof on === 'function' && typeof pipe === 'function';
+}
+
+/**
+ * Whether a value is a stream of either kind, which a request can send only once.
+ */
+export function isAnyStream(value: unknown): value is Readable | ReadableStream<Uint8Array> {
+    return isStream(value) || isWebStream(value);
 }
 
 /**

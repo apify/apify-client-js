@@ -684,17 +684,47 @@ describe('pluggable HTTP client', () => {
             expect(received[0].body).toBe('a=1&b=two+words');
         });
 
-        test.each([
-            { name: 'a FormData', data: new FormData() },
-            { name: 'a ReadableStream', data: new ReadableStream() },
-        ])('throws instead of sending $name as an empty JSON body', async ({ data }) => {
+        test('throws instead of sending a FormData as an empty JSON body', async () => {
             const httpClient = new NodeHttpClient();
+
+            const call = httpClient.call({ url: `${baseUrl}/echo`, method: 'POST', data: new FormData() });
+
+            await expect(call).rejects.toThrow(TypeError);
+            await expect(call).rejects.toThrow('Unsupported request body type: FormData');
+            expect(received).toHaveLength(0);
+        });
+
+        test('hands a web stream body to a Node.js transport as a Readable, untouched', async () => {
+            const httpClient = new RetryingHttpClient();
+            const requests: HttpRequest[] = [];
+            const bodies: string[] = [];
+            vi.spyOn(httpClient, 'sendRequest').mockImplementation(async (request) => {
+                requests.push(request);
+                bodies.push(Buffer.concat(await (request.body as Readable).toArray()).toString('utf8'));
+                return okResponse();
+            });
+            // Large enough to be compressed, if it were not a stream.
+            const text = 'streamed '.repeat(1000);
+
+            await httpClient.call({ url: `${baseUrl}/echo`, method: 'POST', data: new Response(text).body });
+
+            expect(requests[0].body).toBeInstanceOf(Readable);
+            expect(bodies).toEqual([text]);
+            expect(Object.keys(requests[0].headers).map((name) => name.toLowerCase())).not.toContain(
+                'content-encoding',
+            );
+        });
+
+        test('rejects a web stream body that is already being read', async () => {
+            const httpClient = new RetryingHttpClient();
+            const sendRequest = vi.spyOn(httpClient, 'sendRequest');
+            const data = new Response('locked').body!;
+            data.getReader();
 
             const call = httpClient.call({ url: `${baseUrl}/echo`, method: 'POST', data });
 
             await expect(call).rejects.toThrow(TypeError);
-            await expect(call).rejects.toThrow(`Unsupported request body type: ${data.constructor.name}`);
-            expect(received).toHaveLength(0);
+            expect(sendRequest).not.toHaveBeenCalled();
         });
 
         test('lets per-request headers override the defaults regardless of casing', async () => {
@@ -776,12 +806,15 @@ describe('pluggable HTTP client', () => {
             });
         });
 
-        test('gives up on a request whose body is a stream, since part of it is already consumed', async () => {
+        test.each([
+            { name: 'a Readable', data: () => Readable.from(['chunk']) },
+            { name: 'a web stream', data: () => new Response('chunk').body },
+        ])('gives up on a request whose body is $name, since part of it is already consumed', async ({ data }) => {
             const httpClient = new RetryingHttpClient({ minDelayBetweenRetriesMillis: 1 });
             const sendRequest = vi.spyOn(httpClient, 'sendRequest').mockRejectedValue(new Error('socket hang up'));
             const warningOnce = vi.spyOn(httpClient.logger, 'warningOnce');
 
-            const call = httpClient.call({ url: `${baseUrl}/echo`, method: 'POST', data: Readable.from(['chunk']) });
+            const call = httpClient.call({ url: `${baseUrl}/echo`, method: 'POST', data: data() });
 
             await expect(call).rejects.toThrow('socket hang up');
             expect(sendRequest).toHaveBeenCalledTimes(1);

@@ -11,6 +11,7 @@ import ApiLink from '@theme/ApiLink';
 import StreamDatasetItemsExample from '!!raw-loader!./code/08_stream_dataset_items.ts';
 import StreamLogExample from '!!raw-loader!./code/08_stream_log.ts';
 import StreamRecordExample from '!!raw-loader!./code/08_stream_record.ts';
+import UploadStreamExample from '!!raw-loader!./code/08_upload_stream.ts';
 
 Certain resources, such as dataset items, key-value store records and logs, support streaming directly from the Apify API. You can then process large resources incrementally without downloading them entirely into memory, which suits large or continuously updated data.
 
@@ -42,3 +43,15 @@ To export a large dataset without holding it in memory, stream its items to a fi
 </CodeBlock>
 
 The streams are web streams, so these methods work the same way in every runtime, except for `getStreamedLog()`, which needs Node.js. For details, see [Bundled environments](./13_bundled_environments.mdx).
+
+## Upload a stream
+
+A request body can be a stream too: <ApiLink to="class/KeyValueStoreClient#setRecord">`KeyValueStoreClient.setRecord()`</ApiLink> takes a web `ReadableStream` or a Node.js `Readable` as the record `value`, and sends it without holding it in memory. That includes the stream another call returned, so a record can be copied without being read first:
+
+<CodeBlock className="language-ts">
+    {UploadStreamExample}
+</CodeBlock>
+
+A stream can be sent only once, so the client neither retries such a request nor follows a redirect with it. To upload a file with retries, pass a `Blob` instead. For details, see [Retry a request body read from a file](./04_retries.mdx#retry-a-request-body-read-from-a-file).
+
+Node.js, Bun and Deno send a stream of either type. A browser sends a web `ReadableStream` only if it supports streaming request bodies, and only over HTTP/2 or later. In a browser without that support, such as Firefox and Safari, the call throws a `TypeError`, so read the stream into a `Blob` first, for example with `await new Response(stream).blob()`.

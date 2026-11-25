@@ -2,6 +2,7 @@ import http from 'node:http';
 import https from 'node:https';
 import os from 'node:os';
 import { Readable } from 'node:stream';
+import type { ReadableStream as NodeReadableStream } from 'node:stream/web';
 import { brotliCompress, constants, gzip, zstdCompress } from 'node:zlib';
 
 import type { Runtime } from './types.js';
@@ -90,6 +91,10 @@ export const runtime: Runtime = {
 
     openBlobBody(blob, onSourceError) {
         return Readable.from(readBlob(blob, onSourceError), { objectMode: false });
+    },
+
+    openStreamBody(stream) {
+        return Readable.fromWeb(stream as NodeReadableStream<Uint8Array>);
     },
 };
 

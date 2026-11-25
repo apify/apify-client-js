@@ -35,7 +35,11 @@ const server = createServer(async (req, res) => {
     };
 
     if (path === '/ok') return json(200, { data: { id: 'abc', createdAt: '2026-01-01T00:00:00.000Z' } });
-    if (path === '/flaky') return hits[path] < 3 ? json(500, { error: { type: 'x', message: 'boom' } }) : json(200, {});
+    if (path === '/flaky') {
+        // Bun reuses a connection whose stream body the server left unread, which breaks the request after it.
+        await readAll(req);
+        return hits[path] < 3 ? json(500, { error: { type: 'x', message: 'boom' } }) : json(200, {});
+    }
     if (path === '/not-found') return json(404, { error: { type: 'record-not-found', message: 'Not here' } });
     if (path === '/reset') return hits[path] < 2 ? req.socket.destroy() : json(200, {});
     if (path === '/stall') return hits[path] < 2 ? undefined : json(200, {});
@@ -165,6 +169,34 @@ const checks = {
             headers: { 'content-type': 'text/plain' },
         });
         assert.equal(data.sha256, sha256('žluťoučký kůň'));
+    },
+    'uploads a web stream': async () => {
+        const parts = Array.from({ length: 2000 }, (_, index) => Buffer.from(`line ${index}\n`));
+        const { data } = await call({
+            method: 'PUT',
+            url: `${baseUrl}/echo`,
+            data: new Blob(parts).stream(),
+            headers: { 'content-type': 'text/plain' },
+        });
+        assert.equal(data.sha256, sha256(Buffer.concat(parts)));
+    },
+    'uploads the web stream of a download': async () => {
+        const download = await call({ url: `${baseUrl}/download`, responseType: 'stream' });
+        const { data } = await call({
+            method: 'PUT',
+            url: `${baseUrl}/echo`,
+            data: download.data,
+            headers: { 'content-type': 'application/octet-stream' },
+        });
+        assert.equal(data.sha256, sha256(PAYLOAD));
+    },
+    'does not retry a web stream upload': async () => {
+        hits['/flaky'] = 0;
+        const { error, requests } = await counted(async () =>
+            call({ method: 'PUT', url: `${baseUrl}/flaky`, data: new Blob(['streamed']).stream() }),
+        );
+        assert.ok(error instanceof ApifyApiError, `got ${error}`);
+        assert.equal(requests, 1);
     },
     'downloads a buffer': async () => {
         const { data } = await call({ url: `${baseUrl}/download`, responseType: 'buffer' });

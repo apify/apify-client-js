@@ -194,7 +194,7 @@ export class ActorServerClient extends ResourceClient {
      * @param options.params - Query parameters of the request, converted the same way as for API calls.
      * @param options.headers - Additional headers of the request.
      * @param options.data - Request body, serialized the same way as for API calls: a plain object or array is sent
-     * as JSON, and a string or binary value as it is.
+     * as JSON, and a string, binary value or stream (`Readable`, web `ReadableStream`) as it is.
      * @param options.parentRequestId - The `X-Actor-Request-ID` header of the request your Server Actor is handling,
      * sent on as the same header so the called Actor charges at that request's pricing tier.
      * @param options.compression - Compression algorithm for the request body, as a name or an {@link HttpCompressor}.

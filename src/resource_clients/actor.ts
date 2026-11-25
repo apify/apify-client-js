@@ -12,7 +12,7 @@ import type { TimeoutOptions } from '../timeouts.js';
 import type { Dictionary } from '../utils.js';
 import * as schemas from '../schemas.js';
 import { timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
-import { anyObjectSchema, isStream, parseArgument, parseResponse, stringifyWebhooksToBase64 } from '../utils.js';
+import { anyObjectSchema, isAnyStream, parseArgument, parseResponse, stringifyWebhooksToBase64 } from '../utils.js';
 import { startWaitingForResources } from '../wait_for_resources.js';
 import { ActorServerClient } from './actor_server.js';
 import { ActorVersionClient } from './actor_version.js';
@@ -262,10 +262,10 @@ export class ActorClient extends ResourceClient {
             };
         }
 
-        // A `Readable` input is consumed by the first attempt, so a retry would start the run with an empty input.
+        // A stream input is consumed by the first attempt, so a retry would start the run with an empty input.
         const response = await startWaitingForResources(
             async () => this.httpClient.call(request),
-            isStream(input) ? false : waitForResources,
+            isAnyStream(input) ? false : waitForResources,
             this.httpClient.logger,
             signal,
         );
@@ -749,7 +749,8 @@ export interface ActorStartOptions extends TimeoutOptions {
      * A run that requests more memory than the whole memory limit of the account is rejected with
      * `actor-memory-limit-exceeded` as well and never starts, so `true` retries it forever.
      *
-     * A `Readable` input can't be sent twice, so its start is never retried and the first rejection is thrown.
+     * A stream input (`Readable` or web `ReadableStream`) can't be sent twice, so its start is never retried and the
+     * first rejection is thrown.
      */
     waitForResources?: boolean | number;
 }

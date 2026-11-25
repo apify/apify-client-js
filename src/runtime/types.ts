@@ -73,4 +73,11 @@ export interface Runtime {
      * which `fetch` and `XMLHttpRequest` read on their own, and never calls `onSourceError`.
      */
     openBlobBody(blob: Blob, onSourceError: (error: unknown) => void): Readable | Blob;
+    /**
+     * Opens a web `ReadableStream` request body. The Node.js implementation wraps it in a `Readable`, the one
+     * stream type every Node.js transport sends. The Web API one returns the stream itself, and throws a
+     * `TypeError` where `fetch` cannot send a stream body: such a browser would send the text
+     * `[object ReadableStream]` instead.
+     */
+    openStreamBody(stream: ReadableStream<Uint8Array>): Readable | ReadableStream<Uint8Array>;
 }

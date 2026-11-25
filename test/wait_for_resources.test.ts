@@ -202,6 +202,31 @@ describe('waitForResources option', () => {
         expect(sleeps).toEqual([]);
     });
 
+    test('never retries the start of a web stream Actor input', async () => {
+        rejections = ['actor-memory-limit-exceeded'];
+
+        await expect(
+            client.actor('actor-id').start(new Response('{"foo":"bar"}').body as unknown as ActorInput, {
+                contentType: 'application/json',
+                waitForResources: true,
+            }),
+        ).rejects.toMatchObject({ type: 'actor-memory-limit-exceeded' });
+        expect(starts).toHaveLength(1);
+        expect(sleeps).toEqual([]);
+    });
+
+    test('never retries the start of a web stream task input', async () => {
+        rejections = ['actor-memory-limit-exceeded'];
+
+        await expect(
+            client.task('task-id').start(new Response('{"foo":"bar"}').body as unknown as Dictionary, {
+                waitForResources: true,
+            }),
+        ).rejects.toMatchObject({ type: 'actor-memory-limit-exceeded' });
+        expect(starts).toHaveLength(1);
+        expect(sleeps).toEqual([]);
+    });
+
     test('never retries the start of a Readable task input', async () => {
         rejections = ['actor-memory-limit-exceeded'];
 

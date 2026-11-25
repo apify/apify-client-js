@@ -19,10 +19,9 @@ import {
     anyObjectSchema,
     applyQueryParamsToUrl,
     catchNotFoundOrThrow,
+    isAnyStream,
     isBlob,
     isBuffer,
-    isStream,
-    isWebStream,
     minForLimitParam,
     parseArgument,
     parseResponse,
@@ -466,15 +465,17 @@ export class KeyValueStoreClient extends ResourceClient {
      * A string is sent as it is, even under `application/json`, so a string stored under a JSON content type has
      * to be valid JSON already, or {@link getRecord} fails to parse it back.
      *
-     * **Note about streams:** If the value is a stream object (has `.pipe` and `.on` methods),
-     * the upload cannot be retried on failure or follow redirects. For reliable uploads of a file,
-     * pass a `Blob` from `fs.openAsBlob()` instead: it is read again for every attempt and never held
-     * in memory whole.
+     * **Note about streams:** If the value is a stream, either a Node.js `Readable` or a web `ReadableStream`
+     * such as the `value` that {@link getRecord} returns with the `stream` option, the upload cannot be retried
+     * on failure or follow redirects. For reliable uploads of a file, pass a `Blob` from `fs.openAsBlob()`
+     * instead: it is read again for every attempt and never held in memory whole. A browser sends a web
+     * `ReadableStream` only over HTTP/2 or later, and only if it supports streaming request bodies at all:
+     * where it doesn't, the call throws a `TypeError`.
      *
      * @param record - The record to store
      * @param record.key - Record key (unique identifier)
-     * @param record.value - Record value (a JSON-serializable value, Buffer, ArrayBuffer, typed array, Blob, or
-     *                       Readable)
+     * @param record.value - Record value (a JSON-serializable value, Buffer, ArrayBuffer, typed array, Blob,
+     *                       Readable, or web ReadableStream)
      * @param record.contentType - Optional MIME type. Auto-detected if not provided:
      *                             - Objects: `'application/json; charset=utf-8'`
      *                             - Strings: `'text/plain; charset=utf-8'`
@@ -544,15 +545,7 @@ export class KeyValueStoreClient extends ResourceClient {
             throw new Error('The contentEncoding option can only be used in Node.js environment.');
         }
 
-        // A web stream is no request body the transports take, and it would serialize to JSON as `{}`.
-        if (isWebStream(value)) {
-            throw new TypeError(
-                'A web ReadableStream cannot be stored as a record value. ' +
-                    'Convert it with Readable.fromWeb() in Node.js, or read it into bytes first.',
-            );
-        }
-
-        const isBinaryValue = isStream(value) || isBuffer(value) || isBlob(value);
+        const isBinaryValue = isAnyStream(value) || isBuffer(value) || isBlob(value);
 
         // The client forwards the header without inspecting the body, so a string or a value serialized to JSON, which
         // cannot hold compressed bytes, would be stored under an encoding that misdescribes it.
@@ -696,10 +689,16 @@ export interface KeyValueClientGetRecordOptions extends TimeoutOptions {
  * A value that `setRecord` accepts.
  *
  * Anything JSON-serializable, or binary content the client uploads as bytes instead of JSON-encoding
- * it: a `Buffer`, an `ArrayBuffer`, a typed array, a `Blob`, or a readable stream. `Buffer` is a
- * `Uint8Array`, so `TypedArray` covers it.
+ * it: a `Buffer`, an `ArrayBuffer`, a typed array, a `Blob`, a Node.js `Readable`, or a web `ReadableStream`.
+ * `Buffer` is a `Uint8Array`, so `TypedArray` covers it.
  */
-export type KeyValueStoreRecordValue = JsonValue | ArrayBuffer | TypedArray | Blob | Readable;
+export type KeyValueStoreRecordValue =
+    | JsonValue
+    | ArrayBuffer
+    | TypedArray
+    | Blob
+    | Readable
+    | ReadableStream<Uint8Array>;
 
 /**
  * Represents a record (key-value pair) in a Key-Value Store.
