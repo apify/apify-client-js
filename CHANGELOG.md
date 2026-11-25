@@ -2,8 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-<!-- git-cliff-unreleased-start -->
-## 2.26.1 - **not yet released**
+## [2.26.1](https://github.com/apify/apify-client-js/releases/tag/v2.26.1) (2026-11-25)
 
 ### 🐛 Bug Fixes
 
@@ -11,7 +10,6 @@ All notable changes to this project will be documented in this file.
 - Do not follow redirects of Server Actor requests in the browser (#1233) ([6a61708](https://github.com/apify/apify-client-js/commit/6a61708b82b9478a295543209f7d28e1ab2ad488))
 
 
-<!-- git-cliff-unreleased-end -->
 ## [2.26.0](https://github.com/apify/apify-client-js/releases/tag/v2.26.0) (2026-11-10)
 
 ### 🚀 Features
