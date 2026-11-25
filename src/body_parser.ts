@@ -1,5 +1,6 @@
 import { parse as parseContentType } from 'content-type';
-import type { JsonArray, JsonObject } from 'type-fest';
+
+import type { JsonArray, JsonObject } from './utils.js';
 
 const CONTENT_TYPE_JSON = 'application/json';
 const STRINGIFIABLE_CONTENT_TYPE_RXS = [new RegExp(`^${CONTENT_TYPE_JSON}`, 'i'), /^application\/.*xml$/i, /^text\//i];

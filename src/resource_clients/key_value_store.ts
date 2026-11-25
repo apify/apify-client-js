@@ -1,6 +1,5 @@
 import type { Readable } from 'node:stream';
 
-import type { JsonValue, TypedArray } from 'type-fest';
 import { z } from 'zod';
 
 import type { STORAGE_GENERAL_ACCESS } from '@apify/consts';
@@ -27,6 +26,7 @@ import {
     parseArgument,
     parseResponse,
 } from '../utils.js';
+import type { JsonValue, TypedArray } from '../utils.js';
 
 const listKeysOptionsSchema = z.strictObject({
     limit: z.number().min(0).optional(),

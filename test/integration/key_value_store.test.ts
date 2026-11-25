@@ -1,8 +1,6 @@
 import { beforeAll, expect, test } from 'vitest';
 
-import type { JsonValue } from 'type-fest';
-
-import type { ApifyClient, KeyValueStoreResource } from 'apify-client';
+import type { ApifyClient, JsonValue, KeyValueStoreResource } from 'apify-client';
 
 import { makeClient } from './_fixtures.js';
 import { collectUntilPresent, getRandomResourceName, pollUntilCondition } from './_utils.js';
