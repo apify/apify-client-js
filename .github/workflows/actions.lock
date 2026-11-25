@@ -7,7 +7,9 @@ workflows:
         - 'actions/checkout@v7.0.1'
         - 'actions/setup-node@v7.1.0'
         - 'apify/actions@v1.6.2'
+        - 'denoland/setup-deno@v2.0.5'
         - 'lycheeverse/lychee-action@v2.9.0'
+        - 'oven-sh/setup-bun@v2.2.0'
         - 'peter-evans/create-or-update-comment@v5.0.0'
         - 'peter-evans/find-comment@v4.0.0'
     '.github/workflows/docs.yaml':
@@ -138,6 +140,11 @@ dependencies:
         commit: 'sha1-7d5624061f5b9d729a2acb90d4d8ea9f2f6e3ddf'
         owner_id: 957246
         repo_id: 258052107
+    'denoland/setup-deno@v2.0.5':
+        ref: 'v2.0.5'
+        commit: 'sha1-22d081ff2d3a40755e97629de92e3bcbfa7cf2ed'
+        owner_id: 42048915
+        repo_id: 356423100
     'lewagon/wait-on-check-action@v1.9.1':
         ref: 'v1.9.1'
         commit: 'sha1-369769072fe522a3a8a85c03c96af1e5242a1994'
@@ -150,6 +157,11 @@ dependencies:
         commit: 'sha1-e7477775783ea5526144ba13e8db5eec57747ce8'
         owner_id: 74027027
         repo_id: 320929718
+    'oven-sh/setup-bun@v2.2.0':
+        ref: 'v2.2.0'
+        commit: 'sha1-0c5077e51419868618aeaa5fe8019c62421857d6'
+        owner_id: 108928776
+        repo_id: 512644635
     'peter-evans/create-or-update-comment@v5.0.0':
         ref: 'v5.0.0'
         commit: 'sha1-e8674b075228eee787fea43ef493e45ece1004c9'
