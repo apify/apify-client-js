@@ -633,7 +633,7 @@ Readable.fromWeb(record.value as ReadableStream).pipe(fs.createWriteStream('vide
 
 The cast is only needed in a TypeScript project that includes the `DOM` library, whose `ReadableStream` type the Node.js types don't accept.
 
-<ApiLink to="class/KeyValueStoreClient#setRecord">`setRecord()`</ApiLink> still takes a `Readable` and throws for a web `ReadableStream`, so code that copies a record by passing the streamed `value` on has to convert it with `Readable.fromWeb()` as well.
+<ApiLink to="class/KeyValueStoreClient#setRecord">`setRecord()`</ApiLink> takes a web `ReadableStream` as well as a `Readable`, so code that copies a record by passing the streamed `value` on keeps working. v2 serialized a web `ReadableStream` to JSON and stored `{}`.
 
 ### Raw bytes are typed as `Uint8Array`
 
@@ -741,7 +741,7 @@ The method is reported as the client sent it, so `POST` where v2 reported axios'
 
 ### A `FormData` body is no longer sent
 
-Under v2 axios recognized a `FormData` body and sent it as multipart, taking the boundary from the value itself. The pipeline serializes bodies on its own now and doesn't handle it, so passing one throws a `TypeError` naming the type. Encode it to a `Buffer` or a string with a matching `Content-Type` header. A web `ReadableStream` is refused the same way. A `Readable`, a `URLSearchParams`, a `Blob` and a `File` all still go through.
+Under v2 axios recognized a `FormData` body and sent it as multipart, taking the boundary from the value itself. The pipeline serializes bodies on its own now and doesn't handle it, so passing one throws a `TypeError` naming the type. Encode it to a `Buffer` or a string with a matching `Content-Type` header. A `Readable`, a `URLSearchParams`, a `Blob` and a `File` all still go through, and so does a web `ReadableStream`.
 
 ### A form-encoded object body is encoded by the client
 

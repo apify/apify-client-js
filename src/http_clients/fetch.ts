@@ -1,6 +1,6 @@
 import { runtime } from '#runtime';
 import { ApifyClientError } from '../apify_client_error.js';
-import { isStream } from '../utils.js';
+import { isAnyStream, isStream, isWebStream } from '../utils.js';
 import type { HttpClientOptions, HttpRequest, HttpResponse, HttpResponseHeaders } from './base.js';
 import { HttpClient } from './base.js';
 
@@ -16,7 +16,8 @@ export interface FetchHttpClientOptions extends HttpClientOptions {
     /**
      * The `fetch` implementation the requests go through. Pass a wrapper around the global `fetch` to adjust every
      * request, or the `fetch` of another library, such as `undici` with a dispatcher of your own, to control the
-     * connections. A stream body reaches it as an async iterable of byte chunks, or as the stream itself in Bun.
+     * connections. A stream body reaches it as an async iterable of byte chunks, or as the stream itself in Bun. In a
+     * browser or an edge runtime, a web `ReadableStream` body reaches it as a web stream.
      * @default globalThis.fetch
      */
     fetch?: FetchFunction;
@@ -107,6 +108,7 @@ export class FetchHttpClient extends HttpClient {
         };
         restartTimeout();
 
+        let sentBody: BodyInit | undefined;
         try {
             // Browsers and Deno reject an invalid URL with the same bare `TypeError` as a network failure.
             const baseUrl = (globalThis as { location?: { href?: string } }).location?.href;
@@ -114,15 +116,15 @@ export class FetchHttpClient extends HttpClient {
                 throw Object.assign(new TypeError(`Invalid URL: ${url}`), { code: 'ERR_INVALID_URL' });
             }
 
+            sentBody = trackProgress(body, restartTimeout);
             const response = await (this.#fetch ?? globalThis.fetch)(url, {
                 method,
                 headers,
-                // Node.js reads an async iterable, which the DOM types do not know about.
-                body: (isStream(body) && !isBun ? withProgress(body, restartTimeout) : body) as BodyInit | undefined,
-                redirect: followRedirects && !isStream(body) ? 'follow' : 'manual',
+                body: sentBody,
+                redirect: followRedirects && !isAnyStream(body) ? 'follow' : 'manual',
                 signal: signal ? AbortSignal.any([signal, timeout.signal]) : timeout.signal,
                 // Required for a stream body, and ignored for any other.
-                ...(isStream(body) ? { duplex: 'half' } : {}),
+                ...(isAnyStream(body) ? { duplex: 'half' } : {}),
             } as RequestInit);
 
             // `redirect: 'manual'` resolves to an opaque response with status 0 in a browser.
@@ -139,6 +141,8 @@ export class FetchHttpClient extends HttpClient {
                 body: stream ? (response.body ?? new Blob([]).stream()) : await readBody(response, restartTimeout),
             };
         } catch (error) {
+            // A `fetch` that refused the request never took the body over, which keeps the caller's stream locked.
+            if (isWebStream(sentBody) && !sentBody.locked) sentBody.cancel(error).catch(() => {});
             if (!this.#fetch && this.isRetryableTransportError(error)) this.#warnAboutUnusedProxy();
             throw error;
         } finally {
@@ -160,6 +164,14 @@ const isBun = 'Bun' in globalThis;
 /** A larger chunk of a stream body is passed on in pieces, since a `Blob` held in memory arrives as a single one. */
 const MAX_BODY_CHUNK_BYTES = 64 * 1024;
 
+/** Makes a stream body report every chunk that `fetch` reads from it, and leaves any other body as it is. */
+function trackProgress(body: HttpRequest['body'], onChunk: () => void): BodyInit | undefined {
+    if (isWebStream(body)) return withWebProgress(body, onChunk);
+    // Node.js reads an async iterable, which the DOM types do not know about.
+    if (isStream(body) && !isBun) return withProgress(body, onChunk) as unknown as BodyInit;
+    return body as BodyInit | undefined;
+}
+
 /** Passes a stream body on piece by piece, so that a large upload counts as alive for as long as it is being read. */
 async function* withProgress(body: AsyncIterable<unknown>, onChunk: () => void): AsyncGenerator<unknown> {
     for await (const chunk of body) {
@@ -175,6 +187,31 @@ async function* withProgress(body: AsyncIterable<unknown>, onChunk: () => void):
             yield bytes.subarray(offset, offset + MAX_BODY_CHUNK_BYTES);
         }
     }
+}
+
+/** Does for a web stream body what {@link withProgress} does for an async iterable. */
+function withWebProgress(body: ReadableStream<Uint8Array>, onChunk: () => void): ReadableStream<Uint8Array> {
+    const reader = body.getReader();
+    let rest: Uint8Array | undefined;
+    return new ReadableStream<Uint8Array>(
+        {
+            async pull(controller) {
+                if (!rest?.byteLength) {
+                    const { done, value } = await reader.read();
+                    if (done) return controller.close();
+                    rest = value;
+                }
+                onChunk();
+                controller.enqueue(rest.subarray(0, MAX_BODY_CHUNK_BYTES));
+                rest = rest.subarray(MAX_BODY_CHUNK_BYTES);
+            },
+            async cancel(reason) {
+                await reader.cancel(reason);
+            },
+        },
+        // Reads a piece only once `fetch` asks for it.
+        { highWaterMark: 0 },
+    );
 }
 
 /**

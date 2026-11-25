@@ -6,7 +6,7 @@ import axios, { AxiosError, AxiosHeaders } from 'axios';
 
 import { runtime } from '#runtime';
 import { ApifyClientError } from '../apify_client_error.js';
-import { isStream } from '../utils.js';
+import { isAnyStream, isWebStream } from '../utils.js';
 import type { HttpClientOptions, HttpRequest, HttpResponse, HttpResponseBody, HttpResponseHeaders } from './base.js';
 import { HttpClient } from './base.js';
 
@@ -143,8 +143,10 @@ export class AxiosHttpClient extends HttpClient {
     override async sendRequest(request: HttpRequest): Promise<HttpResponse> {
         await this.#ensureHttpAgents();
 
-        const { method, url, headers, body, timeoutMillis, stream, followRedirects, signal } = request;
-        const useFetch = (!followRedirects || stream) && !runtime.isNode;
+        const { method, url, headers, timeoutMillis, stream, followRedirects, signal } = request;
+        // The Node.js adapter of axios refuses a web stream, and an XHR cannot send one either.
+        const body = runtime.isNode && isWebStream(request.body) ? runtime.openStreamBody(request.body) : request.body;
+        const useFetch = (!followRedirects || stream || isWebStream(body)) && !runtime.isNode;
 
         // The fetch adapter keeps the axios timeout running until a streamed response is read to its end.
         const headersTimeout = useFetch && stream && timeoutMillis !== undefined ? new AbortController() : undefined;
@@ -168,7 +170,7 @@ export class AxiosHttpClient extends HttpClient {
                 responseType: stream ? 'stream' : 'arraybuffer',
                 // See axios/axios#1045 for why axios must not buffer a stream body to follow redirects. The fetch
                 // adapter turns this into `redirect: 'manual'`.
-                ...(isStream(body) || !followRedirects ? { maxRedirects: 0 } : {}),
+                ...(isAnyStream(body) || !followRedirects ? { maxRedirects: 0 } : {}),
                 ...(useFetch ? { adapter: 'fetch' } : {}),
             })
             .catch((error) => {

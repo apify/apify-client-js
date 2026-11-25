@@ -32,7 +32,7 @@ You configure the default client through the <ApiLink to="class/ApifyClient">`Ap
     {DefaultHttpClientExample}
 </CodeBlock>
 
-Anything beyond those options is configured on a <ApiLink to="class/FetchHttpClient">`FetchHttpClient`</ApiLink> instance that you plug in yourself. Its `fetch` option takes the function the requests go through: a wrapper around the global `fetch` for a header computed per request, or the `fetch` of another library. A stream body reaches that function as an async iterable of byte chunks. Retries, timeouts and compression then live on the HTTP client too:
+Anything beyond those options is configured on a <ApiLink to="class/FetchHttpClient">`FetchHttpClient`</ApiLink> instance that you plug in yourself. Its `fetch` option takes the function the requests go through: a wrapper around the global `fetch` for a header computed per request, or the `fetch` of another library. A stream body reaches that function as an async iterable of byte chunks, or in a browser or an edge runtime as a web `ReadableStream` when it was passed as one. Retries, timeouts and compression then live on the HTTP client too:
 
 <CodeBlock className="language-ts">
     {CustomFetchExample}
@@ -118,7 +118,7 @@ Mark your implementations with the `override` keyword, as the built-in clients d
 | `method: HttpMethod` | HTTP method, for example `GET` or `POST` |
 | `url: string` | Full URL, query string included |
 | `headers: Record<string, string>` | Final request headers |
-| `body?: string \| Buffer \| ArrayBuffer \| ArrayBufferView \| Readable \| Blob` | Serialized and compressed body, or `undefined`. A `Blob` body arrives in Node.js as a new `Readable` for every attempt |
+| `body?: string \| Buffer \| ArrayBuffer \| ArrayBufferView \| Readable \| ReadableStream \| Blob` | Serialized and compressed body, or `undefined`. A `Blob` body arrives in Node.js as a new `Readable` for every attempt. A web `ReadableStream` body arrives in Node.js as a `Readable` too, and as the stream itself elsewhere |
 | `timeoutMillis?: number` | Timeout of this attempt, or `undefined` for a request that runs without one |
 | `stream: boolean` | Whether to return the body unread, as a stream. The caller always gets a web `ReadableStream` |
 | `followRedirects: boolean` | Whether to follow redirects. When it's `false`, return a redirect response as it is, since the request carries the API token |

@@ -2,13 +2,11 @@
 // The unit tests only run in Node.js, and each runtime ships a `fetch` of its own.
 import assert from 'node:assert/strict';
 import { Buffer } from 'node:buffer';
-import { createHash, randomBytes } from 'node:crypto';
-import { createServer } from 'node:http';
 import process from 'node:process';
 import { Readable } from 'node:stream';
-import { brotliDecompressSync } from 'node:zlib';
 
 import { ApifyApiError, ApifyClient } from '../../dist/index.js';
+import { sha256, startServer } from './server.mjs';
 
 const runtimeName = globalThis.Bun
     ? `Bun ${globalThis.Bun.version}`
@@ -16,50 +14,7 @@ const runtimeName = globalThis.Bun
       ? `Deno ${globalThis.Deno.version.deno}`
       : `Node.js ${process.versions.node}`;
 
-const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex');
-const readAll = async (stream) => {
-    const chunks = [];
-    for await (const chunk of stream) chunks.push(chunk);
-    return Buffer.concat(chunks);
-};
-
-const PAYLOAD = randomBytes(1024 * 1024);
-const hits = {};
-
-const server = createServer(async (req, res) => {
-    const path = req.url.split('?')[0];
-    hits[path] = (hits[path] ?? 0) + 1;
-    const json = (status, body) => {
-        res.writeHead(status, { 'content-type': 'application/json' });
-        res.end(JSON.stringify(body));
-    };
-
-    if (path === '/ok') return json(200, { data: { id: 'abc', createdAt: '2026-01-01T00:00:00.000Z' } });
-    if (path === '/flaky') return hits[path] < 3 ? json(500, { error: { type: 'x', message: 'boom' } }) : json(200, {});
-    if (path === '/not-found') return json(404, { error: { type: 'record-not-found', message: 'Not here' } });
-    if (path === '/reset') return hits[path] < 2 ? req.socket.destroy() : json(200, {});
-    if (path === '/stall') return hits[path] < 2 ? undefined : json(200, {});
-    if (path === '/echo') {
-        const raw = await readAll(req);
-        const encoding = req.headers['content-encoding'];
-        const body = encoding === 'br' ? brotliDecompressSync(raw) : raw;
-        return json(200, {
-            sha256: sha256(body),
-            encoding: encoding ?? null,
-            authorization: req.headers.authorization ?? null,
-            userAgent: req.headers['user-agent'] ?? null,
-        });
-    }
-    if (path === '/download') {
-        res.writeHead(200, { 'content-type': 'application/octet-stream' });
-        return res.end(PAYLOAD);
-    }
-    return json(418, {});
-});
-await new Promise((resolve) => {
-    server.listen(0, '127.0.0.1', resolve);
-});
-const baseUrl = `http://127.0.0.1:${server.address().port}`;
+const { baseUrl, hits, payload: PAYLOAD, close } = await startServer();
 
 const client = new ApifyClient({ token: 'smoke-token', maxRetries: 3, minDelayBetweenRetriesMillis: 10 });
 const { httpClient } = client;
@@ -166,6 +121,34 @@ const checks = {
         });
         assert.equal(data.sha256, sha256('žluťoučký kůň'));
     },
+    'uploads a web stream': async () => {
+        const parts = Array.from({ length: 2000 }, (_, index) => Buffer.from(`line ${index}\n`));
+        const { data } = await call({
+            method: 'PUT',
+            url: `${baseUrl}/echo`,
+            data: new Blob(parts).stream(),
+            headers: { 'content-type': 'text/plain' },
+        });
+        assert.equal(data.sha256, sha256(Buffer.concat(parts)));
+    },
+    'uploads the web stream of a download': async () => {
+        const download = await call({ url: `${baseUrl}/download`, responseType: 'stream' });
+        const { data } = await call({
+            method: 'PUT',
+            url: `${baseUrl}/echo`,
+            data: download.data,
+            headers: { 'content-type': 'application/octet-stream' },
+        });
+        assert.equal(data.sha256, sha256(PAYLOAD));
+    },
+    'does not retry a web stream upload': async () => {
+        hits['/flaky'] = 0;
+        const { error, requests } = await counted(async () =>
+            call({ method: 'PUT', url: `${baseUrl}/flaky`, data: new Blob(['streamed']).stream() }),
+        );
+        assert.ok(error instanceof ApifyApiError, `got ${error}`);
+        assert.equal(requests, 1);
+    },
     'downloads a buffer': async () => {
         const { data } = await call({ url: `${baseUrl}/download`, responseType: 'buffer' });
         assert.ok(Buffer.isBuffer(data));
@@ -190,7 +173,6 @@ for (const [name, check] of Object.entries(checks)) {
     }
 }
 
-server.closeAllConnections();
-server.close();
+close();
 console.log(failed ? `${failed} of ${Object.keys(checks).length} checks failed` : 'All checks passed');
 process.exit(failed ? 1 : 0);

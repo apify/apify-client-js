@@ -71,6 +71,17 @@ describe('Node.js runtime', () => {
         expect(readable.destroyed).toBe(true);
     });
 
+    test('opens a web stream body as a Readable that cancels it when destroyed', async () => {
+        const readable = nodeRuntime.openStreamBody(new Response('streamed').body!) as Readable;
+        expect(readable).toBeInstanceOf(Readable);
+        expect(Buffer.concat(await readable.toArray()).toString()).toBe('streamed');
+
+        const cancel = vi.fn();
+        const unread = nodeRuntime.openStreamBody(new ReadableStream({ cancel })) as Readable;
+        unread.destroy();
+        await vi.waitFor(() => expect(cancel).toHaveBeenCalled());
+    });
+
     describe('unusedProxyHint()', () => {
         beforeEach(() => {
             for (const name of ['HTTP_PROXY', 'HTTPS_PROXY', 'http_proxy', 'https_proxy', 'NODE_USE_ENV_PROXY']) {
@@ -186,6 +197,48 @@ describe('Web API runtime', () => {
         await expect(webRuntime.createHttpAgents({ timeoutMillis: 1000 })).resolves.toBeUndefined();
         expect(() => webRuntime.streamToWeb(Readable.from([]))).toThrow('only available in Node.js');
     });
+
+    test('hands a web stream body over as it is', () => {
+        const stream = new Response('streamed').body!;
+        expect(webRuntime.openStreamBody(stream)).toBe(stream);
+    });
+
+    test('refuses a web stream body where fetch would send it as text', () => {
+        // What a browser without request streams does: it never reads `duplex` and stringifies the body.
+        vi.stubGlobal(
+            'Request',
+            class {
+                headers = new Headers({ 'content-type': 'text/plain;charset=UTF-8' });
+            },
+        );
+        try {
+            expect(() => webRuntime.openStreamBody(new Response('streamed').body!)).toThrow(TypeError);
+            expect(() => webRuntime.openStreamBody(new Response('streamed').body!)).toThrow(
+                'cannot send a ReadableStream as a request body',
+            );
+        } finally {
+            vi.unstubAllGlobals();
+        }
+    });
+
+    test.each(['Cloudflare-Workers', 'Deno/2.8.0', 'Bun/1.3.3'])(
+        'hands a web stream body over in a runtime that never reads `duplex`: %s',
+        (userAgent) => {
+            vi.stubGlobal('navigator', { userAgent });
+            vi.stubGlobal(
+                'Request',
+                class {
+                    headers = new Headers();
+                },
+            );
+            try {
+                const stream = new Response('streamed').body!;
+                expect(webRuntime.openStreamBody(stream)).toBe(stream);
+            } finally {
+                vi.unstubAllGlobals();
+            }
+        },
+    );
 
     test('hands a Blob body over as it is', () => {
         const blob = new Blob(['blob bytes']);

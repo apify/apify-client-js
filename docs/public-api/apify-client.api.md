@@ -3230,7 +3230,7 @@ export interface HttpRequest {
 }
 
 // @public
-export type HttpRequestBody = string | Buffer | ArrayBuffer | ArrayBufferView | Readable | Blob;
+export type HttpRequestBody = string | Buffer | ArrayBuffer | ArrayBufferView | Readable | ReadableStream<Uint8Array> | Blob;
 
 // @public
 export interface HttpResponse {
@@ -3370,7 +3370,7 @@ export interface KeyValueStoreRecordOptions extends TimeoutOptions {
 }
 
 // @public
-export type KeyValueStoreRecordValue = JsonValue | ArrayBuffer | TypedArray | Blob | Readable;
+export type KeyValueStoreRecordValue = JsonValue | ArrayBuffer | TypedArray | Blob | Readable | ReadableStream<Uint8Array>;
 
 // @public
 export interface KeyValueStoreResource extends Omit<Schemas['KeyValueStoreResource'], keyof KeyValueStoreResourceRePointed>, KeyValueStoreResourceRePointed {
