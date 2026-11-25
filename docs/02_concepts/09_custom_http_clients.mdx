@@ -59,6 +59,7 @@ In Node.js, it creates keep-alive agents with its first request, or uses the one
 The client doesn't route requests through a proxy on its own. How to set one up depends on the HTTP client and the runtime:
 
 - **Default client on Node.js 22.21 or 24 and newer** - Start Node.js with `NODE_USE_ENV_PROXY=1`. The `--use-env-proxy` flag does the same on Node.js 22.21 and on 24.5 and newer. Its `fetch` then reads the `HTTP_PROXY`, `HTTPS_PROXY` and `NO_PROXY` environment variables.
+- **Default client on Node.js 24.14 and newer, from inside the application** - Call [`http.setGlobalProxyFromEnv()`](https://nodejs.org/api/http.html#httpsetglobalproxyfromenvproxyenv) before the first request. It has the same effect as the switch, for a tool that can't control how Node.js is started.
 - **Default client on an older Node.js, or a proxy for this client only** - Pass a `fetch` that goes through a proxy, such as the one of [undici](https://undici.nodejs.org) with a dispatcher.
 - **Axios client** - Pass a proxy agent, such as one from [`proxy-agent`](https://www.npmjs.com/package/proxy-agent), in the `httpAgent` and `httpsAgent` options.
 - **Browsers, Bun and Deno** - The runtime applies its own proxy settings, so there is nothing to configure.

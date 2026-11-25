@@ -548,6 +548,8 @@ export HTTP_PROXY=http://proxy.example.com:3128
 export HTTPS_PROXY=http://proxy.example.com:3128
 ```
 
+An application that can't control how Node.js is started, such as a command-line tool, can call [`http.setGlobalProxyFromEnv()`](https://nodejs.org/api/http.html#httpsetglobalproxyfromenvproxyenv) before its first request instead, on Node.js 24.14 and newer.
+
 Without the switch, requests go out directly, which fails in an environment that only lets traffic out through the proxy. When that happens while a proxy variable is set, the client logs a warning that names the variable and the switch. On Node.js 22.15 to 22.20, where `fetch` can't be routed through a proxy this way, upgrade Node.js or pass the client a `fetch` or an agent that goes through the proxy. See [Proxies](../02_concepts/09_custom_http_clients.mdx#proxies) for all the options.
 
 Two details of the v2 behavior are gone for good. Node.js doesn't read `ALL_PROXY`, which v2 used as a fallback. The `proxy` and `https-proxy` settings in `.npmrc`, which npm exports as `npm_config_proxy` and `npm_config_https_proxy` under `npm run` and v2 read as well, no longer reach the client either.

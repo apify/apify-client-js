@@ -77,13 +77,14 @@ export class ActorVersionCollectionClient extends ResourceCollectionClient {
      *
      * @param actorVersion - The Actor version data.
      * @param options - Request options
-     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'long'`, since the version can carry
+     * its source files.
      * @returns The created Actor version object.
      * @see https://docs.apify.com/api/v2/act-versions-post
      */
     async create(actorVersion: Version, options: TimeoutOptions = {}): Promise<FinalVersion> {
         parseArgument(actorVersion, actorVersionSchema);
-        const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'long', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         return this.createResource(schemas.Version(), actorVersion, timeoutSecs, signal);
     }

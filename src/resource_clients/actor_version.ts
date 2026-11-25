@@ -78,13 +78,14 @@ export class ActorVersionClient extends ResourceClient {
      *
      * @param newFields - Fields to update.
      * @param options - Request options
-     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'long'`, since the version can carry
+     * its source files.
      * @returns The updated Actor version object.
      * @see https://docs.apify.com/api/v2/act-version-put
      */
     async update(newFields: ActorVersionUpdateData, options: TimeoutOptions = {}): Promise<FinalVersion> {
         parseArgument(newFields, anyObjectSchema);
-        const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'long', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         return this.updateResource(schemas.Version(), newFields, timeoutSecs, signal);
     }
