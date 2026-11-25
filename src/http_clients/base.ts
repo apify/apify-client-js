@@ -212,7 +212,7 @@ export interface HttpRequest {
      * `timeoutSecs: 'noTimeout'` asks for.
      */
     timeoutMillis?: number;
-    /** Whether to hand the body back unread as a web `ReadableStream` or a `Readable`, so the caller can stream it. */
+    /** Whether to hand the body back unread as a stream. The caller always gets a web `ReadableStream`. */
     stream: boolean;
     /**
      * Whether to follow redirects. With `false`, return a redirect response as it is: the request carries a token
@@ -234,7 +234,7 @@ export interface HttpResponse {
     status: number;
     /** Response headers keyed by lowercase header name. */
     headers: HttpResponseHeaders;
-    /** The body as raw bytes, or unread as a web `ReadableStream` or a `Readable` when the request asked for a stream. */
+    /** The body as raw bytes, or unread as a stream: a web `ReadableStream`, or a `Readable` the pipeline converts. */
     body: HttpResponseBody;
 }
 
