@@ -482,6 +482,18 @@ describe('Key-Value Store methods', () => {
             await expect(call).rejects.toThrow('Expected a JSON-serializable value, binary data, or a stream');
         });
 
+        test.each([undefined, 'application/json', 'application/octet-stream'])(
+            'setRecord() rejects a web stream with content type %s',
+            async (contentType) => {
+                const requests = mockServer.requests.length;
+                const value = new Response('streamed').body as any;
+                const call = client.keyValueStore('some-id').setRecord({ key: 'some-key', value, contentType });
+
+                await expect(call).rejects.toThrow('A web ReadableStream cannot be stored as a record value');
+                expect(mockServer.requests.length).toBe(requests);
+            },
+        );
+
         test('setRecord() works with custom timeout options', async () => {
             const key = 'some-key';
             const storeId = 'some-id';

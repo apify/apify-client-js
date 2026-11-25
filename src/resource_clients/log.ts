@@ -303,7 +303,8 @@ export class StreamedLog {
                 }
                 // A stream opened during stop() would be cut after its first chunk, so read the log in one request.
                 if (this.#stopLogging) {
-                    await logStream.cancel();
+                    // Cancelling a stream that has already failed rejects with its error.
+                    await logStream.cancel().catch(() => {});
                     continue;
                 }
                 lastChunkRemainder = await this.#logStreamChunks(logStream, signal);

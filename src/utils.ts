@@ -278,7 +278,7 @@ function isTagged(value: unknown, tag: string): boolean {
 }
 
 /**
- * Whether a value is a web `ReadableStream`, which is what a streamed response is outside Node.js.
+ * Whether a value is a web `ReadableStream`, which is what the callers get for a streamed response.
  */
 export function isWebStream(value: unknown): value is ReadableStream<Uint8Array> {
     return isTagged(value, 'ReadableStream');

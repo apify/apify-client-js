@@ -278,9 +278,8 @@ export class DatasetClient<
      * @param options.omit - Array of field names to exclude from the export.
      * @param options.stream - If `true`, the items are returned as a web ReadableStream.
      * @param options.timeoutSecs - Timeout for the API request. Default is `'long'`. With `stream`, it bounds the
-     * wait for the API to start responding; once the stream is returned, it only limits inactivity: the stream errors
-     * if no data arrives for that long. To stop the download early or cap its total duration, cancel the stream or
-     * abort `signal`.
+     * wait for the API to start responding. To stop the download early or cap its total duration, cancel the stream
+     * or abort `signal`.
      * @returns Uint8Array containing the serialized data in the specified format, or a web ReadableStream of it with
      * `stream`
      * @see https://docs.apify.com/api/v2/dataset-items-get

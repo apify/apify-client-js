@@ -113,10 +113,11 @@ export class AxiosHttpClient extends HttpClient {
 
     /**
      * A network failure is an axios error that carries the request it was sending: a connection that could not be
-     * made, dropped mid-way or timed out. Errors raised before a request exists, such as an invalid URL, are not
-     * retried.
+     * made, dropped mid-way or timed out, or the `TimeoutError` this client ends a late streamed response outside
+     * Node.js with. Errors raised before a request exists, such as an invalid URL, are not retried.
      */
     override isRetryableTransportError(error: unknown): boolean {
+        if (super.isTimeoutError(error)) return true;
         if (!axios.isAxiosError(error)) return false;
         return typeof error.request === 'object' && error.request !== null && error.config != null;
     }
@@ -136,28 +137,45 @@ export class AxiosHttpClient extends HttpClient {
      * redirects, since the part of it already sent could not be replayed, and so is a request with
      * `followRedirects: false`. Outside Node.js, such a request goes through `fetch`, since the browser follows the
      * redirects of an XHR itself, and a redirect response fails the request: `fetch` hides it from the page. A
-     * request for a streamed response goes through `fetch` there too, since an XHR cannot stream one.
+     * request for a streamed response goes through `fetch` there too, since an XHR cannot stream one, and its
+     * timeout covers the wait for the headers only.
      */
     override async sendRequest(request: HttpRequest): Promise<HttpResponse> {
         await this.#ensureHttpAgents();
 
         const { method, url, headers, body, timeoutMillis, stream, followRedirects, signal } = request;
         const useFetch = (!followRedirects || stream) && !runtime.isNode;
-        const response = await this.axios.request({
-            method,
-            url,
-            // The fetch adapter adds a `User-Agent` of its own otherwise, which a browser lists in the CORS preflight.
-            headers: useFetch ? { 'User-Agent': null, ...headers } : headers,
-            data: body,
-            // Axios reads 0 as no timeout.
-            timeout: timeoutMillis ?? 0,
-            signal,
-            responseType: stream ? 'stream' : 'arraybuffer',
-            // See axios/axios#1045 for why axios must not buffer a stream body to follow redirects. The fetch
-            // adapter turns this into `redirect: 'manual'`.
-            ...(isStream(body) || !followRedirects ? { maxRedirects: 0 } : {}),
-            ...(useFetch ? { adapter: 'fetch' } : {}),
-        });
+
+        // The fetch adapter keeps the axios timeout running until a streamed response is read to its end.
+        const headersTimeout = useFetch && stream && timeoutMillis !== undefined ? new AbortController() : undefined;
+        const headersTimer =
+            headersTimeout &&
+            setTimeout(() => {
+                headersTimeout.abort(new DOMException(`timeout of ${timeoutMillis}ms exceeded`, 'TimeoutError'));
+            }, timeoutMillis);
+        const signals = [signal, headersTimeout?.signal].filter((item) => item !== undefined);
+
+        const response = await this.axios
+            .request({
+                method,
+                url,
+                // The fetch adapter adds a `User-Agent` of its own otherwise, which a browser lists in the CORS preflight.
+                headers: useFetch ? { 'User-Agent': null, ...headers } : headers,
+                data: body,
+                // Axios reads 0 as no timeout.
+                timeout: headersTimeout ? 0 : (timeoutMillis ?? 0),
+                signal: signals.length > 1 ? AbortSignal.any(signals) : signals[0],
+                responseType: stream ? 'stream' : 'arraybuffer',
+                // See axios/axios#1045 for why axios must not buffer a stream body to follow redirects. The fetch
+                // adapter turns this into `redirect: 'manual'`.
+                ...(isStream(body) || !followRedirects ? { maxRedirects: 0 } : {}),
+                ...(useFetch ? { adapter: 'fetch' } : {}),
+            })
+            .catch((error) => {
+                // Axios reports any abort as a cancellation.
+                throw headersTimeout?.signal.aborted ? headersTimeout.signal.reason : error;
+            })
+            .finally(() => clearTimeout(headersTimer));
 
         // `redirect: 'manual'` resolves to an opaque response with status 0 instead of the redirect.
         if (useFetch && response.status === 0) {
@@ -167,7 +185,8 @@ export class AxiosHttpClient extends HttpClient {
         return {
             status: response.status,
             headers: AxiosHeaders.from(response.headers as Record<string, string>).toJSON() as HttpResponseHeaders,
-            body: response.data as HttpResponseBody,
+            // `fetch` has no body stream for a response without a body, such as a 204.
+            body: (response.data ?? (stream ? new Blob([]).stream() : undefined)) as HttpResponseBody,
         };
     }
 

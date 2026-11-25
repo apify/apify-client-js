@@ -22,6 +22,7 @@ import {
     isBlob,
     isBuffer,
     isStream,
+    isWebStream,
     minForLimitParam,
     parseArgument,
     parseResponse,
@@ -541,6 +542,14 @@ export class KeyValueStoreClient extends ResourceClient {
 
         if (contentEncoding !== undefined && !runtime.isNode) {
             throw new Error('The contentEncoding option can only be used in Node.js environment.');
+        }
+
+        // A web stream is no request body the transports take, and it would serialize to JSON as `{}`.
+        if (isWebStream(value)) {
+            throw new TypeError(
+                'A web ReadableStream cannot be stored as a record value. ' +
+                    'Convert it with Readable.fromWeb() in Node.js, or read it into bytes first.',
+            );
         }
 
         const isBinaryValue = isStream(value) || isBuffer(value) || isBlob(value);

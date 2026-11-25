@@ -633,6 +633,8 @@ Readable.fromWeb(record.value as ReadableStream).pipe(fs.createWriteStream('vide
 
 The cast is only needed in a TypeScript project that includes the `DOM` library, whose `ReadableStream` type the Node.js types don't accept.
 
+<ApiLink to="class/KeyValueStoreClient#setRecord">`setRecord()`</ApiLink> still takes a `Readable` and throws for a web `ReadableStream`, so code that copies a record by passing the streamed `value` on has to convert it with `Readable.fromWeb()` as well.
+
 ### Raw bytes are typed as `Uint8Array`
 
 A binary key-value store record, the result of the `buffer` option of `getRecord()`, and of `DatasetClient.downloadItems()` are typed `Uint8Array`, where v2 typed them `Buffer`.

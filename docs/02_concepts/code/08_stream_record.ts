@@ -5,7 +5,7 @@ import { ApifyClient } from 'apify-client';
 
 const client = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
 
-// With `stream: true`, the record value is a Node.js `Readable`.
+// With `stream: true`, the record value is a web `ReadableStream`.
 const record = await client.keyValueStore('MY-KVS-ID').getRecord('video.mp4', { stream: true });
 
 if (record) {
