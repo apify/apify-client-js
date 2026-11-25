@@ -1,5 +1,3 @@
-import type { LiteralUnion } from 'type-fest';
-
 import { ApifyClientError } from './apify_client_error.js';
 import type { ApifyResponse } from './http_clients/base.js';
 import type { ErrorType } from './models.js';
@@ -59,7 +57,7 @@ export class ApifyApiError extends ApifyClientError {
      * The type of the error, as returned by the API. Typed as the known {@link ErrorType}
      * values for autocompletion, while still accepting any string the API may return.
      */
-    type?: LiteralUnion<ErrorType, string>;
+    type?: ErrorType | (string & Record<never, never>);
 
     /**
      * Number of the API call attempt.
