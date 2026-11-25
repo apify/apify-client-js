@@ -37,6 +37,21 @@ describe('AxiosHttpClient', () => {
         await httpClient.close();
     });
 
+    test('streams a response as a web stream, and cancelling it releases the connection', async () => {
+        const httpClient = new AxiosHttpClient();
+        const request = { url: `${baseUrl}/v2/users/me`, method: 'GET', responseType: 'stream' } as const;
+
+        const read = await httpClient.call<ReadableStream<Uint8Array>>(request);
+        expect(read.data).toBeInstanceOf(ReadableStream);
+        expect((await new Response(read.data).json()).data.id).toBe('get-user');
+
+        const cancelled = await httpClient.call<ReadableStream<Uint8Array>>(request);
+        await cancelled.data.cancel();
+        // A cancelled stream destroys its socket instead of handing it back to the pool.
+        await vi.waitFor(() => expect(Object.keys(httpClient.httpAgent!.sockets)).toEqual([]));
+        await httpClient.close();
+    });
+
     test('requests time out after the duration configured for their tier', async () => {
         const httpClient = new AxiosHttpClient({ timeoutShortSecs: 1, maxRetries: 0 });
 

@@ -670,12 +670,12 @@ export abstract class HttpClient {
             config.throwOnErrorStatus === false &&
             (!isRetryable || requestIsStream || attempt > this.maxRetries);
 
-        // A failed streaming request carries the API error body in the stream, so read it and let
-        // `ApifyApiError` parse it like any other error body. A body that cannot be read leaves the error
-        // without a message, which beats losing the status code to a stream error.
         // Transports return whichever stream and binary type their HTTP library has, and callers get the web ones.
         if (isStream(response.body)) response.body = runtime.streamToWeb(response.body);
 
+        // A failed streaming request carries the API error body in the stream, so read it and let
+        // `ApifyApiError` parse it like any other error body. A body that cannot be read leaves the error
+        // without a message, which beats losing the status code to a stream error.
         if (isError && !shouldReturnError && isWebStream(response.body)) {
             response.body = await new Response(response.body).arrayBuffer().catch(() => undefined);
         }

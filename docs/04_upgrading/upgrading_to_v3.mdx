@@ -621,7 +621,7 @@ The client returns the same types in every runtime, where v2 returned Node.js ty
 
 <ApiLink to="class/LogClient#stream">`LogClient.stream()`</ApiLink> and <ApiLink to="class/KeyValueStoreClient#getRecord">`getRecord({ stream: true })`</ApiLink> resolve to a web [`ReadableStream`](https://developer.mozilla.org/docs/Web/API/ReadableStream) of `Uint8Array` chunks, and so do the new `stream` option of <ApiLink to="class/DatasetClient#downloadItems">`DatasetClient.downloadItems()`</ApiLink> and `responseType: 'stream'`. In v2 they resolved to a Node.js `Readable`, and `getRecord({ stream: true })` threw outside Node.js.
 
-A `for await` loop over the stream keeps working. Code that calls `pipe()`, `on('data')`, `destroy()` or passes the stream to an API that takes a `Readable` has to convert it first, or switch to `pipeTo()` and `cancel()`:
+In Node.js, a `for await` loop over the stream keeps working. Code that calls `pipe()`, `on('data')`, `destroy()` or passes the stream to an API that takes a `Readable` has to convert it first, or switch to `pipeTo()` and `cancel()`:
 
 ```ts
 import { Readable } from 'node:stream';
