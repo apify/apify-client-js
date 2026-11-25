@@ -744,6 +744,8 @@ interface components {
         queueId: string;
         webhookId: string;
         scheduleId: string;
+        storeLimit: number;
+        storeOffset: number;
         buildOrRunId: string;
     };
     // (undocumented)
@@ -2349,12 +2351,18 @@ interface components {
             pictureUrl?: string | null;
             userPictureUrl?: string | null;
             url?: string | null;
-            stats: components["schemas"]["ActorStats"];
+            stats: {
+                totalUsers: number;
+                totalRuns?: number;
+                totalUsers7Days?: number;
+                totalUsers30Days?: number;
+                totalUsers90Days?: number;
+                actorReviewRating: number;
+                actorReviewCount: number;
+            };
             currentPricingInfo?: components["schemas"]["CurrentPricingInfo"];
             isWhiteListedForAgenticPayments?: boolean | null;
-            actorReviewCount?: number;
-            actorReviewRating?: number;
-            bookmarkCount?: number;
+            isVerified?: boolean;
             badge?: string | null;
             readmeSummary?: string;
             inputSchema?: {
@@ -4234,7 +4242,7 @@ export interface StoreCollectionListOptions extends PaginationOptions, TimeoutOp
     pricingModel?: string;
     // (undocumented)
     search?: string;
-    // (undocumented)
+    // @deprecated (undocumented)
     sortBy?: string;
     // (undocumented)
     username?: string;

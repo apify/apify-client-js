@@ -4485,8 +4485,13 @@ export interface paths {
          *     and readme.
          *     If you need detailed info about a specific Actor, use the [Get Actor](https://docs.apify.com/api/v2/actor-get) endpoint.
          *
-         *     The endpoint supports pagination using the `limit` and `offset` parameters.
-         *     It will not return more than 1,000 records.
+         *     Without `search`, the endpoint supports pagination using the `limit` and
+         *     `offset` parameters. It will not return more than 1,000 records per page.
+         *
+         *     With `search`, results are ranked by relevance and returned as a single
+         *     page of at most 100 records. `offset` is ignored and there is no second
+         *     page. `total` and `count` equal the number of returned items. To narrow
+         *     the results, use `category`, `username` or `pricingModel`.
          */
         get: operations["store_get"];
         put?: never;
@@ -9146,8 +9151,8 @@ export interface components {
             description?: string | null;
             /**
              * @example [
-             *       "MARKETING",
-             *       "LEAD_GENERATION"
+             *       "AI_AND_ML",
+             *       "GENERATE_LEADS"
              *     ]
              */
             categories?: string[];
@@ -9164,16 +9169,55 @@ export interface components {
              * @example https://...
              */
             url?: string | null;
-            stats: components["schemas"]["ActorStats"];
+            /**
+             * StoreActorStats
+             * @description Actor usage statistics and Apify Store metrics returned by the Store endpoint.
+             */
+            stats: {
+                /**
+                 * @description The total number of Actor users, including its owner.
+                 * @example 6
+                 */
+                totalUsers: number;
+                /**
+                 * @description The total number of runs of the Actor.
+                 * @example 16
+                 */
+                totalRuns?: number;
+                /**
+                 * @description The number of active users of the Actor in the last 7 days.
+                 * @example 2
+                 */
+                totalUsers7Days?: number;
+                /**
+                 * @description The number of active users of the Actor in the last 30 days.
+                 * @example 6
+                 */
+                totalUsers30Days?: number;
+                /**
+                 * @description The number of active users of the Actor in the last 90 days.
+                 * @example 6
+                 */
+                totalUsers90Days?: number;
+                /**
+                 * @description The average rating of the Actor in Apify Store.
+                 * @example 4.7
+                 */
+                actorReviewRating: number;
+                /**
+                 * @description The number of reviews the Actor has received in Apify Store.
+                 * @example 69
+                 */
+                actorReviewCount: number;
+            };
             currentPricingInfo?: components["schemas"]["CurrentPricingInfo"];
             /** @description Whether the Actor is whitelisted for agentic payment processing. */
             isWhiteListedForAgenticPayments?: boolean | null;
-            /** @example 69 */
-            actorReviewCount?: number;
-            /** @example 4.7 */
-            actorReviewRating?: number;
-            /** @example 1269 */
-            bookmarkCount?: number;
+            /**
+             * @description Whether the Actor's developer has a verified identity.
+             * @example false
+             */
+            isVerified?: boolean;
             /** @example null */
             badge?: string | null;
             /** @description A brief, LLM-generated readme summary */
@@ -9225,23 +9269,27 @@ export interface components {
          *             "name": "my-public-actor",
          *             "username": "jane35",
          *             "userFullName": "Jane Doe",
+         *             "categories": [
+         *               "AI_AND_ML",
+         *               "GENERATE_LEADS"
+         *             ],
          *             "description": "My public Actor!",
          *             "pictureUrl": "https://...",
          *             "userPictureUrl": "https://...",
          *             "url": "https://...",
          *             "stats": {
-         *               "totalBuilds": 9,
          *               "totalRuns": 16,
          *               "totalUsers": 6,
          *               "totalUsers7Days": 2,
          *               "totalUsers30Days": 6,
          *               "totalUsers90Days": 6,
-         *               "totalMetamorphs": 2,
-         *               "lastRunStartedAt": "2019-07-08T14:01:05.546Z"
+         *               "actorReviewRating": 4.7,
+         *               "actorReviewCount": 69
          *             },
          *             "currentPricingInfo": {
          *               "pricingModel": "FREE"
          *             },
+         *             "isVerified": true,
          *             "isWhiteListedForAgenticPayments": true
          *           },
          *           {
@@ -9251,26 +9299,25 @@ export interface components {
          *             "username": "jane35",
          *             "userFullName": "Jane H. Doe",
          *             "categories": [
-         *               "MARKETING",
-         *               "LEAD_GENERATION"
+         *               "ECOMMERCE"
          *             ],
          *             "description": "My public Actor!",
          *             "pictureUrl": "https://...",
          *             "userPictureUrl": "https://...",
          *             "url": "https://...",
          *             "stats": {
-         *               "totalBuilds": 9,
          *               "totalRuns": 16,
          *               "totalUsers": 6,
          *               "totalUsers7Days": 2,
          *               "totalUsers30Days": 6,
          *               "totalUsers90Days": 6,
-         *               "totalMetamorphs": 2,
-         *               "lastRunStartedAt": "2019-07-08T14:01:05.546Z"
+         *               "actorReviewRating": 4.7,
+         *               "actorReviewCount": 69
          *             },
          *             "currentPricingInfo": {
          *               "pricingModel": "FREE"
          *             },
+         *             "isVerified": false,
          *             "isWhiteListedForAgenticPayments": false
          *           }
          *         ]
@@ -10425,6 +10472,17 @@ export interface components {
         webhookId: string;
         /** @description Schedule ID. */
         scheduleId: string;
+        /**
+         * @description Maximum number of items to return. The default value as well as the
+         *     maximum is `1000`. When `search` is used, the default and maximum are
+         *     `100`, and larger values are reduced to `100`.
+         */
+        storeLimit: number;
+        /**
+         * @description Number of items that should be skipped at the start. The default value
+         *     is `0`. Ignored when `search` is used.
+         */
+        storeOffset: number;
         /** @description ID of the Actor build or run. */
         buildOrRunId: string;
     };
@@ -22095,21 +22153,38 @@ export interface operations {
     store_get: {
         parameters: {
             query?: {
-                /** @description Maximum number of items to return. The default value as well as the maximum is `1000`. */
-                limit?: components["parameters"]["limit"];
-                /** @description Number of items that should be skipped at the start. The default value is `0`. */
-                offset?: components["parameters"]["offset"];
                 /**
-                 * @description String to search by. The search runs on the following fields: `title`,
-                 *     `name`, `description`, `username`, `readme`.
+                 * @description Maximum number of items to return. The default value as well as the
+                 *     maximum is `1000`. When `search` is used, the default and maximum are
+                 *     `100`, and larger values are reduced to `100`.
+                 */
+                limit?: components["parameters"]["storeLimit"];
+                /**
+                 * @description Number of items that should be skipped at the start. The default value
+                 *     is `0`. Ignored when `search` is used.
+                 */
+                offset?: components["parameters"]["storeOffset"];
+                /**
+                 * @description String to search by. Results are ranked by relevance and returned as a
+                 *     single page of at most 100 items.
                  */
                 search?: string;
                 /**
-                 * @description Specifies the field by which to sort the results. The supported values
-                 *     are `relevance` (default), `popularity`, `newest` and `lastUpdate`.
+                 * @deprecated
+                 * @description Deprecated and ignored. The value is accepted for backward
+                 *     compatibility but has no effect. Results are ordered by relevance when
+                 *     `search` is used, and by Store position otherwise. Sort the results
+                 *     on the client if you need a different order.
                  */
                 sortBy?: string;
-                /** @description Filters the results by the specified category. */
+                /**
+                 * @description Filters the results by category. Accepts one or more category IDs,
+                 *     separated by commas and case-insensitive. An Actor must match all of
+                 *     the listed categories. See the
+                 *     [list of category IDs](https://github.com/apify/apify-shared-js/blob/master/packages/actor-categories/src/actor_categories.ts).
+                 *     Legacy keys such as `social_media` are still accepted. An unknown
+                 *     category returns a `400` error.
+                 */
                 category?: string;
                 /** @description Filters the results by the specified username. */
                 username?: string;
