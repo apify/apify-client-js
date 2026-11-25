@@ -23,29 +23,46 @@ export type RequestInterceptorFunction = Parameters<AxiosInterceptorManager<Inte
 export interface AxiosHttpClientOptions extends HttpClientOptions {
     /** @default [] */
     requestInterceptors?: RequestInterceptorFunction[];
+    /**
+     * Agent for plain HTTP requests in Node.js, in place of the built-in keep-alive one. A proxy agent goes here
+     * and in {@link httpsAgent}. The client does not destroy an agent it was given.
+     */
+    httpAgent?: http.Agent;
+    /** Agent for HTTPS requests in Node.js, in place of the built-in keep-alive one. Requests to the Apify API use it. */
+    httpsAgent?: https.Agent;
 }
 
 /**
- * The default HTTP client of {@link ApifyClient}, built on [axios](https://axios-http.com).
+ * An HTTP client for {@link ApifyClient} built on [axios](https://axios-http.com), which was the transport of the
+ * client before version 3. It is exported from `apify-client/axios` and needs the `axios` package installed
+ * next to the client.
  *
- * It inherits the request pipeline from {@link HttpClient} and adds the transport: in Node.js, keep-alive agents
- * that honor the `HTTP_PROXY`, `HTTPS_PROXY` and `NO_PROXY` environment variables; in the browser, the XHR
- * adapter of axios, or its fetch adapter for a request that must not follow redirects. Network errors are retried,
- * timeouts included, and a stream body is sent without following redirects, since the part of it already sent could
- * not be replayed.
+ * It inherits the request pipeline from {@link HttpClient} and adds the transport: in Node.js, keep-alive agents;
+ * in the browser, the XHR adapter of axios, or its fetch adapter for a request that must not follow redirects.
+ * Network errors are retried, timeouts included, and a stream body is sent without following redirects, since the
+ * part of it already sent could not be replayed. The proxy environment variables are not read: pass a proxy agent
+ * in {@link AxiosHttpClientOptions.httpAgent} and {@link AxiosHttpClientOptions.httpsAgent} instead.
+ *
+ * @example
+ * ```javascript
+ * import { ApifyClient } from 'apify-client';
+ * import { AxiosHttpClient } from 'apify-client/axios';
+ *
+ * const client = ApifyClient.withCustomHttpClient({ token: 'my-token', httpClient: new AxiosHttpClient() });
+ * ```
  */
 export class AxiosHttpClient extends HttpClient {
     /** The axios instance the requests go through. */
     axios: AxiosInstance;
 
-    /**
-     * Keep-alive agent for plain HTTP, created with the first request in Node.js. It is the same `ProxyAgent` as
-     * {@link httpsAgent}, so the socket pool is shared across both schemes.
-     */
+    /** Agent for plain HTTP: the one from the options, or a keep-alive one created with the first request in Node.js. */
     httpAgent?: http.Agent;
 
-    /** Keep-alive agent for HTTPS. The same instance as {@link httpAgent}. */
+    /** Agent for HTTPS: the one from the options, or a keep-alive one created with the first request in Node.js. */
     httpsAgent?: https.Agent;
+
+    /** The built-in agents, which are the ones `close()` destroys. */
+    #ownAgents: (http.Agent | https.Agent)[] = [];
 
     #httpAgentsPromise?: Promise<void>;
 
@@ -53,7 +70,7 @@ export class AxiosHttpClient extends HttpClient {
         super(options);
 
         this.axios = axios.create({
-            // The agents handle the proxy environment variables.
+            // Axios cannot tunnel HTTPS through a proxy on its own, so a proxy is left to the agents.
             proxy: false,
             validateStatus: null,
             // The shared pipeline serializes and parses the bodies, so axios only moves bytes.
@@ -70,6 +87,9 @@ export class AxiosHttpClient extends HttpClient {
 
         // The pipeline merges every header the client sends, so the axios defaults would only get in the way.
         this.axios.defaults.headers = new AxiosHeaders() as any;
+
+        this.httpAgent = options.httpAgent;
+        this.httpsAgent = options.httpsAgent;
 
         for (const interceptor of options.requestInterceptors ?? []) {
             this.axios.interceptors.request.use(interceptor);
@@ -101,14 +121,13 @@ export class AxiosHttpClient extends HttpClient {
     }
 
     /**
-     * Destroys the keep-alive agents, closing every pooled socket. A client that never sent a request in Node.js
-     * has nothing to close.
+     * Destroys the built-in keep-alive agents, closing every pooled socket. A client that never sent a request in
+     * Node.js has nothing to close, and agents passed in the options are left to their owner.
      */
     override async close(): Promise<void> {
         // A failed initialization left nothing to release, and its error belongs to the request that hit it.
         await this.#httpAgentsPromise?.catch(() => {});
-        this.httpAgent?.destroy();
-        this.httpsAgent?.destroy();
+        for (const agent of this.#ownAgents.splice(0)) agent.destroy();
     }
 
     /**
@@ -158,11 +177,17 @@ export class AxiosHttpClient extends HttpClient {
 
     async #initHttpAgents(): Promise<void> {
         const agents = await runtime.createHttpAgents({ timeoutMillis: this.timeoutMaxMillis });
-        if (!agents) return;
+        if (agents) {
+            this.httpAgent ??= this.#own(agents.httpAgent);
+            this.httpsAgent ??= this.#own(agents.httpsAgent);
+        }
 
-        this.httpAgent = agents.httpAgent;
-        this.httpsAgent = agents.httpsAgent;
         this.axios.defaults.httpAgent = this.httpAgent;
         this.axios.defaults.httpsAgent = this.httpsAgent;
+    }
+
+    #own<T extends http.Agent>(agent: T): T {
+        this.#ownAgents.push(agent);
+        return agent;
     }
 }

@@ -25,6 +25,28 @@ export default defineConfig({
                 },
             },
             {
+                // The same suite with `AxiosHttpClient` as the default transport, to keep the two clients in step.
+                extends: true,
+                resolve: {
+                    alias: [
+                        {
+                            find: /^\.\/http_clients\/fetch\.js$/,
+                            replacement: resolve(import.meta.dirname, 'test/_axios_as_default.ts'),
+                        },
+                    ],
+                },
+                test: {
+                    name: 'unit-axios',
+                    include: ['test/**/*.test.{js,ts,mts}'],
+                    // `http_client.test.ts` covers the fetch client itself, which this project replaces.
+                    exclude: [...configDefaults.exclude, 'test/integration/**', 'test/http_client.test.ts'],
+                    globals: true,
+                    environment: 'node',
+                    testTimeout: 20_000,
+                    env: { APIFY_TEST_HTTP_CLIENT: 'axios' },
+                },
+            },
+            {
                 extends: true,
                 test: {
                     name: 'integration',

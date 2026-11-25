@@ -62,7 +62,9 @@ options of the `ApifyClient` constructor.
 
 ### Pluggable HTTP client
 
-The client ships with an axios-based HTTP client and accepts a custom one. Extend `HttpClient`, implement
+The client sends its requests through the `fetch` of the runtime and accepts a custom HTTP client. The axios-based
+client of version 2 is available from `apify-client/axios`, with `axios` installed next to the client. For a client
+of your own, extend `HttpClient`, implement
 `sendRequest()` over the HTTP library of your choice and plug it in with `ApifyClient.withCustomHttpClient()`. The
 custom client inherits the retries, timeouts, compression and error handling of the built-in one.
 
@@ -163,7 +165,7 @@ The package includes a pre-built browser bundle that bundlers targeting browsers
 import { ApifyClient } from 'apify-client/browser';
 ```
 
-Only two parts of the client need Node.js built-ins: the HTTP agents and request compression. The `node` condition selects the Node.js implementation of those, and every other target gets one built on Web APIs. Log streaming, proxy support, and request compression are only available in Node.js.
+Only two parts of the client need Node.js built-ins: streamed responses and request compression. The `node` condition selects the Node.js implementation of those, and every other target gets one built on Web APIs. Log streaming and request compression are only available in Node.js.
 
 For details, see [Bundled environments](https://docs.apify.com/api/client/js/docs/concepts/bundled-environments).
 

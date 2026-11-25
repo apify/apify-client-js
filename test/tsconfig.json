@@ -13,6 +13,7 @@
         "paths": {
             // The entry file, not the `../src` directory: `nodenext` has no directory index lookup.
             "apify-client": ["../src/index.ts"],
+            "apify-client/axios": ["../src/axios.ts"],
             "#runtime": ["../src/runtime/node.ts"]
         }
     },
