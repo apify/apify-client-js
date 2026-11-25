@@ -14,7 +14,7 @@ export interface CompressionOptions {
 }
 
 /**
- * The agents axios's Node.js adapter sends requests through.
+ * The agents the Node.js adapter of axios sends requests through.
  * @internal
  */
 export interface HttpAgents {
@@ -36,6 +36,11 @@ export interface Runtime {
      */
     isNode: boolean;
     /**
+     * Whether a failed `fetch` rejects with a `TypeError` that names the network error as its `cause`, which is
+     * what Node.js does. Bun and Deno resolve the `node` condition too, and their `fetch` does not.
+     */
+    fetchFailsWithCause: boolean;
+    /**
      * The platform part of the `User-Agent` header, or `undefined` where the runtime does not let a client
      * set that header (browsers).
      */
@@ -47,10 +52,20 @@ export interface Runtime {
      */
     compress(data: Uint8Array, options: CompressionOptions): Promise<Buffer>;
     /**
-     * Creates the agents axios's Node.js adapter sends requests through, or resolves to `undefined` where
-     * axios does not use agents.
+     * Creates the keep-alive agents the Node.js adapter of axios sends requests through, or resolves to `undefined`
+     * where axios does not use agents.
      */
     createHttpAgents(options: { timeoutMillis: number }): Promise<HttpAgents | undefined>;
+    /**
+     * Wraps the body of a `fetch` response in a `Readable`, an empty one for a response without a body. Throws
+     * where the runtime has no `Readable`, since streamed responses are a Node.js feature.
+     */
+    readableFromWeb(body: ReadableStream<Uint8Array> | null): Readable;
+    /**
+     * Explains how to make `fetch` use the proxy named in the environment variables, or returns `undefined` when
+     * none is set, the runtime already honors them, or it has no environment to read.
+     */
+    unusedProxyHint(): string | undefined;
     /**
      * Opens a `Blob` request body for one attempt. The Node.js implementation reads the blob into a `Readable` and
      * reports an error the blob raises while it is read to `onSourceError` before the stream fails with it, so the

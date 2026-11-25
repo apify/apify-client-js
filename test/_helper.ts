@@ -55,6 +55,9 @@ export class Browser {
     }
 }
 
+/** The `unit-axios` project runs the suite with `AxiosHttpClient` as the default HTTP client. */
+export const usesAxios = process.env.APIFY_TEST_HTTP_CLIENT === 'axios';
+
 export const DEFAULT_OPTIONS = {
     token: 'default-token',
 };

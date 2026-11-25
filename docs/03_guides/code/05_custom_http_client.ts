@@ -6,7 +6,7 @@ import type { HttpRequest, HttpResponse } from 'apify-client';
 
 const RETRYABLE_CODES = new Set(['ECONNREFUSED', 'ECONNRESET', 'EPIPE', 'ETIMEDOUT', 'EAI_AGAIN', 'UND_ERR_SOCKET']);
 
-class FetchHttpClient extends HttpClient {
+class MyFetchHttpClient extends HttpClient {
     override async sendRequest(request: HttpRequest): Promise<HttpResponse> {
         const { method, url, headers, body, timeoutMillis, stream, followRedirects, signal } = request;
 
@@ -41,7 +41,7 @@ class FetchHttpClient extends HttpClient {
 
 const client = ApifyClient.withCustomHttpClient({
     token: 'MY-APIFY-TOKEN',
-    httpClient: new FetchHttpClient({ maxRetries: 4, timeoutLongSecs: 60 }),
+    httpClient: new MyFetchHttpClient({ maxRetries: 4, timeoutLongSecs: 60 }),
 });
 
 const user = await client.user('me').get();

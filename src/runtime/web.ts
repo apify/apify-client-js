@@ -6,6 +6,8 @@ import type { Runtime } from './types.js';
 export const runtime: Runtime = {
     isNode: false,
 
+    fetchFailsWithCause: false,
+
     // Browsers do not let a page set the `User-Agent` header.
     platform: undefined,
 
@@ -18,6 +20,15 @@ export const runtime: Runtime = {
 
     // The XHR and fetch adapters of axios do not use agents.
     async createHttpAgents() {
+        return undefined;
+    },
+
+    readableFromWeb(): never {
+        throw new Error('Streamed responses are only available in Node.js.');
+    },
+
+    // A browser applies the proxy settings of the system on its own.
+    unusedProxyHint() {
         return undefined;
     },
 

@@ -19,6 +19,10 @@
     "exports": {
         "./package.json": "./package.json",
         "./browser": "./dist/bundle.js",
+        "./axios": {
+            "types": "./dist/axios.d.ts",
+            "default": "./dist/axios.js"
+        },
         ".": {
             "types": "./dist/index.d.ts",
             "browser": "./dist/bundle.js",
@@ -62,6 +66,7 @@
         "prepublishOnly": "(test $CI || (echo \"Publishing is reserved to CI!\"; exit 1))",
         "clean": "rimraf dist tsconfig.tsbuildinfo",
         "test": "pnpm build && vitest run --project unit",
+        "test:axios": "pnpm build && vitest run --project unit-axios",
         "test:integration": "vitest run --project integration",
         "test:all": "pnpm build && vitest run",
         "test:bundling": "pnpm build && pnpm --prefix=./test/bundling run bundle:all",
@@ -90,12 +95,18 @@
         "@apify/utilities": "^3.1.1",
         "@apify/validations": "^1.1.4",
         "ansi-colors": "^4.1.3",
-        "axios": "^1.21.1",
         "content-type": "^3.1.1",
-        "proxy-agent": "^8.0.3",
         "tslib": "^2.9.1",
         "type-fest": "^5.10.0",
         "zod": "^4.6.7"
+    },
+    "peerDependencies": {
+        "axios": "^1.21.1"
+    },
+    "peerDependenciesMeta": {
+        "axios": {
+            "optional": true
+        }
     },
     "devDependencies": {
         "@apify/oxlint-config": "^0.4.1",
@@ -109,6 +120,7 @@
         "@types/express": "^5.0.6",
         "@types/node": "^26.6.6",
         "ajv": "^8.20.0",
+        "axios": "^1.21.1",
         "body-parser": "^2.4.0",
         "compression": "^1.8.2",
         "esbuild": "0.28.2",
