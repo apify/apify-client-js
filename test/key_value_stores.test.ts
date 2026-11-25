@@ -370,19 +370,15 @@ describe('Key-Value Store methods', () => {
 
             const res = await client.keyValueStore(storeId).getRecord(key, options);
 
-            expect(res?.value).toBeInstanceOf(Readable);
-            const chunks: Buffer[] = [];
-            for await (const chunk of res!.value as unknown as Readable) {
-                chunks.push(chunk);
-            }
-            res!.value = Buffer.concat(chunks).toString();
+            expect(res?.value).toBeInstanceOf(ReadableStream);
+            res!.value = await new Response(res!.value as unknown as ReadableStream).text();
             expect(res).toEqual(expectedResult);
             validateRequest({ query: { attachment: 'true' }, params: { storeId, key } });
 
             const browserRes = await page.evaluate(
                 async (id, k, opts) => {
                     const record = await client.keyValueStore(id).getRecord(k, opts);
-                    const stream = record!.value as unknown as ReadableStream<Uint8Array>;
+                    const stream = record!.value as unknown as ReadableStream;
                     const isWebStream = stream instanceof ReadableStream;
                     return { ...record, isWebStream, value: await new Response(stream).text() };
                 },

@@ -1,5 +1,3 @@
-import type { Readable } from 'node:stream';
-
 import { z } from 'zod';
 
 import { ApifyClientError } from '../apify_client_error.js';
@@ -203,9 +201,8 @@ export class ActorServerClient extends ResourceClient {
      * The body is compressed under the same conditions as for API calls. Set it only if the Actor's server decodes
      * the resulting `Content-Encoding`.
      * @param options.responseType - How to return the response body: `'parsed'` by its content type, `'buffer'` as
-     * raw bytes, or `'stream'` as a Readable stream with the body unread. A stream holds its connection open until
-     * you consume it to the end or destroy it. Outside Node.js, the stream is a web ReadableStream and the raw bytes
-     * a Uint8Array. Default is `'parsed'`.
+     * raw bytes in a Uint8Array, or `'stream'` as a web ReadableStream with the body unread. A stream holds its
+     * connection open until you consume it to the end or cancel it. Default is `'parsed'`.
      * @param options.timeoutSecs - Timeout for the HTTP request. Default is `'long'`. With `'stream'`, it bounds the
      * wait for the server to start responding.
      * @returns The response of the Actor's server, with the body in the form `responseType` asks for. An error
@@ -224,12 +221,12 @@ export class ActorServerClient extends ResourceClient {
     async request(
         path: string,
         options: ActorServerRequestOptions & { responseType: 'buffer' },
-    ): Promise<ApifyResponse<Buffer>>;
+    ): Promise<ApifyResponse<Uint8Array>>;
 
     async request(
         path: string,
         options: ActorServerRequestOptions & { responseType: 'stream' },
-    ): Promise<ApifyResponse<Readable>>;
+    ): Promise<ApifyResponse<ReadableStream<Uint8Array>>>;
 
     async request(path?: string, options?: ActorServerRequestOptions): Promise<ApifyResponse>;
 
@@ -320,9 +317,8 @@ export interface ActorServerRequestOptions extends TimeoutOptions {
      */
     compression?: HttpCompressionAlgorithm | HttpCompressor;
     /**
-     * How to return the response body: `'parsed'` by its content type, `'buffer'` as raw bytes, or `'stream'` as a
-     * Readable stream with the body unread. Outside Node.js, the stream is a web ReadableStream and the raw bytes a
-     * Uint8Array.
+     * How to return the response body: `'parsed'` by its content type, `'buffer'` as raw bytes in a Uint8Array, or
+     * `'stream'` as a web ReadableStream with the body unread.
      * @default 'parsed'
      */
     responseType?: ApifyResponseType;

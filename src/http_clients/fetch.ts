@@ -136,7 +136,7 @@ export class FetchHttpClient extends HttpClient {
                 status: response.status,
                 headers: toResponseHeaders(response.headers),
                 // The timeout covers a streamed response only until its headers, and the caller's signal throughout.
-                body: stream ? runtime.streamFromWeb(response.body) : await readBody(response, restartTimeout),
+                body: stream ? (response.body ?? new Blob([]).stream()) : await readBody(response, restartTimeout),
             };
         } catch (error) {
             if (!this.#fetch && this.isRetryableTransportError(error)) this.#warnAboutUnusedProxy();

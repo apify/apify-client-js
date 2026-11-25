@@ -236,11 +236,11 @@ export class ActorServerClient extends ResourceClient {
     // (undocumented)
     request(path: string, options: ActorServerRequestOptions & {
         responseType: 'buffer';
-    }): Promise<ApifyResponse<Buffer>>;
+    }): Promise<ApifyResponse<Uint8Array>>;
     // (undocumented)
     request(path: string, options: ActorServerRequestOptions & {
         responseType: 'stream';
-    }): Promise<ApifyResponse<Readable>>;
+    }): Promise<ApifyResponse<ReadableStream<Uint8Array>>>;
     // (undocumented)
     request(path?: string, options?: ActorServerRequestOptions): Promise<ApifyResponse>;
 }
@@ -2676,13 +2676,13 @@ export class DatasetClient<Data extends Record<string | number, any> = Record<st
     delete(options?: TimeoutOptions): Promise<void>;
     downloadItems(format: `${DownloadItemsFormat}`, options?: DatasetClientDownloadItemsOptions & {
         stream?: false;
-    }): Promise<Buffer>;
+    }): Promise<Uint8Array>;
     // (undocumented)
     downloadItems(format: `${DownloadItemsFormat}`, options: DatasetClientDownloadItemsOptions & {
         stream: true;
-    }): Promise<Readable>;
+    }): Promise<ReadableStream<Uint8Array>>;
     // (undocumented)
-    downloadItems(format: `${DownloadItemsFormat}`, options?: DatasetClientDownloadItemsOptions): Promise<Buffer | Readable>;
+    downloadItems(format: `${DownloadItemsFormat}`, options?: DatasetClientDownloadItemsOptions): Promise<Uint8Array | ReadableStream<Uint8Array>>;
     get(options?: TimeoutOptions): Promise<DatasetResource | undefined>;
     getStatistics(options?: TimeoutOptions): Promise<DatasetStatistics>;
     listItems(options?: DatasetClientListItemOptions): PaginatedIterator<Data>;
@@ -3442,10 +3442,10 @@ export class LogClient extends ResourceClient {
     // (undocumented)
     get(options: LogGetOptions & {
         buffer: true;
-    }): Promise<Buffer | undefined>;
+    }): Promise<Uint8Array | undefined>;
     // (undocumented)
-    get(options?: LogGetOptions): Promise<string | Buffer | undefined>;
-    stream(options?: LogOptions): Promise<Readable | undefined>;
+    get(options?: LogGetOptions): Promise<string | Uint8Array | undefined>;
+    stream(options?: LogOptions): Promise<ReadableStream<Uint8Array> | undefined>;
 }
 
 // @public
@@ -3892,7 +3892,7 @@ export class ResponseValidationError extends ApifyClientError {
 }
 
 // @public
-export type ReturnTypeFromOptions<Options extends KeyValueClientGetRecordOptions> = Options['stream'] extends true ? Readable : Options['buffer'] extends true ? Buffer : JsonValue;
+export type ReturnTypeFromOptions<Options extends KeyValueClientGetRecordOptions> = Options['stream'] extends true ? ReadableStream<Uint8Array> : Options['buffer'] extends true ? Uint8Array : JsonValue;
 
 // @public
 export interface Run extends Omit<Schemas['Run'], keyof RunRePointed | keyof RunClientNarrowings>, RunRePointed, RunClientNarrowings {

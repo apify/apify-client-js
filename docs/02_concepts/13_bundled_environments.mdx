@@ -37,16 +37,4 @@ These features rely on Node.js APIs and aren't available in the browser bundle o
 - Request body compression.
 - The `User-Agent` header, which browsers don't let a page set.
 
-## Streams and raw bytes
-
-Streamed responses work everywhere, but the stream is the one native to the runtime. <ApiLink to="class/LogClient#stream">`LogClient.stream()`</ApiLink>, the `stream` option of <ApiLink to="class/DatasetClient#downloadItems">`DatasetClient.downloadItems()`</ApiLink> and <ApiLink to="class/KeyValueStoreClient#getRecord">`KeyValueStoreClient.getRecord()`</ApiLink>, and `responseType: 'stream'` return a Node.js `Readable` under the `node` condition and a web [`ReadableStream`](https://developer.mozilla.org/docs/Web/API/ReadableStream) of `Uint8Array` chunks in the browser bundle and in the Web API runtime:
-
-```ts
-const record = await client.keyValueStore('my-store').getRecord('video.mp4', { stream: true });
-const stream = record.value as unknown as ReadableStream<Uint8Array>;
-const blob = await new Response(stream).blob();
-```
-
-Raw bytes, such as a binary record or the result of the `buffer` option, are a `Buffer` under the `node` condition and a plain `Uint8Array` everywhere else. A `Buffer` is a `Uint8Array` too, so code that sticks to the `Uint8Array` API runs in every runtime.
-
-The published types describe the Node.js values, `Readable` and `Buffer`, so TypeScript code for another runtime has to cast a stream as in the example above.
+Streamed responses and raw bytes use Web APIs, so they work the same way in every runtime: <ApiLink to="class/LogClient#stream">`LogClient.stream()`</ApiLink> and the `stream` option of <ApiLink to="class/DatasetClient#downloadItems">`DatasetClient.downloadItems()`</ApiLink> and <ApiLink to="class/KeyValueStoreClient#getRecord">`KeyValueStoreClient.getRecord()`</ApiLink> return a web [`ReadableStream`](https://developer.mozilla.org/docs/Web/API/ReadableStream), and raw bytes are a `Uint8Array`.

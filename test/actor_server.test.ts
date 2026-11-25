@@ -1,6 +1,5 @@
 import http from 'node:http';
 import type { AddressInfo } from 'node:net';
-import { Readable } from 'node:stream';
 import { gunzipSync, gzipSync } from 'node:zlib';
 
 import {
@@ -373,14 +372,14 @@ describe('ActorServerClient', () => {
         const response = await client.actor(ACTOR_ID).server().request('/', { responseType: 'buffer' });
 
         expect(Buffer.isBuffer(response.data)).toBe(true);
-        expect(JSON.parse(response.data.toString())).toEqual({ ok: true });
+        expect(JSON.parse(new TextDecoder().decode(response.data))).toEqual({ ok: true });
     });
 
     test('request() returns the body unread with the stream response type', async () => {
         const response = await client.actor(ACTOR_ID).server().request('/', { responseType: 'stream' });
 
-        expect(response.data).toBeInstanceOf(Readable);
-        expect(JSON.parse(Buffer.concat(await response.data.toArray()).toString())).toEqual({ ok: true });
+        expect(response.data).toBeInstanceOf(ReadableStream);
+        expect(await new Response(response.data).json()).toEqual({ ok: true });
     });
 
     test('request() rejects an unknown method without sending a request', async () => {

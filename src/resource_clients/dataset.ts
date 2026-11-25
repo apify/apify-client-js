@@ -1,5 +1,3 @@
-import type { Readable } from 'node:stream';
-
 import { z } from 'zod';
 
 import type { STORAGE_GENERAL_ACCESS } from '@apify/consts';
@@ -261,12 +259,12 @@ export class DatasetClient<
      *
      * Unlike {@link listItems} which returns a {@link PaginatedList} with an array of individual
      * dataset items, this method returns the items serialized to the provided format
-     * (JSON, CSV, Excel, etc.) as a Buffer. Useful for exporting data for further processing.
+     * (JSON, CSV, Excel, etc.) as a Uint8Array. Useful for exporting data for further processing.
      *
-     * You can use the `stream` option to get a Readable stream, so a large export is processed in chunks without
-     * holding all of it in memory. The stream holds its connection open until you consume it to the end or destroy
-     * it. Iterating it with `for await` or passing it to `pipeline()` from `node:stream/promises` does either one
-     * for you. Outside Node.js, the stream is a web ReadableStream, which `cancel()` closes early.
+     * You can use the `stream` option to get a web ReadableStream, so a large export is processed in chunks without
+     * holding all of it in memory. The stream holds its connection open until you consume it to the end or cancel
+     * it. Iterating it with `for await` or piping it with `pipeTo()` does either one for you. In Node.js,
+     * `Readable.fromWeb()` turns it into a Readable.
      *
      * @param format - Output format: `'json'`, `'jsonl'`, `'csv'`, `'xlsx'`, `'xml'`, `'rss'`, or `'html'`
      * @param options - Download and formatting options (extends all options from {@link listItems})
@@ -278,13 +276,13 @@ export class DatasetClient<
      * @param options.xmlRow - Name of the XML element for each item. Default is `'item'`.
      * @param options.fields - Array of field names to include in the export.
      * @param options.omit - Array of field names to exclude from the export.
-     * @param options.stream - If `true`, the items are returned as a Readable stream (Node.js) or a web
-     *                         ReadableStream (browser).
+     * @param options.stream - If `true`, the items are returned as a web ReadableStream.
      * @param options.timeoutSecs - Timeout for the API request. Default is `'long'`. With `stream`, it bounds the
      * wait for the API to start responding; once the stream is returned, it only limits inactivity: the stream errors
-     * if no data arrives for that long. To stop the download early or cap its total duration, destroy the stream or
+     * if no data arrives for that long. To stop the download early or cap its total duration, cancel the stream or
      * abort `signal`.
-     * @returns Buffer containing the serialized data in the specified format, or a Readable stream of it with `stream`
+     * @returns Uint8Array containing the serialized data in the specified format, or a web ReadableStream of it with
+     * `stream`
      * @see https://docs.apify.com/api/v2/dataset-items-get
      *
      * @example
@@ -316,22 +314,22 @@ export class DatasetClient<
     async downloadItems(
         format: `${DownloadItemsFormat}`,
         options?: DatasetClientDownloadItemsOptions & { stream?: false },
-    ): Promise<Buffer>;
+    ): Promise<Uint8Array>;
 
     async downloadItems(
         format: `${DownloadItemsFormat}`,
         options: DatasetClientDownloadItemsOptions & { stream: true },
-    ): Promise<Readable>;
+    ): Promise<ReadableStream<Uint8Array>>;
 
     async downloadItems(
         format: `${DownloadItemsFormat}`,
         options?: DatasetClientDownloadItemsOptions,
-    ): Promise<Buffer | Readable>;
+    ): Promise<Uint8Array | ReadableStream<Uint8Array>>;
 
     async downloadItems(
         format: `${DownloadItemsFormat}`,
         options: DatasetClientDownloadItemsOptions = {},
-    ): Promise<Buffer | Readable> {
+    ): Promise<Uint8Array | ReadableStream<Uint8Array>> {
         parseArgument(format, itemFormatSchema);
         const {
             timeoutSecs = 'long',
@@ -584,7 +582,7 @@ export interface DatasetClientDownloadItemsOptions extends Omit<DatasetClientLis
     xmlRoot?: string;
     xmlRow?: string;
     /**
-     * If `true`, the items are returned as a Readable stream (Node.js) or a web ReadableStream (browser).
+     * If `true`, the items are returned as a web ReadableStream.
      * @default false
      */
     stream?: boolean;

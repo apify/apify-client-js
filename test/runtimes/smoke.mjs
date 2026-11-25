@@ -173,8 +173,8 @@ const checks = {
     },
     'downloads a stream': async () => {
         const { data } = await call({ url: `${baseUrl}/download`, responseType: 'stream' });
-        assert.ok(data instanceof Readable);
-        assert.equal(sha256(await readAll(data)), sha256(PAYLOAD));
+        assert.ok(data instanceof ReadableStream);
+        assert.equal(sha256(Buffer.from(await new Response(data).arrayBuffer())), sha256(PAYLOAD));
     },
 };
 

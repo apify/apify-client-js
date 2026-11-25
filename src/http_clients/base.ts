@@ -6,7 +6,6 @@ import { z } from 'zod';
 import { APIFY_ENV_VARS } from '@apify/consts';
 import type { Log } from '@apify/log';
 import log from '@apify/log';
-import { concatStreamToBuffer } from '@apify/utilities';
 
 import { ApifyApiError } from '../apify_api_error.js';
 import { maybeParseBody } from '../body_parser.js';
@@ -82,9 +81,10 @@ export type HttpResponseHeaders = Record<string, string | string[] | undefined>;
 export type HttpRequestBody = string | Buffer | ArrayBuffer | ArrayBufferView | Readable | Blob;
 
 /**
- * A response body as the transport hands it back: the raw bytes, a `Readable` or a web `ReadableStream` when the
- * request asked for a streamed response, or `undefined` when the response carried no body. The pipeline hands the
- * bytes on as a `Buffer` in Node.js and as a `Uint8Array` elsewhere, whichever of the binary types they arrive in.
+ * A response body as the transport hands it back: the raw bytes, a web `ReadableStream` or a `Readable` when the
+ * request asked for a streamed response, or `undefined` when the response carried no body. The pipeline hands the bytes
+ * on as a `Uint8Array` (a `Buffer` in Node.js) and the stream as a web `ReadableStream`, whichever of the
+ * types they arrive in.
  */
 export type HttpResponseBody = Uint8Array | ArrayBuffer | Readable | ReadableStream<Uint8Array> | undefined;
 
@@ -92,9 +92,9 @@ export type HttpResponseBody = Uint8Array | ArrayBuffer | Readable | ReadableStr
  * How {@link HttpClient.call} hands back the response body.
  *
  * - `parsed` (the default) decodes it by content type: JSON becomes an object, text and XML become a string, anything
- *   else stays a `Buffer` (a `Uint8Array` outside Node.js).
- * - `buffer` skips the decoding and hands back the raw bytes, as a `Buffer` (a `Uint8Array` outside Node.js).
- * - `stream` hands back the body unread, as a `Readable` (a web `ReadableStream` outside Node.js).
+ *   else stays a `Uint8Array`.
+ * - `buffer` skips the decoding and hands back the raw bytes as a `Uint8Array`.
+ * - `stream` hands back the body unread, as a web `ReadableStream` of `Uint8Array` chunks.
  */
 export type ApifyResponseType = 'parsed' | 'buffer' | 'stream';
 
@@ -212,7 +212,7 @@ export interface HttpRequest {
      * `timeoutSecs: 'noTimeout'` asks for.
      */
     timeoutMillis?: number;
-    /** Whether to hand the body back unread as a `Readable` or a web `ReadableStream`, so the caller can stream it. */
+    /** Whether to hand the body back unread as a web `ReadableStream` or a `Readable`, so the caller can stream it. */
     stream: boolean;
     /**
      * Whether to follow redirects. With `false`, return a redirect response as it is: the request carries a token
@@ -234,7 +234,7 @@ export interface HttpResponse {
     status: number;
     /** Response headers keyed by lowercase header name. */
     headers: HttpResponseHeaders;
-    /** The body as raw bytes, or unread as a `Readable` or a web `ReadableStream` when the request asked for a stream. */
+    /** The body as raw bytes, or unread as a web `ReadableStream` or a `Readable` when the request asked for a stream. */
     body: HttpResponseBody;
 }
 
@@ -315,7 +315,7 @@ export interface HttpClientOptions {
  *         return {
  *             status: response.status,
  *             headers: Object.fromEntries(response.headers),
- *             body: Buffer.from(await response.arrayBuffer()),
+ *             body: await response.arrayBuffer(),
  *         };
  *     }
  *
@@ -673,11 +673,13 @@ export abstract class HttpClient {
         // A failed streaming request carries the API error body in the stream, so read it and let
         // `ApifyApiError` parse it like any other error body. A body that cannot be read leaves the error
         // without a message, which beats losing the status code to a stream error.
-        if (isError && !shouldReturnError && (isStream(response.body) || isWebStream(response.body))) {
-            response.body = await readStream(response.body).catch(() => undefined);
+        // Transports return whichever stream and binary type their HTTP library has, and callers get the web ones.
+        if (isStream(response.body)) response.body = runtime.streamToWeb(response.body);
+
+        if (isError && !shouldReturnError && isWebStream(response.body)) {
+            response.body = await new Response(response.body).arrayBuffer().catch(() => undefined);
         }
 
-        // Transports return whichever binary type their HTTP library has, and callers get one type per runtime.
         if (isBuffer(response.body)) response.body = toResponseBytes(response.body);
 
         let data: unknown;
@@ -727,7 +729,7 @@ export abstract class HttpClient {
     #parseResponseBody(response: HttpResponse, config: ApifyRequestConfig): unknown {
         const { body } = response;
         if (config.responseType === 'stream' || config.responseType === 'buffer') return body;
-        if (body === undefined || isStream(body) || isWebStream(body)) return body;
+        if (body === undefined || !isBuffer(body)) return body;
         if (body.byteLength === 0) return undefined;
 
         try {
@@ -868,11 +870,7 @@ function withCause(error: unknown, cause: unknown): unknown {
     return error;
 }
 
-async function readStream(stream: Readable | ReadableStream<Uint8Array>): Promise<Buffer | ArrayBuffer> {
-    return isStream(stream) ? concatStreamToBuffer(stream) : new Response(stream).arrayBuffer();
-}
-
-/** Views response bytes as a `Buffer` in Node.js and as a `Uint8Array` elsewhere, without copying them. */
+/** Views response bytes as a `Uint8Array` without copying them: a `Buffer` in Node.js, which v2 callers rely on. */
 function toResponseBytes(body: Uint8Array | ArrayBuffer): Uint8Array {
     if (runtime.isNode && Buffer.isBuffer(body)) return body;
     const bytes = toBytes(body)!;

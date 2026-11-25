@@ -1,5 +1,4 @@
 import type { AddressInfo } from 'node:net';
-import { Readable } from 'node:stream';
 
 import { ApifyApiError, ApifyClient, ArgumentValidationError, DownloadItemsFormat } from 'apify-client';
 import type { Page } from 'puppeteer';
@@ -320,9 +319,9 @@ describe('Dataset methods', () => {
             mockServer.setResponse({ body, headers });
 
             const res = await client.dataset(datasetId).downloadItems(format, options);
-            expectTypeOf(res).toEqualTypeOf<Buffer>();
+            expectTypeOf(res).toEqualTypeOf<Uint8Array>();
             expect(res).toBeInstanceOf(Buffer);
-            const resString = res.toString('utf-8');
+            const resString = new TextDecoder().decode(res);
             expect(resString).toBe(body);
             validateRequest({ query: { format, ...options }, params: { datasetId } });
 
@@ -385,23 +384,15 @@ describe('Dataset methods', () => {
             };
 
             const res = await client.dataset(datasetId).downloadItems(format, { ...options, stream: true });
-            expectTypeOf(res).toEqualTypeOf<Readable>();
-            expect(res).toBeInstanceOf(Readable);
-            const chunks: Buffer[] = [];
-            for await (const chunk of res) {
-                chunks.push(chunk);
-            }
-            expect(Buffer.concat(chunks).toString()).toBe(body);
+            expectTypeOf(res).toEqualTypeOf<ReadableStream<Uint8Array>>();
+            expect(res).toBeInstanceOf(ReadableStream);
+            expect(await new Response(res).text()).toBe(body);
             validateRequest({ query: { format, bom: 0, delimiter: ';', fields: 'a,b' }, params: { datasetId } });
 
             const browserRes = await page.evaluate(
                 async (id, f, opts) => {
                     const stream = await client.dataset(id).downloadItems(f, { ...opts, stream: true });
-                    const webStream = stream as unknown as ReadableStream<Uint8Array>;
-                    return {
-                        isWebStream: webStream instanceof ReadableStream,
-                        text: await new Response(webStream).text(),
-                    };
+                    return { isWebStream: stream instanceof ReadableStream, text: await new Response(stream).text() };
                 },
                 datasetId,
                 format,

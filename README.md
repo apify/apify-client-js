@@ -165,7 +165,7 @@ The package includes a pre-built browser bundle that bundlers targeting browsers
 import { ApifyClient } from 'apify-client/browser';
 ```
 
-Only two parts of the client need Node.js built-ins: streamed responses and request compression. The `node` condition selects the Node.js implementation of those, and every other target gets one built on Web APIs. There, a streamed response is a web `ReadableStream` and raw bytes are a `Uint8Array`, and log redirection and request compression are not available.
+Only two parts of the client need Node.js built-ins: streamed responses and request compression. The `node` condition selects the Node.js implementation of those, and every other target gets one built on Web APIs. Log redirection and request compression are only available in Node.js.
 
 For details, see [Bundled environments](https://docs.apify.com/api/client/js/docs/concepts/bundled-environments).
 
