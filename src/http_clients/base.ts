@@ -1,6 +1,5 @@
 import type { Readable } from 'node:stream';
 
-import type { TypedArray } from 'type-fest';
 import { z } from 'zod';
 
 import { APIFY_ENV_VARS } from '@apify/consts';
@@ -37,6 +36,7 @@ import {
     toBytes,
     version,
 } from '../utils.js';
+import type { TypedArray } from '../utils.js';
 
 export type { HttpMethod } from '../models.js';
 

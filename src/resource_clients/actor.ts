@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import type { ValueOf } from '@apify/consts';
 import { ACTOR_JOB_STATUSES, ACTOR_PERMISSION_LEVEL, META_ORIGINS } from '@apify/consts';
 import { Log } from '@apify/log';
 
@@ -23,7 +24,6 @@ import { RunClient } from './run.js';
 import { RunCollectionClient } from './run_collection.js';
 import type { WebhookUpdateData } from './webhook.js';
 import { WebhookCollectionClient } from './webhook_collection.js';
-import type { ValueOf } from 'type-fest';
 
 const startOptionsSchema = z.strictObject({
     build: z.string().optional(),

@@ -1,6 +1,5 @@
 import type { Readable } from 'node:stream';
 
-import type { TypedArray } from 'type-fest';
 import { z } from 'zod';
 
 import type { ApifyApiError } from './apify_api_error.js';
@@ -521,3 +520,42 @@ export async function sleep(millis: number, signal?: AbortSignal): Promise<void>
         signal?.addEventListener('abort', onAbort, { once: true });
     });
 }
+
+/** Any string, written so that a union with string literals keeps suggesting the literals. */
+export type AnyString = string & {};
+
+/** Any valid JSON value. */
+export type JsonValue =
+    | string
+    | number
+    | boolean
+    | null
+    | { [Key in string]: JsonValue }
+    | JsonValue[]
+    | readonly JsonValue[];
+
+/**
+ * Any JSON object.
+ * @internal
+ */
+export type JsonObject = { [Key in string]: JsonValue };
+
+/**
+ * Any JSON array.
+ * @internal
+ */
+export type JsonArray = JsonValue[] | readonly JsonValue[];
+
+/** Any typed array, such as `Uint8Array` or `Float64Array`. */
+export type TypedArray =
+    | Int8Array
+    | Uint8Array
+    | Uint8ClampedArray
+    | Int16Array
+    | Uint16Array
+    | Int32Array
+    | Uint32Array
+    | Float32Array
+    | Float64Array
+    | BigInt64Array
+    | BigUint64Array;
