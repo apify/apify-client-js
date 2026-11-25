@@ -87,7 +87,7 @@ describe('Node.js runtime', () => {
             vi.stubEnv('http_proxy', 'http://proxy.example.com:3128');
             const hint = nodeRuntime.unusedProxyHint();
             expect(hint).toMatch('the proxy set in http_proxy was not used');
-            expect(hint).toMatch('NODE_USE_ENV_PROXY=1 or --use-env-proxy');
+            expect(hint).toMatch('Start Node.js with NODE_USE_ENV_PROXY=1 to send');
         });
 
         test.each([

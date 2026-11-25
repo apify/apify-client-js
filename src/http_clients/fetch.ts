@@ -49,8 +49,8 @@ const INVALID_REQUEST_ERROR_CODES = new Set([
  * of the body, so a large download does not time out while it makes progress.
  *
  * In Node.js, `fetch` keeps connections alive on its own, and goes through a proxy only when Node.js is told to
- * read the `HTTP_PROXY`, `HTTPS_PROXY` and `NO_PROXY` environment variables: start it with `NODE_USE_ENV_PROXY=1` or
- * `--use-env-proxy`, available since Node.js 22.21 and 24.0.
+ * read the `HTTP_PROXY`, `HTTPS_PROXY` and `NO_PROXY` environment variables: start it with `NODE_USE_ENV_PROXY=1`
+ * (Node.js 22.21 and 24.0) or `--use-env-proxy` (Node.js 22.21 and 24.5).
  */
 export class FetchHttpClient extends HttpClient {
     readonly #fetch?: FetchFunction;

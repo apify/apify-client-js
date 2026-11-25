@@ -79,9 +79,9 @@ export const runtime: Runtime = {
         if (supported && enabled) return undefined;
 
         const fix = supported
-            ? 'Start Node.js with NODE_USE_ENV_PROXY=1 or --use-env-proxy to send the requests through it.'
+            ? 'Start Node.js with NODE_USE_ENV_PROXY=1 to send the requests through it.'
             : `Node.js ${process.versions.node} cannot route fetch() through it: upgrade to Node.js 22.21 or 24, ` +
-              'then start it with NODE_USE_ENV_PROXY=1 or --use-env-proxy.';
+              'then start it with NODE_USE_ENV_PROXY=1.';
         return (
             `The request failed, and the proxy set in ${names[0]} was not used, since fetch() in Node.js ignores the ` +
             `proxy environment variables by default. ${fix} ` +

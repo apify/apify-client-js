@@ -540,7 +540,7 @@ Nothing changes at runtime. `TaskClient.start()` and `call()` keep taking a `Dic
 
 ## Proxies are opt-in
 
-In v2 the client read the `HTTP_PROXY`, `HTTPS_PROXY` and `NO_PROXY` environment variables on its own, through the `proxy-agent` package. v3 sends its requests through the `fetch` of the runtime and no longer depends on `proxy-agent`, so in Node.js a proxy applies only when Node.js itself is told to read those variables. Start it with `NODE_USE_ENV_PROXY=1` or the `--use-env-proxy` flag, which Node.js 22.21 and 24 and newer support:
+In v2 the client read the `HTTP_PROXY`, `HTTPS_PROXY` and `NO_PROXY` environment variables on its own, through the `proxy-agent` package. v3 sends its requests through the `fetch` of the runtime and no longer depends on `proxy-agent`, so in Node.js a proxy applies only when Node.js itself is told to read those variables. Start it with `NODE_USE_ENV_PROXY=1`, which Node.js 22.21 and 24 and newer support (the `--use-env-proxy` flag does the same on 22.21 and on 24.5 and newer):
 
 ```bash
 export NODE_USE_ENV_PROXY=1
