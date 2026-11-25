@@ -116,6 +116,25 @@ describe('Run methods', () => {
             expect(browserRes).toEqual(res);
             validateRequest({ query: expectedQuery, endpointId: 'list-runs' });
         });
+
+        test('list() works with the standby deployment filter', async () => {
+            const query = {
+                status: 'RUNNING' as const,
+                deployment: ['SINGLE_TENANT' as const, 'MULTI_TENANT_OWNER_PAID' as const],
+            };
+
+            const expectedQuery = {
+                ...query,
+                deployment: 'SINGLE_TENANT,MULTI_TENANT_OWNER_PAID',
+            };
+
+            const res = await client.runs().list(query);
+            validateRequest({ query: expectedQuery, endpointId: 'list-runs' });
+
+            const browserRes = await page.evaluate((opts) => client.runs().list(opts), query);
+            expect(browserRes).toEqual(res);
+            validateRequest({ query: expectedQuery, endpointId: 'list-runs' });
+        });
     });
 
     describe('run()', () => {
