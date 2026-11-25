@@ -43,6 +43,9 @@ jobs:
         needs: [release_metadata, wait_for_checks]
         name: Update changelog
         runs-on: ubuntu-latest
+        environment:
+            name: npm
+            deployment: false
         outputs:
             changelog_commitish: ${{ steps.commit.outputs.commit_long_sha }}
 
