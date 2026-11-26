@@ -21,6 +21,7 @@ automatic retries and convenience functions that improve the experience of using
     - [Nested clients](#nested-clients)
     - [Pagination](#pagination)
 - [API Reference](#api-reference)
+- [Supported versions](#supported-versions)
 
 <!-- tocstop -->
 
@@ -172,3 +173,7 @@ For details, see [Bundled environments](https://docs.apify.com/api/client/js/doc
 ## API Reference
 
 All public classes, methods and their parameters can be inspected in the [API reference](https://docs.apify.com/api/client/js/reference).
+
+## Supported versions
+
+New features and bug fixes land in the latest major version. The previous major version keeps receiving fixes for high and critical severity vulnerabilities for 12 months after the next major is released, and reaches end of life after that. See the [security policy](https://github.com/apify/apify-client-js/security/policy) for the current status of each version and for how to report a vulnerability.
