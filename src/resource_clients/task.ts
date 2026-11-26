@@ -9,7 +9,7 @@ import type { Task, TaskPublicConfig } from '../models.js';
 import type { TimeoutOptions } from '../timeouts.js';
 import type { Dictionary } from '../utils.js';
 import * as schemas from '../schemas.js';
-import { timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
+import { renamedRunTimeoutShape, timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
 import {
     anyObjectSchema,
     cast,
@@ -29,6 +29,7 @@ const startOptionsSchema = z.strictObject({
     build: z.string().optional(),
     memory: z.number().optional(),
     runTimeoutSecs: z.number().min(0).optional(),
+    ...renamedRunTimeoutShape,
     waitForFinish: z.number().optional(),
     webhooks: z.array(anyObjectSchema).optional(),
     maxItems: z.number().min(0).optional(),
@@ -41,6 +42,7 @@ const callOptionsSchema = z.strictObject({
     build: z.string().optional(),
     memory: z.number().optional(),
     runTimeoutSecs: z.number().min(0).optional(),
+    ...renamedRunTimeoutShape,
     waitSecs: z.number().min(0).optional(),
     webhooks: z.array(anyObjectSchema).optional(),
     maxItems: z.number().min(0).optional(),

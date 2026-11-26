@@ -348,6 +348,23 @@ describe('Client timeouts', () => {
         expect(mockHttpClient.lastCall.timeoutSecs).toBe('medium');
     });
 
+    test('the v2 `timeout` run option is rejected with a pointer to runTimeoutSecs', async () => {
+        // Typed as a variable on purpose: an object literal would be caught by the excess property check alone.
+        const v2Options = { memory: 256, timeout: 120 };
+        const renamed = 'The option was renamed to `runTimeoutSecs`';
+
+        // @ts-expect-error -- `timeout` is declared as `never`
+        await expect(client.actor('a').start(undefined, v2Options)).rejects.toThrow(renamed);
+        // @ts-expect-error -- `timeout` is declared as `never`
+        await expect(client.actor('a').call(undefined, v2Options)).rejects.toThrow(renamed);
+        // @ts-expect-error -- `timeout` is declared as `never`
+        await expect(client.task('t').start(undefined, v2Options)).rejects.toThrow(renamed);
+        // @ts-expect-error -- `timeout` is declared as `never`
+        await expect(client.task('t').call(undefined, v2Options)).rejects.toThrow(renamed);
+        // @ts-expect-error -- `timeout` is declared as `never`
+        await expect(client.run('r').resurrect(v2Options)).rejects.toThrow(renamed);
+    });
+
     test.each([
         { timeoutSecs: 0, reason: 'zero' },
         { timeoutSecs: -1, reason: 'a negative number' },
