@@ -685,6 +685,12 @@ const client = ApifyClient.withCustomHttpClient({
 
 It no longer reads the proxy environment variables either. Pass a proxy agent in its `httpAgent` and `httpsAgent` options instead, as described in [Proxies](../02_concepts/09_custom_http_clients.mdx#proxies). It also keeps a separate keep-alive agent for each of HTTP and HTTPS, where v2 shared one.
 
+The entry point is meant for Node.js. An `ApifyClient` imported from the pre-built browser bundle rejects an `AxiosHttpClient`, so a browser application that passed `requestInterceptors` in v2 has to move to a `fetch` wrapper.
+
+### Idle connections close sooner in Node.js
+
+`fetch` in Node.js closes a connection that has been idle for about 4 seconds, where the agents of v2 kept it until the server closed it. A request that follows a longer pause therefore opens a new connection. To keep them open longer, see [Default HTTP client](../02_concepts/09_custom_http_clients.mdx#default-http-client).
+
 ### Transport errors are the errors of `fetch`
 
 An error that isn't an API error, such as a refused connection or a timeout, is no longer an `AxiosError`. A network failure is the `TypeError` that `fetch` throws, with the underlying error and its `code` in `cause` in Node.js, where v2 had the `code` on the error itself. A timeout is a `DOMException` named `TimeoutError` with the same `timeout of 30000ms exceeded` message as in v2. Use <ApiLink to="class/HttpClient#isTimeoutError">`client.httpClient.isTimeoutError(error)`</ApiLink> to recognize one whatever the transport, instead of checking for `AxiosError` or `ECONNABORTED`.

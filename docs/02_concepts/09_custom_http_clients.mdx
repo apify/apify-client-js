@@ -40,6 +40,20 @@ Anything beyond those options is configured on a <ApiLink to="class/FetchHttpCli
 
 The timeout of a request runs until the response headers arrive and starts over with every chunk of the response body, so a large download doesn't time out while it makes progress. In Node.js, the same goes for an upload whose body is a stream or a `Blob`. Any other body has to be sent within the timeout.
 
+In Node.js, `fetch` closes a connection that has been idle for about 4 seconds, unless the server asks for a longer time, so a request that follows a longer pause opens a new one. The axios client keeps an idle connection until the server closes it. To keep connections of the default client open longer, pass a `fetch` that goes through an [undici](https://undici.nodejs.org) `Agent` with a longer `keepAliveTimeout`:
+
+```js
+import { ApifyClient, FetchHttpClient } from 'apify-client';
+import { Agent, fetch as undiciFetch } from 'undici';
+
+const dispatcher = new Agent({ keepAliveTimeout: 60_000 });
+const httpClient = new FetchHttpClient({
+    fetch: (input, init) => undiciFetch(input, { ...init, dispatcher }),
+});
+
+const client = ApifyClient.withCustomHttpClient({ token: 'MY-APIFY-TOKEN', httpClient });
+```
+
 ## Axios HTTP client
 
 Up to version 2, the client sent its requests through axios. That transport is still available as `AxiosHttpClient`, for code that depends on axios behavior such as [request interceptors](https://axios-http.com/docs/interceptors) or `http.Agent` instances. It has an entry point of its own, `apify-client/axios`, and `axios` is an optional peer dependency, so install it next to the client:
@@ -52,7 +66,7 @@ npm install axios
     {AxiosHttpClientExample}
 </CodeBlock>
 
-In Node.js, it creates keep-alive agents with its first request, or uses the ones you pass in the `httpAgent` and `httpsAgent` options. The entry point isn't part of the pre-built browser bundle. In a browser, use it with a bundler that resolves `apify-client` to the ES module build, as described in [Bundled environments](./13_bundled_environments.mdx).
+In Node.js, it creates keep-alive agents with its first request, or uses the ones you pass in the `httpAgent` and `httpsAgent` options. The entry point is meant for Node.js. It isn't part of the pre-built browser bundle, and an `ApifyClient` imported from that bundle rejects an `AxiosHttpClient`.
 
 ## Proxies
 
