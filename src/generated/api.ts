@@ -5083,7 +5083,7 @@ export interface components {
              * @description The contents of the file. Interpreted based on the value of `format`.
              * @example console.log('This is the main.js file');
              */
-            content?: string;
+            content?: string | null;
             /**
              * @description The path of the file relative to the Actor's root directory.
              * @example src/main.js
@@ -5409,7 +5409,7 @@ export interface components {
             eventPriceUsd?: number;
             eventTieredPricingUsd?: components["schemas"]["TieredPricingPerEvent"];
             /** @description Whether this event is the Actor's primary chargeable event. */
-            isPrimaryEvent?: boolean;
+            isPrimaryEvent?: boolean | null;
             /** @description Whether this event can only be charged once per Actor run. */
             isOneTimeEvent?: boolean | null;
         };
@@ -5660,7 +5660,7 @@ export interface components {
              *       "OPEN_SOURCE"
              *     ]
              */
-            categories?: string[];
+            categories?: string[] | null;
             /**
              * @description Whether the Actor is maintained by Apify.
              * @example false
@@ -5909,7 +5909,7 @@ export interface components {
             /** @example Actor run {{resource.id}} finished. */
             body?: string;
             /** @example csv */
-            attachmentFormat?: string;
+            attachmentFormat?: string | null;
             attachmentTransformation?: components["schemas"]["WebhookDatasetTransformation"];
         };
         /**
@@ -6098,7 +6098,7 @@ export interface components {
          * RunOrigin
          * @enum {string}
          */
-        RunOrigin: "DEVELOPMENT" | "WEB" | "API" | "SCHEDULER" | "TEST" | "WEBHOOK" | "ACTOR" | "CLI" | "CI" | "STANDBY" | "MCP";
+        RunOrigin: "DEVELOPMENT" | "WEB" | "API" | "SCHEDULER" | "TEST" | "WEBHOOK" | "ACTOR" | "CLI" | "CI" | "STANDBY" | "MCP" | "APIFY_AI";
         /** BuildMeta */
         BuildMeta: {
             origin: components["schemas"]["RunOrigin"];
@@ -6679,9 +6679,9 @@ export interface components {
              * @description Name of the integration platform.
              * @example zapier
              */
-            platform?: string;
+            platform?: string | null;
             /** @description ID of the integration app. */
-            appId?: string;
+            appId?: string | null;
             /**
              * @description Whether the resource was created by an AI tool.
              * @example false
@@ -9110,7 +9110,7 @@ export interface components {
              * @description Length of the free trial in minutes. Present only for `FLAT_PRICE_PER_MONTH` pricing.
              * @example 1440
              */
-            trialMinutes?: number;
+            trialMinutes?: number | null;
             /**
              * @description Name of the charged unit. Present only for `PRICE_PER_DATASET_ITEM` pricing.
              * @example result
@@ -9155,7 +9155,7 @@ export interface components {
              *       "GENERATE_LEADS"
              *     ]
              */
-            categories?: string[];
+            categories?: string[] | null;
             notice?: components["schemas"]["ActorNotice"];
             /** @example https://... */
             pictureUrl?: string | null;
@@ -10012,6 +10012,23 @@ export interface components {
                 "application/json": components["schemas"]["ErrorResponse"];
             };
         };
+        /** @description Conflict - the request could not be completed due to a conflict with the current state of the resource. */
+        Conflict: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                /**
+                 * @example {
+                 *       "error": {
+                 *         "type": "actor-name-not-unique",
+                 *         "message": "Record with the given name already exists."
+                 *       }
+                 *     }
+                 */
+                "application/json": components["schemas"]["ErrorResponse"];
+            };
+        };
         /** @description Payload too large - the request body exceeds the size limit. */
         PayloadTooLarge: {
             headers: {
@@ -10098,23 +10115,6 @@ export interface components {
                  *       "error": {
                  *         "type": "run-timeout-exceeded",
                  *         "message": "Actor run exceeded the timeout of 300 seconds for this API endpoint"
-                 *       }
-                 *     }
-                 */
-                "application/json": components["schemas"]["ErrorResponse"];
-            };
-        };
-        /** @description Conflict - the request could not be completed due to a conflict with the current state of the resource. */
-        Conflict: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                /**
-                 * @example {
-                 *       "error": {
-                 *         "type": "actor-name-not-unique",
-                 *         "message": "Record with the given name already exists."
                  *       }
                  *     }
                  */
@@ -10706,6 +10706,7 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             405: components["responses"]["MethodNotAllowed"];
+            409: components["responses"]["Conflict"];
             413: components["responses"]["PayloadTooLarge"];
             415: components["responses"]["UnsupportedMediaType"];
             429: components["responses"]["TooManyRequests"];
@@ -11860,6 +11861,7 @@ export interface operations {
                 };
             };
             400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
             404: components["responses"]["NotFound"];
             405: components["responses"]["MethodNotAllowed"];
             408: components["responses"]["Timeout"];

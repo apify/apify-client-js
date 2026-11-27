@@ -793,6 +793,14 @@ interface components {
                 "application/json": components["schemas"]["ErrorResponse"];
             };
         };
+        Conflict: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ErrorResponse"];
+            };
+        };
         PayloadTooLarge: {
             headers: {
                 [name: string]: unknown;
@@ -832,14 +840,6 @@ interface components {
             };
         };
         Timeout: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                "application/json": components["schemas"]["ErrorResponse"];
-            };
-        };
-        Conflict: {
             headers: {
                 [name: string]: unknown;
             };
@@ -911,7 +911,7 @@ interface components {
         SourceCodeFileFormat: "BASE64" | "TEXT";
         SourceCodeFile: {
             format?: components["schemas"]["SourceCodeFileFormat"];
-            content?: string;
+            content?: string | null;
             name: string;
         };
         SourceCodeFolder: {
@@ -1018,7 +1018,7 @@ interface components {
             eventDescription: string;
             eventPriceUsd?: number;
             eventTieredPricingUsd?: components["schemas"]["TieredPricingPerEvent"];
-            isPrimaryEvent?: boolean;
+            isPrimaryEvent?: boolean | null;
             isOneTimeEvent?: boolean | null;
         };
         PayPerEventActorPricingInfo: components["schemas"]["CommonActorPricingInfo"] & {
@@ -1097,7 +1097,7 @@ interface components {
             pictureUrl?: string | null;
             standbyUrl?: string | null;
             notice?: components["schemas"]["ActorNotice"];
-            categories?: string[];
+            categories?: string[] | null;
             isCritical?: boolean;
             isGeneric?: boolean;
             isSourceCodeHidden?: boolean;
@@ -1185,7 +1185,7 @@ interface components {
             emailTo?: string[];
             subject?: string;
             body?: string;
-            attachmentFormat?: string;
+            attachmentFormat?: string | null;
             attachmentTransformation?: components["schemas"]["WebhookDatasetTransformation"];
         };
         WebhookGoogleDrive: {
@@ -1262,7 +1262,7 @@ interface components {
             data: components["schemas"]["ListOfActorOAuthConnections"];
         };
         ActorJobStatus: "READY" | "RUNNING" | "SUCCEEDED" | "FAILED" | "TIMING-OUT" | "TIMED-OUT" | "ABORTING" | "ABORTED";
-        RunOrigin: "DEVELOPMENT" | "WEB" | "API" | "SCHEDULER" | "TEST" | "WEBHOOK" | "ACTOR" | "CLI" | "CI" | "STANDBY" | "MCP";
+        RunOrigin: "DEVELOPMENT" | "WEB" | "API" | "SCHEDULER" | "TEST" | "WEBHOOK" | "ACTOR" | "CLI" | "CI" | "STANDBY" | "MCP" | "APIFY_AI";
         BuildMeta: {
             origin: components["schemas"]["RunOrigin"];
             clientIp?: string;
@@ -1450,8 +1450,8 @@ interface components {
             eventTitle: string;
         };
         IntegrationTracking: {
-            platform?: string;
-            appId?: string;
+            platform?: string | null;
+            appId?: string | null;
             isAiTool?: boolean;
         };
         RunOptions: {
@@ -2329,7 +2329,7 @@ interface components {
                 [key: string]: unknown;
             } | null;
             pricePerUnitUsd?: number;
-            trialMinutes?: number;
+            trialMinutes?: number | null;
             unitName?: string;
             tieredPricing?: {
                 [key: string]: {
@@ -2345,7 +2345,7 @@ interface components {
             username: string;
             userFullName?: string | null;
             description?: string | null;
-            categories?: string[];
+            categories?: string[] | null;
             notice?: components["schemas"]["ActorNotice"];
             pictureUrl?: string | null;
             userPictureUrl?: string | null;
