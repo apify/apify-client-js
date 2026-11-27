@@ -86,7 +86,7 @@ export const SourceCodeFileFormat = lazySchema(() => z.enum(["BASE64", "TEXT"]).
 /** Represents a single file in the Actor's source code. */
 export const SourceCodeFile = lazySchema(() => z.looseObject({
     format: SourceCodeFileFormat().optional(),
-    content: z.string().optional(),
+    content: z.string().nullable().optional(),
     name: z.string(),
 }));
 
@@ -219,7 +219,7 @@ export const ActorChargeEvent = lazySchema(() => z.looseObject({
     eventDescription: z.string(),
     eventPriceUsd: z.number().optional(),
     eventTieredPricingUsd: TieredPricingPerEvent().optional(),
-    isPrimaryEvent: z.boolean().optional(),
+    isPrimaryEvent: z.boolean().nullable().optional(),
     isOneTimeEvent: z.boolean().nullable().optional(),
 }));
 
@@ -304,7 +304,7 @@ export const ActorResource = lazySchema(() => z.looseObject({
     pictureUrl: z.string().nullable().optional(),
     standbyUrl: z.string().nullable().optional(),
     notice: ActorNotice().optional(),
-    categories: z.array(z.string()).optional(),
+    categories: z.array(z.string()).nullable().optional(),
     isCritical: z.boolean().optional(),
     isGeneric: z.boolean().optional(),
     isSourceCodeHidden: z.boolean().optional(),
@@ -412,7 +412,7 @@ export const WebhookGoogleMail = lazySchema(() => z.looseObject({
     emailTo: z.array(z.string()).optional(),
     subject: z.string().optional(),
     body: z.string().optional(),
-    attachmentFormat: z.string().optional(),
+    attachmentFormat: z.string().nullable().optional(),
     attachmentTransformation: WebhookDatasetTransformation().optional(),
 }));
 
@@ -508,7 +508,7 @@ export const ListOfActorOAuthConnectionsResponse = lazySchema(() => z.looseObjec
 /** Status of an Actor job (run or build). */
 export const ActorJobStatus = lazySchema(() => z.enum(["READY", "RUNNING", "SUCCEEDED", "FAILED", "TIMING-OUT", "TIMED-OUT", "ABORTING", "ABORTED"]).or(z.string()));
 
-export const RunOrigin = lazySchema(() => z.enum(["DEVELOPMENT", "WEB", "API", "SCHEDULER", "TEST", "WEBHOOK", "ACTOR", "CLI", "CI", "STANDBY", "MCP"]).or(z.string()));
+export const RunOrigin = lazySchema(() => z.enum(["DEVELOPMENT", "WEB", "API", "SCHEDULER", "TEST", "WEBHOOK", "ACTOR", "CLI", "CI", "STANDBY", "MCP", "APIFY_AI"]).or(z.string()));
 
 export const BuildMeta = lazySchema(() => z.looseObject({
     origin: RunOrigin(),
@@ -723,8 +723,8 @@ export const RunEventUsage = lazySchema(() => z.looseObject({
 
 /** Information about the third-party integration that created the resource. */
 export const IntegrationTracking = lazySchema(() => z.looseObject({
-    platform: z.string().optional(),
-    appId: z.string().optional(),
+    platform: z.string().nullable().optional(),
+    appId: z.string().nullable().optional(),
     isAiTool: z.boolean().optional(),
 }));
 
@@ -1804,7 +1804,7 @@ export const CurrentPricingInfo = lazySchema(() => z.looseObject({
     minimalMaxTotalChargeUsd: z.number().nullable().optional(),
     pricingPerEvent: z.record(z.string(), z.unknown()).nullable().optional(),
     pricePerUnitUsd: z.number().optional(),
-    trialMinutes: z.int().optional(),
+    trialMinutes: z.int().nullable().optional(),
     unitName: z.string().optional(),
     tieredPricing: z.record(z.string(), z.looseObject({
         tieredPricePerUnitUsd: z.number().optional(),
@@ -1819,7 +1819,7 @@ export const StoreActor = lazySchema(() => z.looseObject({
     username: z.string(),
     userFullName: z.string().nullable().optional(),
     description: z.string().nullable().optional(),
-    categories: z.array(z.string()).optional(),
+    categories: z.array(z.string()).nullable().optional(),
     notice: ActorNotice().optional(),
     pictureUrl: z.string().nullable().optional(),
     userPictureUrl: z.url({ normalize: true }).nullable().optional(),
