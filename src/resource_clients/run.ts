@@ -9,7 +9,13 @@ import { ResourceClient } from '../base/resource_client.js';
 import type { ApifyRequestConfig, ApifyResponse } from '../http_clients/index.js';
 import type { TimeoutOptions } from '../timeouts.js';
 import * as schemas from '../schemas.js';
-import { optionalSignalSchema, optionalTimeoutSchema, timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
+import {
+    optionalSignalSchema,
+    optionalTimeoutSchema,
+    renamedRunTimeoutShape,
+    timeoutOptionsSchema,
+    timeoutOptionsShape,
+} from '../timeouts.js';
 import { runtime } from '#runtime';
 import type { PaginatedList, PaginationOptions } from '../utils.js';
 import { anyObjectSchema, paginationOptionsShape, parseArgument, parseResponse } from '../utils.js';
@@ -33,6 +39,7 @@ const resurrectOptionsSchema = z.strictObject({
     build: z.string().optional(),
     memory: z.number().optional(),
     runTimeoutSecs: z.number().optional(),
+    ...renamedRunTimeoutShape,
     maxItems: z.number().optional(),
     maxTotalChargeUsd: z.number().optional(),
     restartOnError: z.boolean().optional(),
@@ -707,6 +714,11 @@ export interface RunResurrectOptions extends TimeoutOptions {
     memory?: number;
     /** Timeout for the resurrected run in seconds. If not provided, the run keeps its original timeout. */
     runTimeoutSecs?: number;
+    /**
+     * The v2 name of `runTimeoutSecs`. The client rejects it, so that a leftover does not drop the run limit.
+     * @deprecated Use `runTimeoutSecs`.
+     */
+    timeout?: never;
     /**
      * @since Added in 2.12.1
      */

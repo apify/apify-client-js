@@ -280,6 +280,8 @@ export interface ActorStartOptions extends TimeoutOptions {
     memory?: number;
     restartOnError?: boolean;
     runTimeoutSecs?: number;
+    // @deprecated
+    timeout?: never;
     waitForFinish?: number;
     waitForResources?: boolean | number;
     webhooks?: readonly WebhookUpdateData[];
@@ -4049,6 +4051,8 @@ export interface RunResurrectOptions extends TimeoutOptions {
     memory?: number;
     restartOnError?: boolean;
     runTimeoutSecs?: number;
+    // @deprecated
+    timeout?: never;
 }
 
 // @public

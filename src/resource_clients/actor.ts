@@ -11,7 +11,7 @@ import type { ActorResource, Run } from '../models.js';
 import type { TimeoutOptions } from '../timeouts.js';
 import type { Dictionary } from '../utils.js';
 import * as schemas from '../schemas.js';
-import { timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
+import { renamedRunTimeoutShape, timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
 import { anyObjectSchema, isAnyStream, parseArgument, parseResponse, stringifyWebhooksToBase64 } from '../utils.js';
 import { startWaitingForResources } from '../wait_for_resources.js';
 import { ActorServerClient } from './actor_server.js';
@@ -30,6 +30,7 @@ const startOptionsSchema = z.strictObject({
     contentType: z.string().optional(),
     memory: z.number().optional(),
     runTimeoutSecs: z.number().min(0).optional(),
+    ...renamedRunTimeoutShape,
     waitForFinish: z.number().optional(),
     webhooks: z.array(anyObjectSchema).optional(),
     maxItems: z.number().min(0).optional(),
@@ -44,6 +45,7 @@ const callOptionsSchema = z.strictObject({
     contentType: z.string().optional(),
     memory: z.number().optional(),
     runTimeoutSecs: z.number().min(0).optional(),
+    ...renamedRunTimeoutShape,
     waitSecs: z.number().min(0).optional(),
     webhooks: z.array(anyObjectSchema).optional(),
     maxItems: z.number().min(0).optional(),
@@ -687,6 +689,11 @@ export interface ActorStartOptions extends TimeoutOptions {
      * If not provided, the run uses the timeout of the default Actor run configuration.
      */
     runTimeoutSecs?: number;
+    /**
+     * The v2 name of `runTimeoutSecs`. The client rejects it, so that a leftover does not drop the run limit.
+     * @deprecated Use `runTimeoutSecs`.
+     */
+    timeout?: never;
 
     /**
      * Maximum time to wait for the Actor run to finish, in seconds.

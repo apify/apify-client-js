@@ -437,7 +437,7 @@ await client.actor('my-actor').get({ timeoutSecs: 'long' });
 + await client.actor('my-actor').call(input, { runTimeoutSecs: 300 }); // v3
 ```
 
-TypeScript reports a leftover `timeout` at compile time, and in JavaScript the option schemas reject it as an unrecognized key, so the call throws an `ArgumentValidationError` instead of silently dropping the run limit. `{ timeout: 0 }`, which asked for an unlimited run in v2, becomes `{ runTimeoutSecs: 0 }`.
+TypeScript reports a leftover `timeout` at compile time, also when the options come from a variable rather than an object literal. At runtime the call throws an `ArgumentValidationError` that names `runTimeoutSecs`, instead of silently dropping the run limit. `{ timeout: 0 }`, which asked for an unlimited run in v2, becomes `{ runTimeoutSecs: 0 }`.
 
 The `timeoutSecs` option of <ApiLink to="class/KeyValueStoreClient#setRecord">`KeyValueStoreClient.setRecord()`</ApiLink> keeps its name and its meaning for a number of seconds, and now takes a tier name or `'noTimeout'` as well. `client.requestQueue(id, { timeoutSecs })` still takes a number of seconds that caps the tier of every request the queue client sends.
 

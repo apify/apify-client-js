@@ -55,6 +55,14 @@ export interface TimeoutOptions {
 const timeoutSchema = z.union([z.enum(['short', 'medium', 'long', 'noTimeout']), z.number().positive()]);
 
 /**
+ * Rejects the v2 `timeout` run option by name, so the error says what replaced it.
+ * @internal
+ */
+export const renamedRunTimeoutShape = {
+    timeout: z.never({ error: 'The option was renamed to `runTimeoutSecs`' }).optional(),
+};
+
+/**
  * Schema of {@link Timeout}, optional, for the methods that validate `timeoutSecs` on its own.
  * @internal
  */
