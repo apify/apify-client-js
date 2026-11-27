@@ -4,7 +4,7 @@ import { ACTOR_ENV_VARS, ME_USER_NAME_PLACEHOLDER } from '@apify/consts';
 import type { Log } from '@apify/log';
 import logger from '@apify/log';
 
-import { AxiosHttpClient } from './http_clients/axios.js';
+import { FetchHttpClient } from './http_clients/fetch.js';
 import type { HttpClientOptions } from './http_clients/base.js';
 import {
     DEFAULT_MAX_RETRIES,
@@ -131,7 +131,7 @@ export class ApifyClient {
     readonly #httpClientOptions: HttpClientOptions;
 
     /**
-     * Creates a client that sends its requests through the built-in {@link AxiosHttpClient}, configured from
+     * Creates a client that sends its requests through the built-in {@link FetchHttpClient}, configured from
      * `options`: the API token, retries, the timeout tiers, request compression and default headers. The HTTP
      * client itself is created when {@link httpClient} is first read. To send the requests through a custom HTTP
      * client, use {@link ApifyClient.withCustomHttpClient} instead.
@@ -181,9 +181,10 @@ export class ApifyClient {
      * Creates an `ApifyClient` that sends its requests through a custom HTTP client.
      *
      * The custom client owns its transport configuration: retries, timeouts, default headers and whatever its
-     * transport needs are set on the client itself. This is also how the built-in {@link AxiosHttpClient} is
-     * configured beyond what the constructor options offer, for example with axios request interceptors. The
-     * token is set as the client's `Authorization` header, unless the client already has one configured.
+     * transport needs are set on the client itself. This is also how the built-in {@link FetchHttpClient} is
+     * configured beyond what the constructor options offer, for example with a `fetch` function of your own, and
+     * how the axios-based client from `apify-client/axios` is brought back. The token is set as the client's
+     * `Authorization` header, unless the client already has one configured.
      *
      * @param options - The token, the API URLs and the HTTP client to use.
      * @returns A client whose {@link httpClient} is the given one.
@@ -215,16 +216,15 @@ export class ApifyClient {
 
     /**
      * The HTTP client the requests go through: the custom one when set through
-     * {@link ApifyClient.withCustomHttpClient}, and otherwise an {@link AxiosHttpClient} configured from the
+     * {@link ApifyClient.withCustomHttpClient}, and otherwise a {@link FetchHttpClient} configured from the
      * constructor options, created on first access. Assigning a client applies {@link token} to it through
      * {@link HttpClient.setDefaultAuthorization} and points {@link stats} at its statistics, so the counters keep
      * tracking the calls the client actually makes. Resource clients hold on to the HTTP client they were created
-     * with, so assign before reaching for them. Assigning does not close the client it replaces. A default client
-     * that already sent a request keeps its keep-alive agents open until {@link HttpClient.close} is called on it,
-     * so close it yourself, or assign before the first request.
+     * with, so assign before reaching for them. Assigning does not close the client it replaces, so call
+     * {@link HttpClient.close} on one that owns connections yourself.
      */
     get httpClient(): HttpClient {
-        this.#httpClient ??= new AxiosHttpClient(this.#httpClientOptions);
+        this.#httpClient ??= new FetchHttpClient(this.#httpClientOptions);
         return this.#httpClient;
     }
 

@@ -4,21 +4,22 @@ import type { HttpCompressor } from './base.js';
 import { httpCompressorSchema } from './base.js';
 import { BrotliHttpCompressor } from './brotli.js';
 import { GzipHttpCompressor } from './gzip.js';
+import { ZstdHttpCompressor } from './zstd.js';
 
 /**
  * Compression algorithms the `compression` option of {@link ApifyClient} accepts by name. Each name selects the
  * matching built-in compressor with its default quality: `'brotli'` a {@link BrotliHttpCompressor}, `'gzip'` a
- * {@link GzipHttpCompressor}. The Apify API also accepts `deflate` and `identity`, which a custom
- * {@link HttpCompressor} covers.
+ * {@link GzipHttpCompressor}, `'zstd'` a {@link ZstdHttpCompressor}. The Apify API also accepts `deflate` and
+ * `identity`, which a custom {@link HttpCompressor} covers.
  */
-export type HttpCompressionAlgorithm = 'brotli' | 'gzip';
+export type HttpCompressionAlgorithm = 'brotli' | 'gzip' | 'zstd';
 
 /**
  * Schema of the `compression` option: an algorithm name or an {@link HttpCompressor}.
  * @internal
  */
 export const compressionSchema = z.union([
-    z.enum(['brotli', 'gzip'] as const satisfies readonly HttpCompressionAlgorithm[]),
+    z.enum(['brotli', 'gzip', 'zstd'] as const satisfies readonly HttpCompressionAlgorithm[]),
     httpCompressorSchema,
 ]);
 
@@ -35,5 +36,7 @@ export function resolveCompressor(compression: HttpCompressionAlgorithm | HttpCo
             return new GzipHttpCompressor();
         case 'brotli':
             return new BrotliHttpCompressor();
+        case 'zstd':
+            return new ZstdHttpCompressor();
     }
 }

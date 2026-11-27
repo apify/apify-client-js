@@ -4,3 +4,5 @@ export type { BrotliHttpCompressorOptions } from './brotli.js';
 export { GzipHttpCompressor } from './gzip.js';
 export type { GzipHttpCompressorOptions } from './gzip.js';
 export type { HttpCompressionAlgorithm } from './resolve.js';
+export { ZstdHttpCompressor } from './zstd.js';
+export type { ZstdHttpCompressorOptions } from './zstd.js';

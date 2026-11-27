@@ -1,5 +1,4 @@
 import type { AddressInfo } from 'node:net';
-import { Readable } from 'node:stream';
 
 import { ApifyApiError, ApifyClient, ArgumentValidationError, DownloadItemsFormat } from 'apify-client';
 import type { Page } from 'puppeteer';
@@ -144,7 +143,7 @@ describe('Dataset methods', () => {
             const expected = {
                 total: 0,
                 offset: 0,
-                count: 0,
+                count: 1,
                 limit: 100000,
                 desc: false,
                 items: [],
@@ -158,7 +157,7 @@ describe('Dataset methods', () => {
                 'content-type': 'application/json; chartset=utf-8',
                 'x-apify-pagination-total': '0',
                 'x-apify-pagination-offset': '0',
-                'x-apify-pagination-count': '1', // the scanned rows; `count` reports the items returned, so it stays 0
+                'x-apify-pagination-count': '1',
                 'x-apify-pagination-limit': '100000',
                 // TODO: https://github.com/apify/apify-core/issues/3503
                 'x-apify-pagination-desc': false,
@@ -172,6 +171,28 @@ describe('Dataset methods', () => {
             const browserRes = await page.evaluate((id, opts) => client.dataset(id).listItems(opts), datasetId, query);
             expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query, params: { datasetId } });
+        });
+
+        test.each([
+            { name: 'filtered page', scanned: '3', items: [{ a: 1 }], expected: 3 },
+            { name: 'lagging header', scanned: '0', items: [{ a: 1 }, { a: 2 }], expected: 2 },
+            { name: 'unwound page', scanned: '1', items: [{ a: 1 }, { a: 2 }], expected: 2 },
+            { name: 'missing header', scanned: undefined, items: [{ a: 1 }], expected: 1 },
+        ])('listItems() count is the larger of the scanned rows and the items returned: $name', async (testCase) => {
+            const { scanned, items, expected } = testCase;
+            const headers = {
+                'content-type': 'application/json; charset=utf-8',
+                'x-apify-pagination-total': '10',
+                'x-apify-pagination-offset': '0',
+                ...(scanned === undefined ? {} : { 'x-apify-pagination-count': scanned }),
+                'x-apify-pagination-limit': '3',
+                'x-apify-pagination-desc': 'false',
+            };
+            mockServer.setResponse({ body: items, headers });
+
+            const res = await client.dataset('some-id').listItems({ limit: 3 });
+            expect(res.count).toBe(expected);
+            expect(res.items).toEqual(items);
         });
 
         test('downloadItems() works with bom=false', async () => {
@@ -298,9 +319,9 @@ describe('Dataset methods', () => {
             mockServer.setResponse({ body, headers });
 
             const res = await client.dataset(datasetId).downloadItems(format, options);
-            expectTypeOf(res).toEqualTypeOf<Buffer>();
+            expectTypeOf(res).toEqualTypeOf<Uint8Array>();
             expect(res).toBeInstanceOf(Buffer);
-            const resString = res.toString('utf-8');
+            const resString = new TextDecoder().decode(res);
             expect(resString).toBe(body);
             validateRequest({ query: { format, ...options }, params: { datasetId } });
 
@@ -363,23 +384,22 @@ describe('Dataset methods', () => {
             };
 
             const res = await client.dataset(datasetId).downloadItems(format, { ...options, stream: true });
-            expectTypeOf(res).toEqualTypeOf<Readable>();
-            expect(res).toBeInstanceOf(Readable);
-            const chunks: Buffer[] = [];
-            for await (const chunk of res) {
-                chunks.push(chunk);
-            }
-            expect(Buffer.concat(chunks).toString()).toBe(body);
+            expectTypeOf(res).toEqualTypeOf<ReadableStream<Uint8Array>>();
+            expect(res).toBeInstanceOf(ReadableStream);
+            expect(await new Response(res).text()).toBe(body);
             validateRequest({ query: { format, bom: 0, delimiter: ';', fields: 'a,b' }, params: { datasetId } });
 
-            await expect(
-                page.evaluate(
-                    async (id, f, opts) => client.dataset(id).downloadItems(f, { ...opts, stream: true }),
-                    datasetId,
-                    format,
-                    options,
-                ),
-            ).rejects.toThrow('The stream option can only be used in Node.js environment.');
+            const browserRes = await page.evaluate(
+                async (id, f, opts) => {
+                    const stream = await client.dataset(id).downloadItems(f, { ...opts, stream: true });
+                    return { isWebStream: stream instanceof ReadableStream, text: await new Response(stream).text() };
+                },
+                datasetId,
+                format,
+                options,
+            );
+            expect(browserRes).toEqual({ isWebStream: true, text: body });
+            validateRequest({ query: { format, bom: 0, delimiter: ';', fields: 'a,b' }, params: { datasetId } });
         });
 
         test('downloadItems() with stream throws an ApifyApiError with the parsed error body', async () => {
@@ -545,6 +565,13 @@ describe('Dataset methods', () => {
                 expect(itemsPublicUrl.searchParams.get('format')).toBe('csv');
                 expect(itemsPublicUrl.searchParams.get('signature')).toBeDefined();
                 expect(itemsPublicUrl.pathname).toBe(`/v2/datasets/${datasetId}/items`);
+            });
+
+            it.each([0, -1])('rejects a non-positive expiresInSecs (%s)', async (expiresInSecs) => {
+                const res = client.dataset('id-with-secret-key').createItemsPublicUrl({ expiresInSecs });
+
+                await expect(res).rejects.toThrow(ArgumentValidationError);
+                await expect(res).rejects.toThrow('at `expiresInSecs`');
             });
         });
     });

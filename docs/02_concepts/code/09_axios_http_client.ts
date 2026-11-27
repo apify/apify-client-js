@@ -1,4 +1,5 @@
-import { ApifyClient, AxiosHttpClient } from 'apify-client';
+import { ApifyClient } from 'apify-client';
+import { AxiosHttpClient } from 'apify-client/axios';
 
 const httpClient = new AxiosHttpClient({
     maxRetries: 4,

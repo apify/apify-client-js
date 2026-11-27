@@ -10,7 +10,14 @@ import type { TimeoutOptions } from '../timeouts.js';
 import type { Dictionary } from '../utils.js';
 import * as schemas from '../schemas.js';
 import { timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
-import { anyObjectSchema, cast, isStream, parseArgument, parseResponse, stringifyWebhooksToBase64 } from '../utils.js';
+import {
+    anyObjectSchema,
+    cast,
+    isAnyStream,
+    parseArgument,
+    parseResponse,
+    stringifyWebhooksToBase64,
+} from '../utils.js';
 import { startWaitingForResources } from '../wait_for_resources.js';
 import type { ActorLastRunOptions, ActorStartOptions, Run } from './actor.js';
 import { RunClient } from './run.js';
@@ -222,10 +229,10 @@ export class TaskClient extends ResourceClient {
             signal,
         };
 
-        // A `Readable` input is consumed by the first attempt, so a retry would start the run with an empty input.
+        // A stream input is consumed by the first attempt, so a retry would start the run with an empty input.
         const response = await startWaitingForResources(
             async () => this.httpClient.call(request),
-            isStream(input) ? false : waitForResources,
+            isAnyStream(input) ? false : waitForResources,
             this.httpClient.logger,
             signal,
         );

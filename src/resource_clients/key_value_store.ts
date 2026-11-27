@@ -1,6 +1,5 @@
 import type { Readable } from 'node:stream';
 
-import type { JsonValue, TypedArray } from 'type-fest';
 import { z } from 'zod';
 
 import type { STORAGE_GENERAL_ACCESS } from '@apify/consts';
@@ -20,13 +19,14 @@ import {
     anyObjectSchema,
     applyQueryParamsToUrl,
     catchNotFoundOrThrow,
+    isAnyStream,
     isBlob,
     isBuffer,
-    isStream,
     minForLimitParam,
     parseArgument,
     parseResponse,
 } from '../utils.js';
+import type { JsonValue, TypedArray } from '../utils.js';
 
 const listKeysOptionsSchema = z.strictObject({
     limit: z.number().min(0).optional(),
@@ -45,7 +45,7 @@ const createKeysPublicUrlOptionsSchema = z.strictObject({
     exclusiveStartKey: z.string().optional(),
     collection: z.string().optional(),
     prefix: z.string().optional(),
-    expiresInSecs: z.number().optional(),
+    expiresInSecs: z.number().positive().optional(),
     ...timeoutOptionsShape,
 });
 const keySchema = z.string();
@@ -300,7 +300,8 @@ export class KeyValueStoreClient extends ResourceClient {
      * the URL will include a cryptographic signature which allows access without authentication.
      *
      * @param options - URL generation options (extends all options from {@link listKeys})
-     * @param options.expiresInSecs - Number of seconds until the signed URL expires. If omitted, the URL never expires.
+     * @param options.expiresInSecs - Number of seconds until the signed URL expires. Must be positive. If omitted, the URL
+     * never expires.
      * @param options.limit - Maximum number of keys to return.
      * @param options.prefix - Filter keys by prefix.
      * @param options.timeoutSecs - Timeout for the API request that fetches the store. Default is `'long'`.
@@ -386,22 +387,21 @@ export class KeyValueStoreClient extends ResourceClient {
 
     /**
      * By default, the value is parsed by the record's content type: `application/json` is parsed into a value,
-     * `text/*` and `application/*xml` are decoded to a string, and anything else is returned as a Buffer (Node.js)
-     * or ArrayBuffer (browser). A record whose body does not parse as its content type claims, such as a non-JSON
+     * `text/*` and `application/*xml` are decoded to a string, and anything else is returned as a Uint8Array.
+     * A record whose body does not parse as its content type claims, such as a non-JSON
      * string stored under `application/json`, makes the call throw an {@link InvalidResponseBodyError}, which
      * carries the raw body in `error.response`.
      *
-     * You can use the `buffer` option to get the value in a Buffer (Node.js)
-     * or ArrayBuffer (browser) format, which skips the parsing. In Node.js (not in browser) you can also
-     * use the `stream` option to get a Readable stream.
+     * You can use the `buffer` option to get the value as a Uint8Array, which skips the parsing. You can also
+     * use the `stream` option to get the value unread, as a web ReadableStream.
      *
      * When the record does not exist, the function resolves to `undefined`. It does
      * NOT resolve to a `KeyValueStoreRecord` with an `undefined` value.
      *
      * @param key - The record key
      * @param options - Retrieval options
-     * @param options.buffer - If `true`, the value is returned as a Buffer (Node.js) or ArrayBuffer (browser).
-     * @param options.stream - If `true`, the value is returned as a Readable stream. Node.js only.
+     * @param options.buffer - If `true`, the value is returned as a Uint8Array.
+     * @param options.stream - If `true`, the value is returned as a web ReadableStream.
      * @param options.signature - Signature of a public URL, for reading a record without a token.
      * @param options.timeoutSecs - Timeout for the API request. Default is `'long'`.
      * @see https://docs.apify.com/api/v2/key-value-store-record-get
@@ -419,10 +419,6 @@ export class KeyValueStoreClient extends ResourceClient {
     ): Promise<KeyValueStoreRecord<unknown> | undefined> {
         parseArgument(key, keySchema);
         const parsed = parseArgument(options, getRecordOptionsSchema, 'KeyValueClientGetRecordOptions');
-
-        if (parsed.stream && !runtime.isNode) {
-            throw new Error('The stream option can only be used in Node.js environment.');
-        }
 
         if ('disableRedirect' in parsed) {
             log.deprecated(
@@ -469,15 +465,17 @@ export class KeyValueStoreClient extends ResourceClient {
      * A string is sent as it is, even under `application/json`, so a string stored under a JSON content type has
      * to be valid JSON already, or {@link getRecord} fails to parse it back.
      *
-     * **Note about streams:** If the value is a stream object (has `.pipe` and `.on` methods),
-     * the upload cannot be retried on failure or follow redirects. For reliable uploads of a file,
-     * pass a `Blob` from `fs.openAsBlob()` instead: it is read again for every attempt and never held
-     * in memory whole.
+     * **Note about streams:** If the value is a stream, either a Node.js `Readable` or a web `ReadableStream`
+     * such as the `value` that {@link getRecord} returns with the `stream` option, the upload cannot be retried
+     * on failure or follow redirects. For reliable uploads of a file, pass a `Blob` from `fs.openAsBlob()`
+     * instead: it is read again for every attempt and never held in memory whole. A browser sends a web
+     * `ReadableStream` only over HTTP/2 or later, and only if it supports streaming request bodies at all:
+     * where it doesn't, the call throws a `TypeError`.
      *
      * @param record - The record to store
      * @param record.key - Record key (unique identifier)
-     * @param record.value - Record value (a JSON-serializable value, Buffer, ArrayBuffer, typed array, Blob, or
-     *                       Readable)
+     * @param record.value - Record value (a JSON-serializable value, Buffer, ArrayBuffer, typed array, Blob,
+     *                       Readable, or web ReadableStream)
      * @param record.contentType - Optional MIME type. Auto-detected if not provided:
      *                             - Objects: `'application/json; charset=utf-8'`
      *                             - Strings: `'text/plain; charset=utf-8'`
@@ -491,12 +489,12 @@ export class KeyValueStoreClient extends ResourceClient {
      * @param record.contentEncoding - Optional encoding already applied to `value`, sent as the `Content-Encoding`
      *                                 header. Set it to upload a pre-compressed value: the client then sends the
      *                                 bytes as they are and does not compress them again. The API accepts `gzip`,
-     *                                 `br`, `deflate`, and `identity`, and stores the record exactly as uploaded, so
-     *                                 this is also the encoding the record is served with. Only binary values and
-     *                                 streams can carry a compression, so any encoding other than `identity` throws
-     *                                 a `TypeError` when `value` is a string, or a plain object, array, or other
-     *                                 value that the client serializes to JSON. Node.js only, since browsers cannot
-     *                                 send the header to the API.
+     *                                 `br`, `zstd`, `deflate`, and `identity`, and stores the record exactly as
+     *                                 uploaded, so this is also the encoding the record is served with. Only binary
+     *                                 values and streams can carry a compression, so any encoding other than
+     *                                 `identity` throws a `TypeError` when `value` is a string, or a plain object,
+     *                                 array, or other value that the client serializes to JSON. Node.js only, since
+     *                                 browsers cannot send the header to the API.
      * @param options - Storage options
      * @param options.timeoutSecs - Timeout for the API request. Default is `'long'`.
      * @param options.doNotRetryTimeouts - If `true`, don't retry on timeout errors. Default is `false`.
@@ -547,7 +545,7 @@ export class KeyValueStoreClient extends ResourceClient {
             throw new Error('The contentEncoding option can only be used in Node.js environment.');
         }
 
-        const isBinaryValue = isStream(value) || isBuffer(value) || isBlob(value);
+        const isBinaryValue = isAnyStream(value) || isBuffer(value) || isBlob(value);
 
         // The client forwards the header without inspecting the body, so a string or a value serialized to JSON, which
         // cannot hold compressed bytes, would be stored under an encoding that misdescribes it.
@@ -646,7 +644,7 @@ export interface KeyValueClientListKeysOptions extends TimeoutOptions {
     /**
      * Maximum number of keys returned in one API response. When the call is iterated with `for await`, the iterator
      * fetches keys in chunks of this size and yields them one by one, until `limit` is reached or the store has no
-     * more keys. Awaiting the call returns only the first chunk.
+     * more keys. Awaiting the call returns only the first chunk. Without it, the API's default page size applies.
      */
     chunkSize?: number;
     exclusiveStartKey?: string;
@@ -691,10 +689,16 @@ export interface KeyValueClientGetRecordOptions extends TimeoutOptions {
  * A value that `setRecord` accepts.
  *
  * Anything JSON-serializable, or binary content the client uploads as bytes instead of JSON-encoding
- * it: a `Buffer`, an `ArrayBuffer`, a typed array, a `Blob`, or a readable stream. `Buffer` is a
- * `Uint8Array`, so `TypedArray` covers it.
+ * it: a `Buffer`, an `ArrayBuffer`, a typed array, a `Blob`, a Node.js `Readable`, or a web `ReadableStream`.
+ * `Buffer` is a `Uint8Array`, so `TypedArray` covers it.
  */
-export type KeyValueStoreRecordValue = JsonValue | ArrayBuffer | TypedArray | Blob | Readable;
+export type KeyValueStoreRecordValue =
+    | JsonValue
+    | ArrayBuffer
+    | TypedArray
+    | Blob
+    | Readable
+    | ReadableStream<Uint8Array>;
 
 /**
  * Represents a record (key-value pair) in a Key-Value Store.
@@ -729,12 +733,12 @@ export interface KeyValueStoreRecordOptions extends TimeoutOptions {
 /**
  * Helper type to determine the return type based on getRecord options.
  *
- * Returns Readable if stream option is true, Buffer if buffer option is true,
+ * Returns a web ReadableStream if stream option is true, Uint8Array if buffer option is true,
  * otherwise returns JsonValue.
  * @since Added in 2.0.6
  */
 export type ReturnTypeFromOptions<Options extends KeyValueClientGetRecordOptions> = Options['stream'] extends true
-    ? Readable
+    ? ReadableStream<Uint8Array>
     : Options['buffer'] extends true
-      ? Buffer
+      ? Uint8Array
       : JsonValue;

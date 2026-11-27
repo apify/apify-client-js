@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import http from 'node:http';
+import https from 'node:https';
 import os from 'node:os';
 import { resolve } from 'node:path';
 import { Readable } from 'node:stream';
@@ -7,7 +8,7 @@ import type * as Zlib from 'node:zlib';
 import { brotliDecompressSync, gunzipSync } from 'node:zlib';
 
 import { build } from 'esbuild';
-import { describe, expect, test, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { runtime as nodeRuntime } from '../src/runtime/node.js';
 import { runtime as webRuntime } from '../src/runtime/web.js';
@@ -49,14 +50,93 @@ describe('Node.js runtime', () => {
         }
     });
 
-    test('creates one keep-alive agent for both http and https', async () => {
+    test('creates a keep-alive agent for each of http and https', async () => {
         const agents = await nodeRuntime.createHttpAgents({ timeoutMillis: 1000 });
         // `options` is where an agent keeps its constructor options; the Node.js types leave it undeclared.
         const agent = agents!.httpAgent as http.Agent & { options: http.AgentOptions };
         expect(agent).toBeInstanceOf(http.Agent);
-        expect(agents!.httpsAgent).toBe(agent);
+        expect(agents!.httpsAgent).toBeInstanceOf(https.Agent);
         expect(agent.options).toMatchObject({ keepAlive: true, timeout: 1000 });
         agent.destroy();
+        agents!.httpsAgent.destroy();
+    });
+
+    test('turns a Readable into a web stream that destroys it when cancelled', async () => {
+        const stream = nodeRuntime.streamToWeb(Readable.from([Buffer.from('streamed')]));
+        expect(stream).toBeInstanceOf(ReadableStream);
+        expect(await new Response(stream).text()).toBe('streamed');
+
+        const readable = Readable.from([Buffer.from('unread')]);
+        await nodeRuntime.streamToWeb(readable).cancel();
+        expect(readable.destroyed).toBe(true);
+    });
+
+    test('opens a web stream body as a Readable that cancels it when destroyed', async () => {
+        const readable = nodeRuntime.openStreamBody(new Response('streamed').body!) as Readable;
+        expect(readable).toBeInstanceOf(Readable);
+        expect(Buffer.concat(await readable.toArray()).toString()).toBe('streamed');
+
+        const cancel = vi.fn();
+        const unread = nodeRuntime.openStreamBody(new ReadableStream({ cancel })) as Readable;
+        unread.destroy();
+        await vi.waitFor(() => expect(cancel).toHaveBeenCalled());
+    });
+
+    describe('unusedProxyHint()', () => {
+        beforeEach(() => {
+            for (const name of ['HTTP_PROXY', 'HTTPS_PROXY', 'http_proxy', 'https_proxy', 'NODE_USE_ENV_PROXY']) {
+                vi.stubEnv(name, '');
+            }
+            vi.stubEnv('NODE_OPTIONS', '');
+        });
+        afterEach(() => {
+            vi.unstubAllEnvs();
+        });
+
+        test('is empty without a proxy in the environment', () => {
+            expect(nodeRuntime.unusedProxyHint()).toBeUndefined();
+        });
+
+        test('names the variable and the switch that makes Node.js read it', () => {
+            vi.stubEnv('http_proxy', 'http://proxy.example.com:3128');
+            const hint = nodeRuntime.unusedProxyHint();
+            expect(hint).toMatch('the proxy set in http_proxy was not used');
+            expect(hint).toMatch('Start Node.js with NODE_USE_ENV_PROXY=1 to send');
+        });
+
+        test.each([
+            { name: 'NODE_USE_ENV_PROXY=1', env: { NODE_USE_ENV_PROXY: '1' } },
+            { name: '--use-env-proxy in NODE_OPTIONS', env: { NODE_OPTIONS: '--no-warnings --use-env-proxy' } },
+        ])('is empty with $name', ({ env }) => {
+            vi.stubEnv('HTTPS_PROXY', 'http://proxy.example.com:3128');
+            for (const [name, value] of Object.entries(env)) vi.stubEnv(name, value);
+            expect(nodeRuntime.unusedProxyHint()).toBeUndefined();
+        });
+
+        test('asks for an upgrade where Node.js cannot route fetch() through a proxy', () => {
+            vi.stubEnv('HTTPS_PROXY', 'http://proxy.example.com:3128');
+            const versions = vi
+                .spyOn(process, 'versions', 'get')
+                .mockReturnValue({ ...process.versions, node: '22.15.0' });
+            try {
+                expect(nodeRuntime.unusedProxyHint()).toMatch('Node.js 22.15.0 cannot route fetch() through it');
+            } finally {
+                versions.mockRestore();
+            }
+        });
+
+        test('asks for an upgrade there even with NODE_USE_ENV_PROXY=1, which that Node.js ignores', () => {
+            vi.stubEnv('HTTPS_PROXY', 'http://proxy.example.com:3128');
+            vi.stubEnv('NODE_USE_ENV_PROXY', '1');
+            const versions = vi
+                .spyOn(process, 'versions', 'get')
+                .mockReturnValue({ ...process.versions, node: '22.15.0' });
+            try {
+                expect(nodeRuntime.unusedProxyHint()).toMatch('Node.js 22.15.0 cannot route fetch() through it');
+            } finally {
+                versions.mockRestore();
+            }
+        });
     });
 
     test('opens a Blob body as a fresh Readable over its bytes every time', async () => {
@@ -115,7 +195,50 @@ describe('Web API runtime', () => {
             'only available in Node.js',
         );
         await expect(webRuntime.createHttpAgents({ timeoutMillis: 1000 })).resolves.toBeUndefined();
+        expect(() => webRuntime.streamToWeb(Readable.from([]))).toThrow('only available in Node.js');
     });
+
+    test('hands a web stream body over as it is', () => {
+        const stream = new Response('streamed').body!;
+        expect(webRuntime.openStreamBody(stream)).toBe(stream);
+    });
+
+    test('refuses a web stream body where fetch would send it as text', () => {
+        // What a browser without request streams does: it never reads `duplex` and stringifies the body.
+        vi.stubGlobal(
+            'Request',
+            class {
+                headers = new Headers({ 'content-type': 'text/plain;charset=UTF-8' });
+            },
+        );
+        try {
+            expect(() => webRuntime.openStreamBody(new Response('streamed').body!)).toThrow(TypeError);
+            expect(() => webRuntime.openStreamBody(new Response('streamed').body!)).toThrow(
+                'cannot send a ReadableStream as a request body',
+            );
+        } finally {
+            vi.unstubAllGlobals();
+        }
+    });
+
+    test.each(['Cloudflare-Workers', 'Deno/2.8.0', 'Bun/1.3.3'])(
+        'hands a web stream body over in a runtime that never reads `duplex`: %s',
+        (userAgent) => {
+            vi.stubGlobal('navigator', { userAgent });
+            vi.stubGlobal(
+                'Request',
+                class {
+                    headers = new Headers();
+                },
+            );
+            try {
+                const stream = new Response('streamed').body!;
+                expect(webRuntime.openStreamBody(stream)).toBe(stream);
+            } finally {
+                vi.unstubAllGlobals();
+            }
+        },
+    );
 
     test('hands a Blob body over as it is', () => {
         const blob = new Blob(['blob bytes']);

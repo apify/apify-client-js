@@ -1,6 +1,5 @@
 import type { Readable } from 'node:stream';
 
-import type { TypedArray } from 'type-fest';
 import { z } from 'zod';
 
 import type { ApifyApiError } from './apify_api_error.js';
@@ -197,8 +196,8 @@ export function toBytes(value: unknown): Uint8Array | undefined {
 /**
  * Decides whether a request body with the given content type is worth compressing.
  *
- * Images, audio, video and archives already carry their own compression. Running them through brotli or gzip
- * burns CPU, holds a second full copy of the body in memory, and usually produces output slightly larger than
+ * Images, audio, video and archives already carry their own compression. Running them through brotli, gzip or
+ * zstd burns CPU, holds a second full copy of the body in memory, and usually produces output slightly larger than
  * the input. Formats that are raw despite such a media type, for example `image/bmp` or `audio/wav`, are still
  * compressed. A body with no content type is assumed to be compressible.
  * @internal
@@ -278,10 +277,25 @@ function isTagged(value: unknown, tag: string): boolean {
     return Object.prototype.toString.call(value) === `[object ${tag}]`;
 }
 
+/**
+ * Whether a value is a web `ReadableStream`, which is what the callers get for a streamed response and may pass
+ * on as a request body.
+ */
+export function isWebStream(value: unknown): value is ReadableStream<Uint8Array> {
+    return isTagged(value, 'ReadableStream');
+}
+
 export function isStream(value: unknown): value is Readable {
     if (value === null || typeof value !== 'object') return false;
     const { on, pipe } = value as Partial<Readable>;
     return typeof on === 'function' && typeof pipe === 'function';
+}
+
+/**
+ * Whether a value is a stream of either kind, which a request can send only once.
+ */
+export function isAnyStream(value: unknown): value is Readable | ReadableStream<Uint8Array> {
+    return isStream(value) || isWebStream(value);
 }
 
 /**
@@ -350,6 +364,10 @@ export interface PaginationOptions {
      * limit is reached or once all items from API have been fetched.
      *
      * Chunk size is usually limited by API. Minimum of those two limits will be used.
+     *
+     * Without `chunkSize`, each request gets the API's default page size, capped by the remaining `limit`. Dataset
+     * items have no default limit, so iterating `DatasetClient.listItems()` without `chunkSize` loads the whole
+     * dataset, or all `limit` items, in one response. Pass `chunkSize` to iterate a large dataset.
      * @since Added in 2.21.0
      * */
     chunkSize?: number;
@@ -400,7 +418,12 @@ export interface PaginatedResponse<Data> {
  * @template Data - The type of items in the list
  */
 export interface PaginatedList<Data> extends PaginatedResponse<Data> {
-    /** Count of dataset entries returned in this set. */
+    /**
+     * Number of entries on this page. On a page from {@link DatasetClient.listItems}, the number of dataset rows the
+     * API scanned for it, or the number of items returned when that is larger. Filters (`clean`, `skipEmpty`) can
+     * leave it above `items.length`. The next page starts at `offset + Math.min(count, limit)`; the cap matters only
+     * with `unwind`, which can return more items than the rows scanned.
+     */
     count: number;
     /** Position of the first returned entry in the dataset. */
     offset: number;
@@ -409,17 +432,6 @@ export interface PaginatedList<Data> extends PaginatedResponse<Data> {
     /** Should the results be in descending order. */
     desc: boolean;
 }
-
-/**
- * Key under which a page of dataset items carries the number of rows the API scanned to produce it, as a
- * non-enumerable property that stays out of the page's public shape. The API applies `offset` and `limit` to the
- * dataset's rows first and shapes the result afterwards: filters (`clean`, `skipEmpty`, `skipHidden`) drop items and
- * `unwind` splits or drops them, so `items.length` can land on either side of the rows scanned. The
- * `x-apify-pagination-count` header reports the scanned number, and the offset iterator advances and terminates by it
- * alone. A page without the property falls back to `items.length`.
- * @internal
- */
-export const SCANNED_COUNT = Symbol('scannedCount');
 
 /**
  * Type representing both a Promise of a paginated list and an async iterable.
@@ -523,3 +535,42 @@ export async function sleep(millis: number, signal?: AbortSignal): Promise<void>
         signal?.addEventListener('abort', onAbort, { once: true });
     });
 }
+
+/** Any string, written so that a union with string literals keeps suggesting the literals. */
+export type AnyString = string & {};
+
+/** Any valid JSON value. */
+export type JsonValue =
+    | string
+    | number
+    | boolean
+    | null
+    | { [Key in string]: JsonValue }
+    | JsonValue[]
+    | readonly JsonValue[];
+
+/**
+ * Any JSON object.
+ * @internal
+ */
+export type JsonObject = { [Key in string]: JsonValue };
+
+/**
+ * Any JSON array.
+ * @internal
+ */
+export type JsonArray = JsonValue[] | readonly JsonValue[];
+
+/** Any typed array, such as `Uint8Array` or `Float64Array`. */
+export type TypedArray =
+    | Int8Array
+    | Uint8Array
+    | Uint8ClampedArray
+    | Int16Array
+    | Uint16Array
+    | Int32Array
+    | Uint32Array
+    | Float32Array
+    | Float64Array
+    | BigInt64Array
+    | BigUint64Array;

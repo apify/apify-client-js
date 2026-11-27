@@ -6,6 +6,7 @@ import type { Page } from 'puppeteer';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest';
 
 import { DEFAULT_OPTIONS, asBrowserResult, Browser, validateRequest } from './_helper.js';
+import * as fixtures from './mock_server/fixtures.js';
 import { mockServer } from './mock_server/server.js';
 
 describe('Schedule methods', () => {
@@ -89,6 +90,17 @@ describe('Schedule methods', () => {
             const browserRes = await page.evaluate((id) => client.schedule(id).get(), scheduleId);
             expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { scheduleId } });
+        });
+
+        test('get() accepts a schedule whose uiState is null', async () => {
+            mockServer.setResponse({ body: { data: { ...fixtures.schedule, uiState: null } } });
+
+            try {
+                const res = await client.schedule('schedule_id').get();
+                expect(res?.uiState).toBeNull();
+            } finally {
+                mockServer.setResponse(null);
+            }
         });
 
         test('get() 404', async () => {

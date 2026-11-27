@@ -8,13 +8,6 @@ import type { ACT_JOB_STATUSES } from '@apify/consts';
 import { ACTOR_JOB_STATUSES } from '@apify/consts';
 import { ACTOR_PERMISSION_LEVEL } from '@apify/consts';
 import { ArgumentValidationError } from '@apify/validations';
-import type { AxiosInstance } from 'axios';
-import type { AxiosInterceptorManager } from 'axios';
-import type http from 'node:http';
-import type https from 'node:https';
-import type { InternalAxiosRequestConfig } from 'axios';
-import type { JsonValue } from 'type-fest';
-import type { LiteralUnion } from 'type-fest';
 import { Log } from '@apify/log';
 import { Logger } from '@apify/log';
 import { LogLevel } from '@apify/log';
@@ -23,9 +16,7 @@ import type { Readable } from 'node:stream';
 import type { RUN_GENERAL_ACCESS } from '@apify/consts';
 import type { STORAGE_GENERAL_ACCESS } from '@apify/consts';
 import { STORAGE_OWNERSHIP_FILTER } from '@apify/consts';
-import type { TypedArray } from 'type-fest';
 import type { ValueOf } from '@apify/consts';
-import type { ValueOf as ValueOf_2 } from 'type-fest';
 import type { WEBHOOK_EVENT_TYPES } from '@apify/consts';
 import type { z } from 'zod';
 
@@ -87,6 +78,9 @@ export class ActorClient extends ResourceClient {
     get(options?: TimeoutOptions): Promise<ActorResource | undefined>;
     lastRun(options?: ActorLastRunOptions): RunClient;
     runs(): RunCollectionClient;
+    server(): ActorServerClient;
+    // @deprecated
+    standby(): ActorServerClient;
     start(input?: ActorInput, options?: ActorStartOptions): Promise<Run>;
     update(newFields: ActorUpdateOptions, options?: TimeoutOptions): Promise<ActorResource>;
     validateInput(input?: ActorInput, options?: ActorValidateInputOptions): Promise<boolean>;
@@ -165,9 +159,9 @@ export type ActorInput = Dictionary | readonly Dictionary[] | Uint8Array | Array
 
 // @public
 export interface ActorLastRunOptions {
-    origin?: ValueOf_2<typeof META_ORIGINS>;
+    origin?: ValueOf<typeof META_ORIGINS>;
     // (undocumented)
-    status?: ValueOf_2<typeof ACTOR_JOB_STATUSES>;
+    status?: ValueOf<typeof ACTOR_JOB_STATUSES>;
 }
 
 // @public
@@ -225,6 +219,37 @@ export type ActorRunPricingInfo = PayPerEventActorPricingInfo | PricePerDatasetI
 
 // @public
 export interface ActorRunStorageIds extends GeneratedRunStorageIds {
+}
+
+// @public
+export class ActorServerClient extends ResourceClient {
+    constructor(options: ApiClientSubResourceOptions);
+    getOpenApiSpec(options?: TimeoutOptions): Promise<Record<string, unknown> | undefined>;
+    getUrl(options?: TimeoutOptions): Promise<string>;
+    request<T = any>(path?: string, options?: ActorServerRequestOptions & {
+        responseType?: 'parsed';
+    }): Promise<ApifyResponse<T>>;
+    // (undocumented)
+    request(path: string, options: ActorServerRequestOptions & {
+        responseType: 'buffer';
+    }): Promise<ApifyResponse<Uint8Array>>;
+    // (undocumented)
+    request(path: string, options: ActorServerRequestOptions & {
+        responseType: 'stream';
+    }): Promise<ApifyResponse<ReadableStream<Uint8Array>>>;
+    // (undocumented)
+    request(path?: string, options?: ActorServerRequestOptions): Promise<ApifyResponse>;
+}
+
+// @public
+export interface ActorServerRequestOptions extends TimeoutOptions {
+    compression?: HttpCompressionAlgorithm | HttpCompressor;
+    data?: unknown;
+    headers?: Record<string, string>;
+    method?: HttpMethod;
+    params?: Record<string, unknown>;
+    parentRequestId?: string;
+    responseType?: ApifyResponseType;
 }
 
 // @public
@@ -295,6 +320,9 @@ export type ActorVersionListResult = Pick<PaginatedList<FinalVersion>, 'total' |
 
 // @public
 export type ActorVersionUpdateData = Partial<Version>;
+
+// @public
+export type AnyString = string & {};
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
@@ -373,7 +401,7 @@ export class ApifyApiError extends ApifyClientError {
     originalStack: string;
     path?: string;
     statusCode: number;
-    type?: LiteralUnion<ErrorType, string>;
+    type?: ErrorType | AnyString;
 }
 
 // @public
@@ -448,14 +476,20 @@ export interface ApifyClientOptions {
 
 // @public
 export interface ApifyRequestConfig {
+    authorizationHeader?: 'Authorization' | 'X-Apify-Authorization';
+    compression?: HttpCompressor | false;
     data?: unknown;
     doNotRetryTimeouts?: boolean;
+    followRedirects?: boolean;
     headers?: Record<string, string>;
     method: HttpMethod;
     params?: Record<string, unknown>;
     responseType?: ApifyResponseType;
+    retryStatusCodes?: readonly number[];
+    retryTransportErrors?: boolean;
     signal?: AbortSignal;
     stringifyFunctions?: boolean;
+    throwOnErrorStatus?: boolean;
     timeoutSecs?: Timeout;
     url: string;
 }
@@ -472,23 +506,6 @@ export interface ApifyResponse<T = any> {
 export type ApifyResponseType = 'parsed' | 'buffer' | 'stream';
 
 export { ArgumentValidationError }
-
-// @public
-export class AxiosHttpClient extends HttpClient {
-    constructor(options?: AxiosHttpClientOptions);
-    axios: AxiosInstance;
-    close(): Promise<void>;
-    httpAgent?: http.Agent;
-    httpsAgent?: https.Agent;
-    isRetryableTransportError(error: unknown): boolean;
-    isTimeoutError(error: unknown): boolean;
-    sendRequest(request: HttpRequest): Promise<HttpResponse>;
-}
-
-// @public
-export interface AxiosHttpClientOptions extends HttpClientOptions {
-    requestInterceptors?: RequestInterceptorFunction[];
-}
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
@@ -651,6 +668,7 @@ interface components {
         status: string[];
         startedAfter: string;
         startedBefore: string;
+        deployment: string[];
         timeout: number;
         memory: number;
         maxItems: number;
@@ -659,6 +677,7 @@ interface components {
         build: string;
         waitForFinishRun: number;
         webhooks: string;
+        forcePermissionLevel: "LIMITED_PERMISSIONS" | "FULL_PERMISSIONS";
         outputRecordKey: string;
         format: string;
         clean: boolean;
@@ -690,7 +709,7 @@ interface components {
         "status-2": string;
         origin: components["schemas"]["RunOrigin"];
         signature: string;
-        "Content-Encoding": "br" | "gzip" | "deflate" | "identity";
+        "Content-Encoding": "br" | "gzip" | "zstd" | "deflate" | "identity";
         exclusiveStartKey: string;
         "limit-3": number;
         collectionKeys: string;
@@ -724,6 +743,8 @@ interface components {
         queueId: string;
         webhookId: string;
         scheduleId: string;
+        storeLimit: number;
+        storeOffset: number;
         buildOrRunId: string;
     };
     // (undocumented)
@@ -796,6 +817,12 @@ interface components {
                 "application/json": components["schemas"]["ErrorResponse"];
             };
         };
+        NoContent: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content?: never;
+        };
         PaymentRequired: {
             headers: {
                 [name: string]: unknown;
@@ -811,12 +838,6 @@ interface components {
             content: {
                 "application/json": components["schemas"]["ErrorResponse"];
             };
-        };
-        NoContent: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content?: never;
         };
         Conflict: {
             headers: {
@@ -875,6 +896,7 @@ interface components {
         ErrorDetail: {
             type?: components["schemas"]["ErrorType"];
             message?: string;
+            data?: Record<string, unknown>;
         };
         ErrorResponse: {
             error: components["schemas"]["ErrorDetail"];
@@ -907,6 +929,7 @@ interface components {
             gitRepoUrl?: string;
             tarballUrl?: string;
             gitHubGistUrl?: string;
+            actorPath?: string | null;
         };
         DefaultRunOptions: {
             build?: string;
@@ -914,6 +937,8 @@ interface components {
             memoryMbytes?: number;
             restartOnError?: boolean | null;
             maxItems?: number | null;
+            maxTotalChargeUsd?: number | null;
+            isMaxTotalChargeUsdSetByUser?: boolean | null;
             forcePermissionLevel?: components["schemas"]["ActorPermissionLevel"] | null;
         };
         ActorStandby: {
@@ -925,6 +950,9 @@ interface components {
             memoryMbytes?: number | null;
             disableStandbyFieldsOverride?: boolean | null;
             shouldPassActorInput?: boolean | null;
+            tenancy?: "SINGLE_TENANT" | "MULTI_TENANT" | null;
+            isConsoleAuthEnabled?: boolean | null;
+            isTokenlessEnabled?: boolean | null;
         };
         ExampleRunInput: {
             body?: string;
@@ -951,6 +979,7 @@ interface components {
             name: string;
             value?: string;
             isSecret?: boolean | null;
+            valueHash?: string;
         };
         Version: {
             versionNumber: string;
@@ -962,6 +991,10 @@ interface components {
             gitRepoUrl?: string | null;
             tarballUrl?: string | null;
             gitHubGistUrl?: string | null;
+            actorPath?: string | null;
+            githubWebhookId?: number | null;
+            gitlabWebhookId?: number | null;
+            bitbucketWebhookId?: string | null;
         };
         CommonActorPricingInfo: {
             apifyMarginPercentage: number;
@@ -969,6 +1002,7 @@ interface components {
             startedAt: Date;
             notifiedAboutFutureChangeAt?: Date | null;
             notifiedAboutChangeAt?: Date | null;
+            notifiedAboutRentalToPpePriceChangeAt?: Date | null;
             reasonForChange?: string | null;
             isPriceChangeNotificationSuppressed?: boolean;
             forceContainsSignificantPriceChange?: boolean;
@@ -995,6 +1029,7 @@ interface components {
                 };
             };
             minimalMaxTotalChargeUsd?: number | null;
+            isPPEPlatformUsagePaidByUser?: boolean | null;
         } & {
             pricingModel: "PAY_PER_EVENT";
         };
@@ -1114,6 +1149,11 @@ interface components {
             gitRepoUrl?: string;
             tarballUrl?: string;
             gitHubGistUrl?: string;
+            actorPath?: string | null;
+        };
+        UpdateBuildOnPushRequest: {
+            providerId: string;
+            enabled: boolean;
         };
         ListOfEnvVars: {
             total: number;
@@ -1131,6 +1171,35 @@ interface components {
             actorTaskId?: string | null;
             actorRunId?: string | null;
         };
+        WebhookSlackMessage: {
+            userIntegrationId?: string;
+            channelId?: string;
+            messageTemplate?: string;
+        };
+        WebhookDatasetTransformation: {
+            fields?: string[];
+            omit?: string[];
+        };
+        WebhookGoogleMail: {
+            userIntegrationId?: string;
+            emailTo?: string[];
+            subject?: string;
+            body?: string;
+            attachmentFormat?: string;
+            attachmentTransformation?: components["schemas"]["WebhookDatasetTransformation"];
+        };
+        WebhookGoogleDrive: {
+            userIntegrationId?: string;
+            filename?: string;
+            format?: string | null;
+            transformation?: components["schemas"]["WebhookDatasetTransformation"];
+        };
+        WebhookGithubIssue: {
+            userIntegrationId?: string;
+            repository?: string;
+            title?: string;
+            body?: string;
+        };
         WebhookDispatchStatus: "ACTIVE" | "SUCCEEDED" | "FAILED";
         WebhookLastDispatch: {
             status: components["schemas"]["WebhookDispatchStatus"];
@@ -1140,29 +1209,57 @@ interface components {
         WebhookStats: {
             totalDispatches?: number;
         };
-        WebhookListItem: {
+        WebhookResource: {
             id: string;
             createdAt: Date;
             modifiedAt: Date;
             userId: string;
             isAdHoc?: boolean | null;
-            isApifyIntegration?: boolean;
             isEnabled?: boolean;
             actionType?: string;
+            isApifyIntegration?: boolean | null;
             shouldInterpolateStrings?: boolean | null;
             eventTypes: components["schemas"]["WebhookEventType"][];
             condition: components["schemas"]["WebhookCondition"];
             ignoreSslErrors: boolean;
-            doNotRetry: boolean;
-            requestUrl: string;
+            doNotRetry?: boolean | null;
+            requestUrl?: string | null;
+            payloadTemplate?: string | null;
+            headersTemplate?: string | null;
+            title?: string | null;
+            description?: string | null;
+            slackMessage?: components["schemas"]["WebhookSlackMessage"];
+            googleMail?: components["schemas"]["WebhookGoogleMail"];
+            googleDrive?: components["schemas"]["WebhookGoogleDrive"];
+            githubIssue?: components["schemas"]["WebhookGithubIssue"];
             lastDispatch?: components["schemas"]["WebhookLastDispatch"] | null;
             stats?: components["schemas"]["WebhookStats"] | null;
         };
-        ListOfWebhooks: components["schemas"]["PaginationResponse"] & {
-            items: components["schemas"]["WebhookListItem"][];
+        ListOfWebhookResources: components["schemas"]["PaginationResponse"] & {
+            items: components["schemas"]["WebhookResource"][];
         };
-        ListOfWebhooksResponse: {
-            data: components["schemas"]["ListOfWebhooks"];
+        ListOfWebhookResourcesResponse: {
+            data: components["schemas"]["ListOfWebhookResources"];
+        };
+        ActorOAuthConnection: {
+            _id: string;
+            actorId: string;
+            oAuthProviderType: "CUSTOM" | "GOOGLE";
+            createdAt: Date;
+            modifiedAt: Date;
+            credentials?: {
+                clientId?: string;
+                scope?: string;
+                label?: string;
+                imageUrl?: string;
+            };
+        };
+        ListOfActorOAuthConnections: {
+            total: number;
+            items: components["schemas"]["ActorOAuthConnection"][];
+        };
+        ListOfActorOAuthConnectionsResponse: {
+            data: components["schemas"]["ListOfActorOAuthConnections"];
         };
         ActorJobStatus: "READY" | "RUNNING" | "SUCCEEDED" | "FAILED" | "TIMING-OUT" | "TIMED-OUT" | "ABORTING" | "ABORTED";
         RunOrigin: "DEVELOPMENT" | "WEB" | "API" | "SCHEDULER" | "TEST" | "WEBHOOK" | "ACTOR" | "CLI" | "CI" | "STANDBY" | "MCP";
@@ -1170,6 +1267,9 @@ interface components {
             origin: components["schemas"]["RunOrigin"];
             clientIp?: string;
             userAgent?: string;
+            githubActionsRunUrl?: string;
+            actorRunId?: string;
+            webhookDispatchId?: string;
         };
         BuildListItem: {
             id: string;
@@ -1178,7 +1278,7 @@ interface components {
             status: components["schemas"]["ActorJobStatus"];
             startedAt: Date;
             finishedAt?: Date | null;
-            usageTotalUsd: number;
+            usageTotalUsd?: number;
             buildNumber: string;
             buildNumberInt?: number;
             meta?: components["schemas"]["BuildMeta"];
@@ -1200,6 +1300,8 @@ interface components {
             betaPackages?: boolean | null;
             memoryMbytes?: number | null;
             diskMbytes?: number | null;
+            tag?: string | null;
+            debug?: boolean | null;
         };
         BuildUsage: {
             ACTOR_COMPUTE_UNITS?: number | null;
@@ -1254,6 +1356,11 @@ interface components {
             usageUsd?: components["schemas"]["BuildUsage"] | null;
             inputSchema?: string | null;
             readme?: string | null;
+            changelog?: string | null;
+            exitCode?: number | null;
+            gitCommitId?: string;
+            gitBranchName?: string;
+            createdByOrganizationMemberUserId?: string;
             buildNumber: string;
             imageDigest?: string | null;
             actVersion?: {
@@ -1262,6 +1369,9 @@ interface components {
                 versionNumber?: string;
                 gitRepoUrl?: string;
                 sourceFiles?: components["schemas"]["SourceCodeFile"][];
+                gitHubGistUrl?: string;
+                tarballUrl?: string;
+                actorPath?: string | null;
             };
             actorDefinition?: components["schemas"]["ActorDefinition"] | null;
         };
@@ -1274,6 +1384,13 @@ interface components {
             userAgent?: string | null;
             scheduleId?: string | null;
             scheduledAt?: Date | null;
+            actorRunId?: string;
+            webhookDispatchId?: string;
+            scheduledAct2Id?: string;
+            scheduledActorTaskId?: string;
+        };
+        RunStandby: {
+            deployment: "SINGLE_TENANT" | "MULTI_TENANT_OWNER_PAID" | "MULTI_TENANT_FREE_USERS" | "MULTI_TENANT_PAYING_USERS";
         };
         RunListItem: {
             id: string;
@@ -1291,6 +1408,7 @@ interface components {
             defaultKeyValueStoreId: string;
             defaultDatasetId: string;
             defaultRequestQueueId: string;
+            standby?: components["schemas"]["RunStandby"] | null;
         };
         ListOfRuns: components["schemas"]["PaginationResponse"] & {
             items: components["schemas"]["RunListItem"][];
@@ -1327,13 +1445,24 @@ interface components {
             metamorph?: number;
             computeUnits?: number;
         };
+        RunEventUsage: {
+            eventTotalUsd: number;
+            eventTitle: string;
+        };
+        IntegrationTracking: {
+            platform?: string;
+            appId?: string;
+            isAiTool?: boolean;
+        };
         RunOptions: {
             build: string;
             timeoutSecs: number;
             memoryMbytes: number;
             diskMbytes: number;
+            restartOnError?: boolean | null;
             maxItems?: number | null;
             maxTotalChargeUsd?: number | null;
+            isMaxTotalChargeUsdSetByUser?: boolean;
         };
         GeneralAccess: "ANYONE_WITH_ID_CAN_READ" | "ANYONE_WITH_NAME_CAN_READ" | "FOLLOW_USER_SETTING" | "RESTRICTED";
         RunUsage: {
@@ -1349,6 +1478,7 @@ interface components {
             DATA_TRANSFER_EXTERNAL_GBYTES?: number | null;
             PROXY_RESIDENTIAL_TRANSFER_GBYTES?: number | null;
             PROXY_SERPS?: number | null;
+            PROXY_UNBLOCKER_UNITS?: number | null;
         };
         RunUsageUsd: {
             ACTOR_COMPUTE_UNITS?: number | null;
@@ -1363,12 +1493,14 @@ interface components {
             DATA_TRANSFER_EXTERNAL_GBYTES?: number | null;
             PROXY_RESIDENTIAL_TRANSFER_GBYTES?: number | null;
             PROXY_SERPS?: number | null;
+            PROXY_UNBLOCKER_UNITS?: number | null;
         };
         RunMetamorphEvent: {
             createdAt: Date;
             actorId: string;
             buildId: string;
             inputKey?: string | null;
+            buildTags?: string[];
         };
         Run: {
             id: string;
@@ -1385,6 +1517,20 @@ interface components {
             stats: components["schemas"]["RunStats"];
             chargedEventCounts?: {
                 [key: string]: number;
+            };
+            accountedChargedEventCounts?: {
+                [key: string]: number;
+            } | null;
+            eventUsage?: {
+                [key: string]: components["schemas"]["RunEventUsage"];
+            };
+            externalChargedTotalUsd?: number;
+            standby?: components["schemas"]["RunStandby"] | null;
+            integrationTracking?: components["schemas"]["IntegrationTracking"];
+            createdByOrganizationMemberUserId?: string;
+            consoleUrl?: string;
+            output?: {
+                [key: string]: string;
             };
             options: components["schemas"]["RunOptions"];
             buildId: string;
@@ -1432,6 +1578,7 @@ interface components {
         DatasetResource: {
             id: string;
             name?: string | null;
+            title?: string | null;
             userId: string;
             createdAt: Date;
             modifiedAt: Date;
@@ -1505,6 +1652,7 @@ interface components {
         KeyValueStoreResource: {
             id: string;
             name?: string | null;
+            title?: string | null;
             userId?: string | null;
             username?: string | null;
             createdAt: Date;
@@ -1568,6 +1716,7 @@ interface components {
         RequestQueueResource: {
             id: components["schemas"]["QueueId"];
             name?: string | null;
+            title?: string | null;
             userId: components["schemas"]["QueueUserId"];
             actId?: string | null;
             actRunId?: string | null;
@@ -1611,8 +1760,11 @@ interface components {
             handledAt?: Date | null;
         };
         RequestId: string;
+        LockExpiresAt: Date;
         RequestResource: components["schemas"]["RequestBase"] & {
             id: components["schemas"]["RequestId"];
+            lockExpiresAt?: components["schemas"]["LockExpiresAt"];
+            lockByClient?: string;
         };
         ListOfRequests: {
             items: components["schemas"]["RequestResource"][];
@@ -1691,7 +1843,6 @@ interface components {
         UpdateRequestResponse: {
             data: components["schemas"]["RequestRegistration"];
         };
-        LockExpiresAt: Date;
         RequestLockInfo: {
             lockExpiresAt: components["schemas"]["LockExpiresAt"];
         };
@@ -1737,6 +1888,7 @@ interface components {
         };
         TaskStats: {
             totalRuns?: number;
+            lastRunStartedAt?: Date | null;
         };
         TaskListItem: {
             id: string;
@@ -1744,11 +1896,13 @@ interface components {
             actId: string;
             actName?: string | null;
             name: string;
+            title?: string | null;
             username?: string | null;
             actUsername?: string | null;
             createdAt: Date;
             modifiedAt: Date;
             stats?: components["schemas"]["TaskStats"] | null;
+            isPublic?: boolean;
         };
         ListOfTasks: components["schemas"]["PaginationResponse"] & {
             items: components["schemas"]["TaskListItem"][];
@@ -1763,6 +1917,8 @@ interface components {
             maxItems?: number | null;
             maxTotalChargeUsd?: number | null;
             restartOnError?: boolean | null;
+            isMaxTotalChargeUsdSetByUser?: boolean | null;
+            forcePermissionLevel?: components["schemas"]["ActorPermissionLevel"] | null;
         };
         TaskInput: {
             [key: string]: unknown;
@@ -1774,6 +1930,12 @@ interface components {
             inputSchemaFields?: string[] | null;
             datasetName?: string | null;
             datasetView?: string | null;
+            categorization?: string | null;
+            highlightedFields?: string[] | null;
+            faq?: {
+                question: string;
+                answer: string;
+            }[] | null;
         };
         CreateTaskRequest: {
             actId: string;
@@ -1790,6 +1952,7 @@ interface components {
             userId: string;
             actId: string;
             name: string;
+            nameLowerCase?: string;
             username?: string | null;
             createdAt: Date;
             modifiedAt: Date;
@@ -1817,24 +1980,6 @@ interface components {
             publicConfig?: components["schemas"]["TaskPublicConfig"];
             isPublic?: boolean;
         };
-        WebhookResource: {
-            id: string;
-            createdAt: Date;
-            modifiedAt: Date;
-            userId: string;
-            isAdHoc?: boolean | null;
-            shouldInterpolateStrings?: boolean | null;
-            eventTypes: components["schemas"]["WebhookEventType"][];
-            condition: components["schemas"]["WebhookCondition"];
-            ignoreSslErrors: boolean;
-            doNotRetry?: boolean | null;
-            requestUrl?: string | null;
-            payloadTemplate?: string | null;
-            headersTemplate?: string | null;
-            description?: string | null;
-            lastDispatch?: components["schemas"]["WebhookLastDispatch"] | null;
-            stats?: components["schemas"]["WebhookStats"] | null;
-        };
         UpdateRunRequest: {
             runId?: string;
             statusMessage?: string;
@@ -1846,17 +1991,61 @@ interface components {
             count: number;
             requestId?: string;
         };
+        ActorOAuthAccount: {
+            _id: string;
+            userId: string;
+            connectionId: string;
+            createdAt: Date;
+            modifiedAt: Date;
+            authorizedAt?: Date | null;
+            description?: string | null;
+            data: {
+                [key: string]: unknown;
+            };
+        };
+        ListOfActorOAuthAccounts: {
+            total: number;
+            items: components["schemas"]["ActorOAuthAccount"][];
+        };
+        ListOfActorOAuthAccountsResponse: {
+            data: components["schemas"]["ListOfActorOAuthAccounts"];
+        };
+        ActorOAuthAccountResponse: {
+            data: components["schemas"]["ActorOAuthAccount"];
+        };
         StorageOwnership: "ownedByMe" | "sharedWithMe";
+        KeyValueStoreListStats: {
+            readCount?: number;
+            writeCount?: number;
+            deleteCount?: number;
+            listCount?: number;
+            s3StorageBytes?: number;
+        };
+        KeyValueStoreListItem: {
+            id: string;
+            name?: string | null;
+            title?: string | null;
+            userId?: string | null;
+            username?: string | null;
+            createdAt: Date;
+            modifiedAt: Date;
+            accessedAt: Date;
+            actId?: string | null;
+            actRunId?: string | null;
+            schema?: Record<string, unknown> | string | null;
+            generalAccess?: components["schemas"]["GeneralAccess"] | null;
+            stats?: components["schemas"]["KeyValueStoreListStats"];
+        };
         ListOfKeyValueStores: components["schemas"]["PaginationResponse"] & {
             unnamed?: boolean;
-            items: components["schemas"]["KeyValueStoreResource"][];
+            items: components["schemas"]["KeyValueStoreListItem"][];
         };
         ListOfKeyValueStoresResponse: {
             data: components["schemas"]["ListOfKeyValueStores"];
         };
         DatasetListItem: {
             id: string;
-            name: string;
+            name?: string | null;
             userId: string;
             createdAt: Date;
             modifiedAt: Date;
@@ -1877,11 +2066,20 @@ interface components {
         ListOfDatasetsResponse: {
             data: components["schemas"]["ListOfDatasets"];
         };
+        RequestQueueListStats: {
+            deleteCount?: number;
+            headItemReadCount?: number;
+            readCount?: number;
+            writeCount?: number;
+            s3StorageBytes?: number;
+            dynamodbStorageBytes?: number;
+        };
         RequestQueueListItem: {
             id: components["schemas"]["QueueId"];
-            name: string;
+            name?: string | null;
+            title?: string | null;
             userId: components["schemas"]["QueueUserId"];
-            username: string;
+            username?: string;
             createdAt: components["schemas"]["QueueCreatedAt"];
             modifiedAt: components["schemas"]["QueueModifiedAt"];
             accessedAt: components["schemas"]["QueueAccessedAt"];
@@ -1893,7 +2091,7 @@ interface components {
             actRunId?: string | null;
             hadMultipleClients: components["schemas"]["HadMultipleClients"];
             generalAccess?: components["schemas"]["GeneralAccess"] | null;
-            stats?: components["schemas"]["RequestQueueStats"];
+            stats?: components["schemas"]["RequestQueueListStats"];
         };
         ListOfRequestQueues: components["schemas"]["PaginationResponse"] & {
             unnamed?: boolean;
@@ -1901,6 +2099,37 @@ interface components {
         };
         ListOfRequestQueuesResponse: {
             data: components["schemas"]["ListOfRequestQueues"];
+        };
+        WebhookListItem: {
+            id: string;
+            createdAt: Date;
+            modifiedAt: Date;
+            userId: string;
+            isAdHoc?: boolean | null;
+            isApifyIntegration?: boolean;
+            isEnabled?: boolean;
+            actionType?: string;
+            shouldInterpolateStrings?: boolean | null;
+            eventTypes: components["schemas"]["WebhookEventType"][];
+            condition: components["schemas"]["WebhookCondition"];
+            ignoreSslErrors: boolean;
+            doNotRetry: boolean;
+            requestUrl?: string | null;
+            headersTemplate?: string | null;
+            title?: string | null;
+            description?: string | null;
+            slackMessage?: components["schemas"]["WebhookSlackMessage"];
+            googleMail?: components["schemas"]["WebhookGoogleMail"];
+            googleDrive?: components["schemas"]["WebhookGoogleDrive"];
+            githubIssue?: components["schemas"]["WebhookGithubIssue"];
+            lastDispatch?: components["schemas"]["WebhookLastDispatch"] | null;
+            stats?: components["schemas"]["WebhookStats"] | null;
+        };
+        ListOfWebhooks: components["schemas"]["PaginationResponse"] & {
+            items: components["schemas"]["WebhookListItem"][];
+        };
+        ListOfWebhooksResponse: {
+            data: components["schemas"]["ListOfWebhooks"];
         };
         CreateWebhookRequest: {
             isAdHoc?: boolean | null;
@@ -1931,10 +2160,16 @@ interface components {
             shouldInterpolateStrings?: boolean | null;
         };
         WebhookDispatchWebhookSummary: {
+            _id?: string;
             actionType?: string;
             condition?: components["schemas"]["WebhookCondition"];
             requestUrl?: string | null;
             isAdHoc?: boolean;
+            isApifyIntegration?: boolean | null;
+            slackMessage?: components["schemas"]["WebhookSlackMessage"];
+            googleMail?: components["schemas"]["WebhookGoogleMail"];
+            googleDrive?: components["schemas"]["WebhookGoogleDrive"];
+            githubIssue?: components["schemas"]["WebhookGithubIssue"];
         };
         WebhookDispatch: {
             id: string;
@@ -1956,6 +2191,9 @@ interface components {
                 errorMessage?: string | null;
                 responseStatus?: number | null;
                 responseBody?: string | null;
+                debugPostMessage?: {
+                    [key: string]: unknown;
+                };
             }[];
         };
         WebhookDispatchResponse: {
@@ -1980,6 +2218,9 @@ interface components {
             nextRunAt?: Date | null;
             lastRunAt?: Date | null;
         };
+        ScheduleNotifications: {
+            email?: boolean;
+        };
         ScheduleListItemActionRunActor: {
             id: string;
             type: "RUN_ACTOR";
@@ -1992,6 +2233,9 @@ interface components {
         };
         ScheduleListItemAction: components["schemas"]["ScheduleListItemActionRunActor"] | components["schemas"]["ScheduleListItemActionRunActorTask"];
         ScheduleListItem: components["schemas"]["ScheduleBase"] & {
+            title?: string | null;
+            notifications?: components["schemas"]["ScheduleNotifications"];
+            integrationTracking?: components["schemas"]["IntegrationTracking"];
             actions: components["schemas"]["ScheduleListItemAction"][];
         };
         ListOfSchedules: components["schemas"]["PaginationResponse"] & {
@@ -1999,9 +2243,6 @@ interface components {
         };
         ListOfSchedulesResponse: {
             data: components["schemas"]["ListOfSchedules"];
-        };
-        ScheduleNotifications: {
-            email?: boolean;
         };
         ScheduleActionRunInput: {
             body?: string | null;
@@ -2030,6 +2271,15 @@ interface components {
             notifications?: components["schemas"]["ScheduleNotifications"];
             actions?: components["schemas"]["ScheduleCreateAction"][] | null;
         };
+        ScheduleUiState: {
+            version?: number;
+            data?: {
+                cronExpression?: string;
+                timezone?: string;
+            } & {
+                [key: string]: unknown;
+            };
+        } | null;
         ScheduleActionRunActor: {
             id: string;
             type: "RUN_ACTOR";
@@ -2048,6 +2298,8 @@ interface components {
             description?: string | null;
             title?: string | null;
             notifications?: components["schemas"]["ScheduleNotifications"];
+            uiState?: components["schemas"]["ScheduleUiState"];
+            integrationTracking?: components["schemas"]["IntegrationTracking"];
             actions: components["schemas"]["ScheduleAction"][];
         };
         ScheduleResponse: {
@@ -2076,6 +2328,15 @@ interface components {
             pricingPerEvent?: {
                 [key: string]: unknown;
             } | null;
+            pricePerUnitUsd?: number;
+            trialMinutes?: number;
+            unitName?: string;
+            tieredPricing?: {
+                [key: string]: {
+                    tieredPricePerUnitUsd?: number;
+                };
+            };
+            notifiedAboutRentalToPpePriceChangeAt?: Date | null;
         };
         StoreActor: {
             id: string;
@@ -2089,14 +2350,29 @@ interface components {
             pictureUrl?: string | null;
             userPictureUrl?: string | null;
             url?: string | null;
-            stats: components["schemas"]["ActorStats"];
+            stats: {
+                totalUsers: number;
+                totalRuns?: number;
+                totalUsers7Days?: number;
+                totalUsers30Days?: number;
+                totalUsers90Days?: number;
+                actorReviewRating: number;
+                actorReviewCount: number;
+            };
             currentPricingInfo?: components["schemas"]["CurrentPricingInfo"];
             isWhiteListedForAgenticPayments?: boolean | null;
-            actorReviewCount?: number;
-            actorReviewRating?: number;
-            bookmarkCount?: number;
+            isVerified?: boolean;
             badge?: string | null;
             readmeSummary?: string;
+            inputSchema?: {
+                type: string;
+                properties: {
+                    [key: string]: {
+                        type?: string | string[];
+                    };
+                };
+                required?: string[];
+            };
         };
         ListOfStoreActors: components["schemas"]["PaginationResponse"] & {
             items: components["schemas"]["StoreActor"][];
@@ -2121,12 +2397,13 @@ interface components {
             data: components["schemas"]["UserPublicInfo"];
         };
         ProxyGroup: {
+            id?: string;
             name: string;
             description: string | null;
-            availableCount: number;
+            availableCount?: number;
         };
         ProxyResource: {
-            password: string;
+            password?: string | null;
             groups: components["schemas"]["ProxyGroup"][];
         };
         AvailableProxyGroups: {
@@ -2160,6 +2437,17 @@ interface components {
             planPricing?: {
                 [key: string]: unknown;
             };
+            planVersion?: number;
+            legacyPlanId?: string;
+            planTags?: string[];
+            overageThresholdUsd?: number;
+            maxMonthlyUnblockerUnits?: number;
+            maxPublicActorTaskCount?: number;
+            maxPublicActorTaskCountPerActor?: number;
+            forceBillingInterval?: string;
+            personalizedSupport?: string | null;
+            monitoringLevel?: "STANDARD" | null;
+            isPayingCustomer?: boolean;
         };
         EffectivePlatformFeature: {
             isEnabled: boolean;
@@ -2184,15 +2472,26 @@ interface components {
             id?: string;
             username: string;
             profile?: components["schemas"]["UserProfile"];
-            email?: string;
+            email?: string | null;
             proxy?: components["schemas"]["ProxyResource"];
             plan?: components["schemas"]["UserPlan"];
             effectivePlatformFeatures?: components["schemas"]["EffectivePlatformFeatures"];
             createdAt?: Date;
             isPaying?: boolean;
+            organizationOwnerUserId?: string | null;
         };
         UserPrivateInfoResponse: {
             data: components["schemas"]["UserPrivateInfo"];
+        };
+        UserProxyInfo: {
+            plan: {
+                availableProxyGroups: components["schemas"]["AvailableProxyGroups"];
+            };
+            effectivePlatformFeatures: components["schemas"]["EffectivePlatformFeatures"];
+            isPaying: boolean;
+        };
+        UserProxyInfoResponse: {
+            data: components["schemas"]["UserProxyInfo"];
         };
         UsageCycle: {
             startAt: Date;
@@ -2246,6 +2545,7 @@ interface components {
             maxTeamAccountSeatCount: number;
             dataRetentionDays: number;
             maxScheduleCount?: number;
+            maxMonthlyUnblockerUnits?: number;
         };
         CurrentUsage: {
             monthlyUsageUsd: number;
@@ -2259,6 +2559,7 @@ interface components {
             activeActorJobCount: number;
             teamAccountSeatCount: number;
             scheduleCount?: number;
+            monthlyUnblockerUnits?: number;
         };
         AccountLimits: {
             monthlyUsageCycle: components["schemas"]["UsageCycle"];
@@ -2271,6 +2572,48 @@ interface components {
         UpdateLimitsRequest: {
             maxMonthlyUsageUsd?: number;
             dataRetentionDays?: number;
+        };
+        GitProviderWorkspace: {
+            id: string;
+            label: string;
+        };
+        GitProviderIntegration: {
+            id: string;
+            provider: "github" | "gitlab" | "bitbucket";
+            workspaces: components["schemas"]["GitProviderWorkspace"][];
+            addWorkspaceUrl?: string;
+        };
+        ListOfGitProviderIntegrationsResponse: {
+            data: components["schemas"]["GitProviderIntegration"][];
+        };
+        GitRepoFile: {
+            path: string;
+            content: string;
+            encoding: "utf-8" | "base64";
+        };
+        CreateGitRepoRequest: {
+            workspace: string;
+            repoName: string;
+            isPrivate: boolean;
+            files?: components["schemas"]["GitRepoFile"][];
+            templateArchiveUrl?: string;
+        };
+        GitRepo: {
+            sshUrl: string;
+            httpsUrl: string;
+            htmlUrl: string;
+        };
+        GitRepoResponse: {
+            data: components["schemas"]["GitRepo"];
+        };
+        RegisterDeploymentKeyRequest: {
+            actorId: string;
+            repoName: string;
+        };
+        RegisterDeploymentKeyResponse: {
+            data: {
+                repoName: string;
+            };
         };
         BrowserInfoResponse: {
             method: string;
@@ -2332,13 +2675,13 @@ export class DatasetClient<Data extends Record<string | number, any> = Record<st
     delete(options?: TimeoutOptions): Promise<void>;
     downloadItems(format: `${DownloadItemsFormat}`, options?: DatasetClientDownloadItemsOptions & {
         stream?: false;
-    }): Promise<Buffer>;
+    }): Promise<Uint8Array>;
     // (undocumented)
     downloadItems(format: `${DownloadItemsFormat}`, options: DatasetClientDownloadItemsOptions & {
         stream: true;
-    }): Promise<Readable>;
+    }): Promise<ReadableStream<Uint8Array>>;
     // (undocumented)
-    downloadItems(format: `${DownloadItemsFormat}`, options?: DatasetClientDownloadItemsOptions): Promise<Buffer | Readable>;
+    downloadItems(format: `${DownloadItemsFormat}`, options?: DatasetClientDownloadItemsOptions): Promise<Uint8Array | ReadableStream<Uint8Array>>;
     get(options?: TimeoutOptions): Promise<DatasetResource | undefined>;
     getStatistics(options?: TimeoutOptions): Promise<DatasetStatistics>;
     listItems(options?: DatasetClientListItemOptions): PaginatedIterator<Data>;
@@ -2446,8 +2789,6 @@ interface DatasetResourceRePointed {
 // Not exported by the entry point; reachable only as a referenced type.
 // @public
 interface DatasetResourceSpecGaps {
-    // (undocumented)
-    title?: string;
     // (undocumented)
     username?: string;
 }
@@ -2558,6 +2899,22 @@ export type ErrorType = Schemas['ErrorType'];
 
 // @public
 export interface ExampleRunInput extends GeneratedExampleRunInput {
+}
+
+// @public
+export type FetchFunction = typeof globalThis.fetch;
+
+// @public
+export class FetchHttpClient extends HttpClient {
+    constructor(options?: FetchHttpClientOptions);
+    isRetryableTransportError(error: unknown): boolean;
+    isTimeoutError(error: unknown): boolean;
+    sendRequest(request: HttpRequest): Promise<HttpResponse>;
+}
+
+// @public
+export interface FetchHttpClientOptions extends HttpClientOptions {
+    fetch?: FetchFunction;
 }
 
 // @public
@@ -2849,7 +3206,7 @@ export interface HttpClientOptions {
 }
 
 // @public
-export type HttpCompressionAlgorithm = 'brotli' | 'gzip';
+export type HttpCompressionAlgorithm = 'brotli' | 'gzip' | 'zstd';
 
 // @public
 export interface HttpCompressor {
@@ -2863,6 +3220,7 @@ export type HttpMethod = Schemas['HttpMethod'];
 // @public
 export interface HttpRequest {
     body?: HttpRequestBody;
+    followRedirects: boolean;
     headers: Record<string, string>;
     method: HttpMethod;
     signal?: AbortSignal;
@@ -2872,7 +3230,7 @@ export interface HttpRequest {
 }
 
 // @public
-export type HttpRequestBody = string | Buffer | ArrayBuffer | ArrayBufferView | Readable | Blob;
+export type HttpRequestBody = string | Buffer | ArrayBuffer | ArrayBufferView | Readable | ReadableStream<Uint8Array> | Blob;
 
 // @public
 export interface HttpResponse {
@@ -2882,7 +3240,7 @@ export interface HttpResponse {
 }
 
 // @public
-export type HttpResponseBody = Buffer | ArrayBuffer | Readable | undefined;
+export type HttpResponseBody = Uint8Array | ArrayBuffer | Readable | ReadableStream<Uint8Array> | undefined;
 
 // @public
 export type HttpResponseHeaders = Record<string, string | string[] | undefined>;
@@ -2900,6 +3258,11 @@ export class InvalidResponseBodyError extends ApifyClientError {
     code: string;
     response: HttpResponse;
 }
+
+// @public
+export type JsonValue = string | number | boolean | null | {
+    [Key in string]: JsonValue;
+} | JsonValue[] | readonly JsonValue[];
 
 // @public
 export interface KeyValueClientCreateKeysUrlOptions extends Omit<KeyValueClientListKeysOptions, 'chunkSize' | 'signature'> {
@@ -3007,10 +3370,10 @@ export interface KeyValueStoreRecordOptions extends TimeoutOptions {
 }
 
 // @public
-export type KeyValueStoreRecordValue = JsonValue | ArrayBuffer | TypedArray | Blob | Readable;
+export type KeyValueStoreRecordValue = JsonValue | ArrayBuffer | TypedArray | Blob | Readable | ReadableStream<Uint8Array>;
 
 // @public
-export interface KeyValueStoreResource extends Omit<Schemas['KeyValueStoreResource'], keyof KeyValueStoreResourceRePointed>, KeyValueStoreResourceRePointed, KeyValueStoreResourceSpecGaps {
+export interface KeyValueStoreResource extends Omit<Schemas['KeyValueStoreResource'], keyof KeyValueStoreResourceRePointed>, KeyValueStoreResourceRePointed {
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
@@ -3020,13 +3383,6 @@ interface KeyValueStoreResourceRePointed {
     generalAccess?: STORAGE_GENERAL_ACCESS | null;
     // (undocumented)
     stats?: KeyValueStoreStats;
-}
-
-// Not exported by the entry point; reachable only as a referenced type.
-// @public
-interface KeyValueStoreResourceSpecGaps {
-    // (undocumented)
-    title?: string;
 }
 
 // @public
@@ -3090,10 +3446,10 @@ export class LogClient extends ResourceClient {
     // (undocumented)
     get(options: LogGetOptions & {
         buffer: true;
-    }): Promise<Buffer | undefined>;
+    }): Promise<Uint8Array | undefined>;
     // (undocumented)
-    get(options?: LogGetOptions): Promise<string | Buffer | undefined>;
-    stream(options?: LogOptions): Promise<Readable | undefined>;
+    get(options?: LogGetOptions): Promise<string | Uint8Array | undefined>;
+    stream(options?: LogOptions): Promise<ReadableStream<Uint8Array> | undefined>;
 }
 
 // @public
@@ -3301,9 +3657,6 @@ export class RateLimitError extends ApifyApiError {
 }
 
 // @public
-export type RequestInterceptorFunction = Parameters<AxiosInterceptorManager<InternalAxiosRequestConfig>['use']>[0];
-
-// @public
 export interface RequestLockInfo extends GeneratedRequestLockInfo {
 }
 
@@ -3476,8 +3829,6 @@ interface RequestQueueResourceRePointed {
 // @public
 interface RequestQueueResourceSpecGaps {
     // (undocumented)
-    title?: string;
-    // (undocumented)
     username?: string;
 }
 
@@ -3545,7 +3896,7 @@ export class ResponseValidationError extends ApifyClientError {
 }
 
 // @public
-export type ReturnTypeFromOptions<Options extends KeyValueClientGetRecordOptions> = Options['stream'] extends true ? Readable : Options['buffer'] extends true ? Buffer : JsonValue;
+export type ReturnTypeFromOptions<Options extends KeyValueClientGetRecordOptions> = Options['stream'] extends true ? ReadableStream<Uint8Array> : Options['buffer'] extends true ? Uint8Array : JsonValue;
 
 // @public
 export interface Run extends Omit<Schemas['Run'], keyof RunRePointed | keyof RunClientNarrowings>, RunRePointed, RunClientNarrowings {
@@ -3616,6 +3967,7 @@ export interface RunGetOptions extends TimeoutOptions {
 
 // @public
 export interface RunIterateDatasetItemsOptions extends PaginationOptions, TimeoutOptions {
+    chunkSize?: number;
     clean?: boolean;
     fields?: string[];
     omit?: string[];
@@ -3661,14 +4013,7 @@ interface RunMetaRePointed {
 }
 
 // @public
-export interface RunOptions extends GeneratedRunOptions, RunOptionsSpecGaps {
-}
-
-// Not exported by the entry point; reachable only as a referenced type.
-// @public
-interface RunOptionsSpecGaps {
-    // (undocumented)
-    restartOnError?: boolean;
+export interface RunOptions extends GeneratedRunOptions {
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
@@ -3728,7 +4073,7 @@ export interface RunWaitForFinishOptions extends TimeoutOptions {
 }
 
 // @public
-export interface Schedule extends Omit<Schemas['Schedule'], keyof ScheduleRePointed | keyof ScheduleClientNarrowings>, ScheduleRePointed, ScheduleClientNarrowings {
+export interface Schedule extends Omit<Schemas['Schedule'], keyof ScheduleRePointed | keyof ScheduleClientNarrowings | keyof ScheduleSpecNarrowings>, ScheduleRePointed, ScheduleClientNarrowings, ScheduleSpecNarrowings {
 }
 
 // @public
@@ -3819,6 +4164,13 @@ interface ScheduleRePointed {
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
+interface ScheduleSpecNarrowings {
+    // (undocumented)
+    uiState?: NonNullable<Schemas['Schedule']['uiState']> | null;
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
 type Schemas = components['schemas'];
 
 // Not exported by the entry point; reachable only as a referenced type.
@@ -3894,7 +4246,7 @@ export interface StoreCollectionListOptions extends PaginationOptions, TimeoutOp
     pricingModel?: string;
     // (undocumented)
     search?: string;
-    // (undocumented)
+    // @deprecated (undocumented)
     sortBy?: string;
     // (undocumented)
     username?: string;
@@ -3973,7 +4325,7 @@ export interface TaskLastRunOptions extends ActorLastRunOptions {
 }
 
 // @public
-export interface TaskListItem extends Omit<Schemas['TaskListItem'], keyof TaskListItemRePointed>, TaskListItemRePointed, TaskListItemSpecGaps {
+export interface TaskListItem extends Omit<Schemas['TaskListItem'], keyof TaskListItemRePointed>, TaskListItemRePointed {
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
@@ -3981,13 +4333,6 @@ export interface TaskListItem extends Omit<Schemas['TaskListItem'], keyof TaskLi
 interface TaskListItemRePointed {
     // (undocumented)
     stats?: TaskStats | null;
-}
-
-// Not exported by the entry point; reachable only as a referenced type.
-// @public
-interface TaskListItemSpecGaps {
-    // (undocumented)
-    title?: string | null;
 }
 
 // @public
@@ -4066,6 +4411,9 @@ type Timezone = (typeof timezones)[number];
 const timezones: readonly ['Africa/Abidjan', 'Africa/Accra', 'Africa/Addis_Ababa', 'Africa/Algiers', 'Africa/Asmara', 'Africa/Asmera', 'Africa/Bamako', 'Africa/Bangui', 'Africa/Banjul', 'Africa/Bissau', 'Africa/Blantyre', 'Africa/Brazzaville', 'Africa/Bujumbura', 'Africa/Cairo', 'Africa/Casablanca', 'Africa/Ceuta', 'Africa/Conakry', 'Africa/Dakar', 'Africa/Dar_es_Salaam', 'Africa/Djibouti', 'Africa/Douala', 'Africa/El_Aaiun', 'Africa/Freetown', 'Africa/Gaborone', 'Africa/Harare', 'Africa/Johannesburg', 'Africa/Juba', 'Africa/Kampala', 'Africa/Khartoum', 'Africa/Kigali', 'Africa/Kinshasa', 'Africa/Lagos', 'Africa/Libreville', 'Africa/Lome', 'Africa/Luanda', 'Africa/Lubumbashi', 'Africa/Lusaka', 'Africa/Malabo', 'Africa/Maputo', 'Africa/Maseru', 'Africa/Mbabane', 'Africa/Mogadishu', 'Africa/Monrovia', 'Africa/Nairobi', 'Africa/Ndjamena', 'Africa/Niamey', 'Africa/Nouakchott', 'Africa/Ouagadougou', 'Africa/Porto-Novo', 'Africa/Sao_Tome', 'Africa/Timbuktu', 'Africa/Tripoli', 'Africa/Tunis', 'Africa/Windhoek', 'America/Adak', 'America/Anchorage', 'America/Anguilla', 'America/Antigua', 'America/Araguaina', 'America/Argentina/Buenos_Aires', 'America/Argentina/Catamarca', 'America/Argentina/ComodRivadavia', 'America/Argentina/Cordoba', 'America/Argentina/Jujuy', 'America/Argentina/La_Rioja', 'America/Argentina/Mendoza', 'America/Argentina/Rio_Gallegos', 'America/Argentina/Salta', 'America/Argentina/San_Juan', 'America/Argentina/San_Luis', 'America/Argentina/Tucuman', 'America/Argentina/Ushuaia', 'America/Aruba', 'America/Asuncion', 'America/Atikokan', 'America/Atka', 'America/Bahia', 'America/Bahia_Banderas', 'America/Barbados', 'America/Belem', 'America/Belize', 'America/Blanc-Sablon', 'America/Boa_Vista', 'America/Bogota', 'America/Boise', 'America/Buenos_Aires', 'America/Cambridge_Bay', 'America/Campo_Grande', 'America/Cancun', 'America/Caracas', 'America/Catamarca', 'America/Cayenne', 'America/Cayman', 'America/Chicago', 'America/Chihuahua', 'America/Coral_Harbour', 'America/Cordoba', 'America/Costa_Rica', 'America/Creston', 'America/Cuiaba', 'America/Curacao', 'America/Danmarkshavn', 'America/Dawson', 'America/Dawson_Creek', 'America/Denver', 'America/Detroit', 'America/Dominica', 'America/Edmonton', 'America/Eirunepe', 'America/El_Salvador', 'America/Ensenada', 'America/Fort_Nelson', 'America/Fort_Wayne', 'America/Fortaleza', 'America/Glace_Bay', 'America/Godthab', 'America/Goose_Bay', 'America/Grand_Turk', 'America/Grenada', 'America/Guadeloupe', 'America/Guatemala', 'America/Guayaquil', 'America/Guyana', 'America/Halifax', 'America/Havana', 'America/Hermosillo', 'America/Indiana/Indianapolis', 'America/Indiana/Knox', 'America/Indiana/Marengo', 'America/Indiana/Petersburg', 'America/Indiana/Tell_City', 'America/Indiana/Vevay', 'America/Indiana/Vincennes', 'America/Indiana/Winamac', 'America/Indianapolis', 'America/Inuvik', 'America/Iqaluit', 'America/Jamaica', 'America/Jujuy', 'America/Juneau', 'America/Kentucky/Louisville', 'America/Kentucky/Monticello', 'America/Knox_IN', 'America/Kralendijk', 'America/La_Paz', 'America/Lima', 'America/Los_Angeles', 'America/Louisville', 'America/Lower_Princes', 'America/Maceio', 'America/Managua', 'America/Manaus', 'America/Marigot', 'America/Martinique', 'America/Matamoros', 'America/Mazatlan', 'America/Mendoza', 'America/Menominee', 'America/Merida', 'America/Metlakatla', 'America/Mexico_City', 'America/Miquelon', 'America/Moncton', 'America/Monterrey', 'America/Montevideo', 'America/Montreal', 'America/Montserrat', 'America/Nassau', 'America/New_York', 'America/Nipigon', 'America/Nome', 'America/Noronha', 'America/North_Dakota/Beulah', 'America/North_Dakota/Center', 'America/North_Dakota/New_Salem', 'America/Nuuk', 'America/Ojinaga', 'America/Panama', 'America/Pangnirtung', 'America/Paramaribo', 'America/Phoenix', 'America/Port-au-Prince', 'America/Port_of_Spain', 'America/Porto_Acre', 'America/Porto_Velho', 'America/Puerto_Rico', 'America/Punta_Arenas', 'America/Rainy_River', 'America/Rankin_Inlet', 'America/Recife', 'America/Regina', 'America/Resolute', 'America/Rio_Branco', 'America/Rosario', 'America/Santa_Isabel', 'America/Santarem', 'America/Santiago', 'America/Santo_Domingo', 'America/Sao_Paulo', 'America/Scoresbysund', 'America/Shiprock', 'America/Sitka', 'America/St_Barthelemy', 'America/St_Johns', 'America/St_Kitts', 'America/St_Lucia', 'America/St_Thomas', 'America/St_Vincent', 'America/Swift_Current', 'America/Tegucigalpa', 'America/Thule', 'America/Thunder_Bay', 'America/Tijuana', 'America/Toronto', 'America/Tortola', 'America/Vancouver', 'America/Virgin', 'America/Whitehorse', 'America/Winnipeg', 'America/Yakutat', 'America/Yellowknife', 'Antarctica/Casey', 'Antarctica/Davis', 'Antarctica/DumontDUrville', 'Antarctica/Macquarie', 'Antarctica/Mawson', 'Antarctica/McMurdo', 'Antarctica/Palmer', 'Antarctica/Rothera', 'Antarctica/South_Pole', 'Antarctica/Syowa', 'Antarctica/Troll', 'Antarctica/Vostok', 'Arctic/Longyearbyen', 'Asia/Aden', 'Asia/Almaty', 'Asia/Amman', 'Asia/Anadyr', 'Asia/Aqtau', 'Asia/Aqtobe', 'Asia/Ashgabat', 'Asia/Ashkhabad', 'Asia/Atyrau', 'Asia/Baghdad', 'Asia/Bahrain', 'Asia/Baku', 'Asia/Bangkok', 'Asia/Barnaul', 'Asia/Beirut', 'Asia/Bishkek', 'Asia/Brunei', 'Asia/Calcutta', 'Asia/Chita', 'Asia/Choibalsan', 'Asia/Chongqing', 'Asia/Chungking', 'Asia/Colombo', 'Asia/Dacca', 'Asia/Damascus', 'Asia/Dhaka', 'Asia/Dili', 'Asia/Dubai', 'Asia/Dushanbe', 'Asia/Famagusta', 'Asia/Gaza', 'Asia/Harbin', 'Asia/Hebron', 'Asia/Ho_Chi_Minh', 'Asia/Hong_Kong', 'Asia/Hovd', 'Asia/Irkutsk', 'Asia/Istanbul', 'Asia/Jakarta', 'Asia/Jayapura', 'Asia/Jerusalem', 'Asia/Kabul', 'Asia/Kamchatka', 'Asia/Karachi', 'Asia/Kashgar', 'Asia/Kathmandu', 'Asia/Katmandu', 'Asia/Khandyga', 'Asia/Kolkata', 'Asia/Krasnoyarsk', 'Asia/Kuala_Lumpur', 'Asia/Kuching', 'Asia/Kuwait', 'Asia/Macao', 'Asia/Macau', 'Asia/Magadan', 'Asia/Makassar', 'Asia/Manila', 'Asia/Muscat', 'Asia/Nicosia', 'Asia/Novokuznetsk', 'Asia/Novosibirsk', 'Asia/Omsk', 'Asia/Oral', 'Asia/Phnom_Penh', 'Asia/Pontianak', 'Asia/Pyongyang', 'Asia/Qatar', 'Asia/Qostanay', 'Asia/Qyzylorda', 'Asia/Rangoon', 'Asia/Riyadh', 'Asia/Saigon', 'Asia/Sakhalin', 'Asia/Samarkand', 'Asia/Seoul', 'Asia/Shanghai', 'Asia/Singapore', 'Asia/Srednekolymsk', 'Asia/Taipei', 'Asia/Tashkent', 'Asia/Tbilisi', 'Asia/Tehran', 'Asia/Tel_Aviv', 'Asia/Thimbu', 'Asia/Thimphu', 'Asia/Tokyo', 'Asia/Tomsk', 'Asia/Ujung_Pandang', 'Asia/Ulaanbaatar', 'Asia/Ulan_Bator', 'Asia/Urumqi', 'Asia/Ust-Nera', 'Asia/Vientiane', 'Asia/Vladivostok', 'Asia/Yakutsk', 'Asia/Yangon', 'Asia/Yekaterinburg', 'Asia/Yerevan', 'Atlantic/Azores', 'Atlantic/Bermuda', 'Atlantic/Canary', 'Atlantic/Cape_Verde', 'Atlantic/Faeroe', 'Atlantic/Faroe', 'Atlantic/Jan_Mayen', 'Atlantic/Madeira', 'Atlantic/Reykjavik', 'Atlantic/South_Georgia', 'Atlantic/St_Helena', 'Atlantic/Stanley', 'Australia/ACT', 'Australia/Adelaide', 'Australia/Brisbane', 'Australia/Broken_Hill', 'Australia/Canberra', 'Australia/Currie', 'Australia/Darwin', 'Australia/Eucla', 'Australia/Hobart', 'Australia/LHI', 'Australia/Lindeman', 'Australia/Lord_Howe', 'Australia/Melbourne', 'Australia/NSW', 'Australia/North', 'Australia/Perth', 'Australia/Queensland', 'Australia/South', 'Australia/Sydney', 'Australia/Tasmania', 'Australia/Victoria', 'Australia/West', 'Australia/Yancowinna', 'Brazil/Acre', 'Brazil/DeNoronha', 'Brazil/East', 'Brazil/West', 'CET', 'CST6CDT', 'Canada/Atlantic', 'Canada/Central', 'Canada/Eastern', 'Canada/Mountain', 'Canada/Newfoundland', 'Canada/Pacific', 'Canada/Saskatchewan', 'Canada/Yukon', 'Chile/Continental', 'Chile/EasterIsland', 'Cuba', 'EET', 'EST', 'EST5EDT', 'Egypt', 'Eire', 'Etc/GMT', 'Etc/GMT+0', 'Etc/GMT+1', 'Etc/GMT+10', 'Etc/GMT+11', 'Etc/GMT+12', 'Etc/GMT+2', 'Etc/GMT+3', 'Etc/GMT+4', 'Etc/GMT+5', 'Etc/GMT+6', 'Etc/GMT+7', 'Etc/GMT+8', 'Etc/GMT+9', 'Etc/GMT-0', 'Etc/GMT-1', 'Etc/GMT-10', 'Etc/GMT-11', 'Etc/GMT-12', 'Etc/GMT-13', 'Etc/GMT-14', 'Etc/GMT-2', 'Etc/GMT-3', 'Etc/GMT-4', 'Etc/GMT-5', 'Etc/GMT-6', 'Etc/GMT-7', 'Etc/GMT-8', 'Etc/GMT-9', 'Etc/GMT0', 'Etc/Greenwich', 'Etc/UCT', 'Etc/UTC', 'Etc/Universal', 'Etc/Zulu', 'Europe/Amsterdam', 'Europe/Andorra', 'Europe/Astrakhan', 'Europe/Athens', 'Europe/Belfast', 'Europe/Belgrade', 'Europe/Berlin', 'Europe/Bratislava', 'Europe/Brussels', 'Europe/Bucharest', 'Europe/Budapest', 'Europe/Busingen', 'Europe/Chisinau', 'Europe/Copenhagen', 'Europe/Dublin', 'Europe/Gibraltar', 'Europe/Guernsey', 'Europe/Helsinki', 'Europe/Isle_of_Man', 'Europe/Istanbul', 'Europe/Jersey', 'Europe/Kaliningrad', 'Europe/Kiev', 'Europe/Kirov', 'Europe/Lisbon', 'Europe/Ljubljana', 'Europe/London', 'Europe/Luxembourg', 'Europe/Madrid', 'Europe/Malta', 'Europe/Mariehamn', 'Europe/Minsk', 'Europe/Monaco', 'Europe/Moscow', 'Europe/Nicosia', 'Europe/Oslo', 'Europe/Paris', 'Europe/Podgorica', 'Europe/Prague', 'Europe/Riga', 'Europe/Rome', 'Europe/Samara', 'Europe/San_Marino', 'Europe/Sarajevo', 'Europe/Saratov', 'Europe/Simferopol', 'Europe/Skopje', 'Europe/Sofia', 'Europe/Stockholm', 'Europe/Tallinn', 'Europe/Tirane', 'Europe/Tiraspol', 'Europe/Ulyanovsk', 'Europe/Uzhgorod', 'Europe/Vaduz', 'Europe/Vatican', 'Europe/Vienna', 'Europe/Vilnius', 'Europe/Volgograd', 'Europe/Warsaw', 'Europe/Zagreb', 'Europe/Zaporozhye', 'Europe/Zurich', 'GB', 'GB-Eire', 'GMT', 'GMT+0', 'GMT-0', 'GMT0', 'Greenwich', 'HST', 'Hongkong', 'Iceland', 'Indian/Antananarivo', 'Indian/Chagos', 'Indian/Christmas', 'Indian/Cocos', 'Indian/Comoro', 'Indian/Kerguelen', 'Indian/Mahe', 'Indian/Maldives', 'Indian/Mauritius', 'Indian/Mayotte', 'Indian/Reunion', 'Iran', 'Israel', 'Jamaica', 'Japan', 'Kwajalein', 'Libya', 'MET', 'MST', 'MST7MDT', 'Mexico/BajaNorte', 'Mexico/BajaSur', 'Mexico/General', 'NZ', 'NZ-CHAT', 'Navajo', 'PRC', 'PST8PDT', 'Pacific/Apia', 'Pacific/Auckland', 'Pacific/Bougainville', 'Pacific/Chatham', 'Pacific/Chuuk', 'Pacific/Easter', 'Pacific/Efate', 'Pacific/Enderbury', 'Pacific/Fakaofo', 'Pacific/Fiji', 'Pacific/Funafuti', 'Pacific/Galapagos', 'Pacific/Gambier', 'Pacific/Guadalcanal', 'Pacific/Guam', 'Pacific/Honolulu', 'Pacific/Johnston', 'Pacific/Kiritimati', 'Pacific/Kosrae', 'Pacific/Kwajalein', 'Pacific/Majuro', 'Pacific/Marquesas', 'Pacific/Midway', 'Pacific/Nauru', 'Pacific/Niue', 'Pacific/Norfolk', 'Pacific/Noumea', 'Pacific/Pago_Pago', 'Pacific/Palau', 'Pacific/Pitcairn', 'Pacific/Pohnpei', 'Pacific/Ponape', 'Pacific/Port_Moresby', 'Pacific/Rarotonga', 'Pacific/Saipan', 'Pacific/Samoa', 'Pacific/Tahiti', 'Pacific/Tarawa', 'Pacific/Tongatapu', 'Pacific/Truk', 'Pacific/Wake', 'Pacific/Wallis', 'Pacific/Yap', 'Poland', 'Portugal', 'ROC', 'ROK', 'Singapore', 'Turkey', 'UCT', 'US/Alaska', 'US/Aleutian', 'US/Arizona', 'US/Central', 'US/East-Indiana', 'US/Eastern', 'US/Hawaii', 'US/Indiana-Starke', 'US/Michigan', 'US/Mountain', 'US/Pacific', 'US/Samoa', 'UTC', 'Universal', 'W-SU', 'WET', 'Zulu'];
 
 // @public
+export type TypedArray = Int8Array | Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array | BigInt64Array | BigUint64Array;
+
+// @public
 export class UnauthorizedError extends ApifyApiError {
 }
 
@@ -4136,6 +4484,8 @@ export type Version = VersionSourceFiles | VersionGitRepo | VersionTarball | Ver
 // @public (undocumented)
 interface VersionClientNarrowings {
     // (undocumented)
+    actorPath?: GeneratedVersion['actorPath'];
+    // (undocumented)
     sourceType: `${ActorSourceType}`;
 }
 
@@ -4164,6 +4514,7 @@ export interface VersionSourceCode extends BaseVersion<`${ActorSourceType.Source
 
 // @public
 export interface VersionSourceFiles extends BaseVersion<`${ActorSourceType.SourceFiles}`> {
+    actorPath?: GeneratedVersion['actorPath'];
     // (undocumented)
     sourceFiles: (SourceCodeFile | SourceCodeFolder)[];
 }
@@ -4174,6 +4525,7 @@ type VersionSourceLocation = 'sourceFiles' | 'gitRepoUrl' | 'tarballUrl' | 'gitH
 
 // @public
 export interface VersionTarball extends BaseVersion<`${ActorSourceType.Tarball}`> {
+    actorPath?: GeneratedVersion['actorPath'];
     // (undocumented)
     tarballUrl: NonNullable<GeneratedVersion['tarballUrl']>;
 }
@@ -4316,7 +4668,7 @@ interface WebhookLastDispatchRePointed {
 }
 
 // @public
-export interface WebhookResource extends Omit<Schemas['WebhookResource'], keyof WebhookResourceRePointed>, WebhookResourceRePointed, WebhookResourceSpecGaps {
+export interface WebhookResource extends Omit<Schemas['WebhookResource'], keyof WebhookResourceRePointed>, WebhookResourceRePointed {
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
@@ -4332,13 +4684,6 @@ interface WebhookResourceRePointed {
     stats?: WebhookStats | null;
 }
 
-// Not exported by the entry point; reachable only as a referenced type.
-// @public
-interface WebhookResourceSpecGaps {
-    // (undocumented)
-    isApifyIntegration?: boolean;
-}
-
 // @public
 export interface WebhookStats extends GeneratedWebhookStats {
 }
@@ -4347,6 +4692,20 @@ export interface WebhookStats extends GeneratedWebhookStats {
 export type WebhookUpdateData = Partial<Pick<WebhookResource, 'isAdHoc' | 'condition' | 'ignoreSslErrors' | 'doNotRetry' | 'requestUrl' | 'payloadTemplate' | 'shouldInterpolateStrings' | 'isApifyIntegration' | 'headersTemplate' | 'description'> & {
     eventTypes: readonly WebhookEventType[];
 }> & WebhookIdempotencyKey;
+
+// @public
+export class ZstdHttpCompressor implements HttpCompressor {
+    constructor(options?: ZstdHttpCompressorOptions);
+    // (undocumented)
+    compress(data: Buffer): Promise<Buffer>;
+    // (undocumented)
+    readonly contentEncoding = "zstd";
+}
+
+// @public
+export interface ZstdHttpCompressorOptions {
+    quality?: number;
+}
 
 // (No @packageDocumentation comment for this package)
 

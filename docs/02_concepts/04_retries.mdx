@@ -35,13 +35,13 @@ Retries with exponential backoff help reduce the load on the server and increase
     {RetriesExample}
 </CodeBlock>
 
-When the retries are exhausted, the client throws the error of the final attempt. Which transport errors count as retryable is decided by the HTTP client the requests go through. The built-in axios client retries every network failure, timeouts included. A custom client classifies its own errors. For details, see [HTTP clients](./09_custom_http_clients.mdx).
+When the retries are exhausted, the client throws the error of the final attempt. Which transport errors count as retryable is decided by the HTTP client the requests go through. The built-in client retries every network failure, timeouts included. A custom client classifies its own errors. For details, see [HTTP clients](./09_custom_http_clients.mdx).
 
 A request that times out is retried the same way, with a longer timeout on each attempt. For how the timeouts are set, see [Timeouts](./10_timeouts.mdx).
 
 ## Retry a request body read from a file
 
-A request whose body is a Node.js `Readable` gets a single attempt, since the failed attempt has already consumed part of the stream. To upload a file with retries, pass it as a `Blob`, for example one from `fs.openAsBlob()`. The client reads the blob again for every attempt and doesn't hold it in memory. If reading the blob itself fails, for example because the file was deleted, the client throws that error right away. Its `cause` is the transport error, unless the transport error already wraps it.
+A request whose body is a stream, either a Node.js `Readable` or a web `ReadableStream`, gets a single attempt, since the failed attempt has already consumed part of the stream. To upload a file with retries, pass it as a `Blob`, for example one from `fs.openAsBlob()`. The client reads the blob again for every attempt and doesn't hold it in memory. If reading the blob itself fails, for example because the file was deleted, the client throws that error right away. Its `cause` is the transport error, unless the transport error already wraps it.
 
 ## Wait for resources to start a run
 

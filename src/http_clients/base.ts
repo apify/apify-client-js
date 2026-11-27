@@ -1,12 +1,10 @@
 import type { Readable } from 'node:stream';
 
-import type { TypedArray } from 'type-fest';
 import { z } from 'zod';
 
 import { APIFY_ENV_VARS } from '@apify/consts';
 import type { Log } from '@apify/log';
 import log from '@apify/log';
-import { concatStreamToBuffer } from '@apify/utilities';
 
 import { ApifyApiError } from '../apify_api_error.js';
 import { maybeParseBody } from '../body_parser.js';
@@ -27,16 +25,19 @@ import { runtime } from '#runtime';
 import {
     asArray,
     getEnv,
+    isAnyStream,
     isBlob,
     isBuffer,
     isCompressibleContentType,
     isStream,
+    isWebStream,
     MIN_COMPRESS_BYTES,
     parseArgument,
     sleep,
     toBytes,
     version,
 } from '../utils.js';
+import type { TypedArray } from '../utils.js';
 
 export type { HttpMethod } from '../models.js';
 
@@ -66,7 +67,7 @@ export const httpClientOptionsShape = {
 const httpClientOptionsSchema = z.looseObject(httpClientOptionsShape).partial();
 
 /** Objects whose payload does not live in their own enumerable keys, so JSON serialization loses it. */
-const UNSERIALIZABLE_OBJECT_TAGS = new Set(['FormData', 'ReadableStream']);
+const UNSERIALIZABLE_OBJECT_TAGS = new Set(['FormData']);
 
 /**
  * Response headers keyed by lowercase header name. A header the server sent more than once may arrive as an array.
@@ -77,22 +78,33 @@ export type HttpResponseHeaders = Record<string, string | string[] | undefined>;
  * A request body as the transport receives it: already serialized, and compressed when that paid off. A `Readable`
  * is passed through untouched and is only available in Node.js. A `Blob` body reaches a Node.js transport as a
  * fresh `Readable` over its bytes for every attempt, and a transport in any other runtime as the `Blob` itself.
+ * A web `ReadableStream` body reaches a Node.js transport as a `Readable` too, and a transport in any other
+ * runtime as the stream itself.
  */
-export type HttpRequestBody = string | Buffer | ArrayBuffer | ArrayBufferView | Readable | Blob;
+export type HttpRequestBody =
+    | string
+    | Buffer
+    | ArrayBuffer
+    | ArrayBufferView
+    | Readable
+    | ReadableStream<Uint8Array>
+    | Blob;
 
 /**
- * A response body as the transport hands it back: the raw bytes, a `Readable` when the request asked for a streamed
- * response, or `undefined` when the response carried no body.
+ * A response body as the transport hands it back: the raw bytes, a web `ReadableStream` or a `Readable` when the
+ * request asked for a streamed response, or `undefined` when the response carried no body. The pipeline hands the bytes
+ * on as a `Uint8Array` (a `Buffer` in Node.js) and the stream as a web `ReadableStream`, whichever of the
+ * types they arrive in.
  */
-export type HttpResponseBody = Buffer | ArrayBuffer | Readable | undefined;
+export type HttpResponseBody = Uint8Array | ArrayBuffer | Readable | ReadableStream<Uint8Array> | undefined;
 
 /**
  * How {@link HttpClient.call} hands back the response body.
  *
  * - `parsed` (the default) decodes it by content type: JSON becomes an object, text and XML become a string, anything
- *   else stays a `Buffer` (an `ArrayBuffer` in the browser).
- * - `buffer` skips the decoding and hands back the raw bytes.
- * - `stream` hands back a `Readable` with the body unread. Node.js only.
+ *   else stays a `Uint8Array`.
+ * - `buffer` skips the decoding and hands back the raw bytes as a `Uint8Array`.
+ * - `stream` hands back the body unread, as a web `ReadableStream` of `Uint8Array` chunks.
  */
 export type ApifyResponseType = 'parsed' | 'buffer' | 'stream';
 
@@ -114,10 +126,11 @@ export interface ApifyRequestConfig {
     /**
      * Request body. A plain object or array is serialized to JSON and sent as `application/json`, or form-encoded
      * when a `Content-Type: application/x-www-form-urlencoded` header asks for it. A string, binary value
-     * (`Buffer`, `ArrayBuffer`, typed array) or `Readable` is sent as it is, and `URLSearchParams` is sent
-     * form-encoded. A `Blob` or `File`, such as one from `fs.openAsBlob()`, is streamed without being held in
-     * memory, under its own `type` when no `Content-Type` header is set. A `FormData` or web `ReadableStream` is
-     * rejected with a `TypeError`, since serializing one would send an empty body.
+     * (`Buffer`, `ArrayBuffer`, typed array) or stream (`Readable`, web `ReadableStream`) is sent as it is, and
+     * `URLSearchParams` is sent form-encoded. A `Blob` or `File`, such as one from `fs.openAsBlob()`, is streamed
+     * without being held in memory, under its own `type` when no `Content-Type` header is set. A `FormData` is
+     * rejected with a `TypeError`, since serializing one would send an empty body, and so is a web `ReadableStream`
+     * in a browser that cannot send one.
      */
     data?: unknown;
     /**
@@ -136,6 +149,40 @@ export interface ApifyRequestConfig {
     /** Give up on the first transport timeout instead of retrying it. */
     doNotRetryTimeouts?: boolean;
     /**
+     * How to compress the request body: an {@link HttpCompressor} for this request only, or `false` to send the body
+     * uncompressed. Defaults to the client's {@link HttpClient.httpCompressor}.
+     */
+    compression?: HttpCompressor | false;
+    /**
+     * Header that carries the client's API token for this request. The Apify API reads `Authorization`. Actor
+     * servers also accept `X-Apify-Authorization`, which the platform removes before the request reaches the Actor,
+     * so the `Authorization` header stays free for the Actor's own authentication. A per-request header of either
+     * name still wins.
+     * @default 'Authorization'
+     */
+    authorizationHeader?: 'Authorization' | 'X-Apify-Authorization';
+    /**
+     * Whether an error status throws {@link ApifyApiError}. With `false`, the call resolves to the error response
+     * once no retry follows, and a rate limit (429) doesn't count toward the client's statistics, which track the
+     * API's rate limits.
+     * @default true
+     */
+    throwOnErrorStatus?: boolean;
+    /** Status codes to retry. Defaults to rate limits (429) and server errors (5xx). */
+    retryStatusCodes?: readonly number[];
+    /**
+     * Whether transport errors, timeouts included, are retried. With `false`, the first one fails the call, since the
+     * request may have reached the server before it failed.
+     * @default true
+     */
+    retryTransportErrors?: boolean;
+    /**
+     * Whether the transport follows redirects. With `false`, a redirect response is handled like an error status, so
+     * headers that carry the token never go to a host the server picked.
+     * @default true
+     */
+    followRedirects?: boolean;
+    /**
      * Aborts the call. Once the signal aborts, the attempt in flight is ended, no retry follows, and the call
      * rejects with the signal's `reason`.
      */
@@ -143,7 +190,8 @@ export interface ApifyRequestConfig {
 }
 
 /**
- * A successful response as {@link HttpClient.call} resolves to it.
+ * A response as {@link HttpClient.call} resolves to it: a success, or an error response when the request sets
+ * {@link ApifyRequestConfig.throwOnErrorStatus} to `false`.
  *
  * @template T - Type of the parsed body.
  */
@@ -175,8 +223,13 @@ export interface HttpRequest {
      * `timeoutSecs: 'noTimeout'` asks for.
      */
     timeoutMillis?: number;
-    /** Whether to hand the body back unread as a `Readable`, so the caller can stream it. */
+    /** Whether to hand the body back unread as a stream. The caller always gets a web `ReadableStream`. */
     stream: boolean;
+    /**
+     * Whether to follow redirects. With `false`, return a redirect response as it is: the request carries a token
+     * that must not follow a redirect to another host.
+     */
+    followRedirects: boolean;
     /**
      * The caller's abort signal, to hand to the HTTP library alongside the timeout. The pipeline stops retrying
      * once it aborts, so the transport only has to end the request in flight.
@@ -192,7 +245,7 @@ export interface HttpResponse {
     status: number;
     /** Response headers keyed by lowercase header name. */
     headers: HttpResponseHeaders;
-    /** The body as raw bytes, or unread as a `Readable` when the request asked for a stream. */
+    /** The body as raw bytes, or unread as a stream: a web `ReadableStream`, or a `Readable` the pipeline converts. */
     body: HttpResponseBody;
 }
 
@@ -247,22 +300,33 @@ export interface HttpClientOptions {
  *
  * Overriding {@link call} itself is also supported and bypasses the transport hooks entirely. Such a client has
  * to send the default headers from `defaultHeaders` with every request, otherwise the `Authorization` header never
- * reaches the API. The protected helpers `prepareRequest()`, `buildUrl()` and `computeTimeoutMillis()` stay
- * available to it.
+ * reaches the API. It also has to honor the per-request options {@link ApifyRequestConfig.compression},
+ * {@link ApifyRequestConfig.authorizationHeader}, {@link ApifyRequestConfig.throwOnErrorStatus},
+ * {@link ApifyRequestConfig.retryStatusCodes}, {@link ApifyRequestConfig.retryTransportErrors} and
+ * {@link ApifyRequestConfig.followRedirects}.
+ * {@link ActorServerClient.request} relies on them to keep the token away from the Actor's code, to return the
+ * server's error responses and to avoid sending a request to the Actor twice. The protected helpers
+ * `prepareRequest()`, `buildUrl()` and `computeTimeoutMillis()` stay available to it.
  *
  * @example
  * ```javascript
  * import { ApifyClient, HttpClient } from 'apify-client';
  *
- * class FetchHttpClient extends HttpClient {
- *     async sendRequest({ method, url, headers, body, timeoutMillis, signal }) {
+ * class MyFetchHttpClient extends HttpClient {
+ *     async sendRequest({ method, url, headers, body, timeoutMillis, followRedirects, signal }) {
  *         const signals = signal ? [signal] : [];
  *         if (timeoutMillis !== undefined) signals.push(AbortSignal.timeout(timeoutMillis));
- *         const response = await fetch(url, { method, headers, body, signal: AbortSignal.any(signals) });
+ *         const response = await fetch(url, {
+ *             method,
+ *             headers,
+ *             body,
+ *             redirect: followRedirects ? 'follow' : 'manual',
+ *             signal: AbortSignal.any(signals),
+ *         });
  *         return {
  *             status: response.status,
  *             headers: Object.fromEntries(response.headers),
- *             body: Buffer.from(await response.arrayBuffer()),
+ *             body: await response.arrayBuffer(),
  *         };
  *     }
  *
@@ -272,7 +336,7 @@ export interface HttpClientOptions {
  *     }
  * }
  *
- * const client = ApifyClient.withCustomHttpClient({ token: 'my-token', httpClient: new FetchHttpClient() });
+ * const client = ApifyClient.withCustomHttpClient({ token: 'my-token', httpClient: new MyFetchHttpClient() });
  * ```
  */
 export abstract class HttpClient {
@@ -391,7 +455,8 @@ export abstract class HttpClient {
      * propagate unwrapped: {@link call} classifies them through {@link isRetryableTransportError} and
      * {@link isTimeoutError}. Return error responses as they are too, the pipeline turns them into
      * {@link ApifyApiError} and decides whether to retry. Reject when the connection drops before the body is
-     * complete: the pipeline takes a returned body as whole and does not retry one that fails to parse.
+     * complete: the pipeline takes a returned body as whole and does not retry one that fails to parse. When
+     * `request.followRedirects` is `false`, return a redirect response as it is, since the request carries a token.
      *
      * @param request - The request to send, with the headers merged, the body serialized and the query encoded.
      * @returns The response, with the body unread when `request.stream` is set and as raw bytes otherwise.
@@ -406,17 +471,19 @@ export abstract class HttpClient {
      * Makes an API request with automatic retries and exponential backoff.
      *
      * Network errors the transport classifies as retryable, rate limits (HTTP 429) and server errors (HTTP 5xx)
-     * are retried up to {@link maxRetries} times. Any other error status is thrown as {@link ApifyApiError} right
-     * away. A request whose body is a `Readable` is never retried, since part of the stream has already been
-     * consumed by the time the failure shows. A `Blob` body is read again for every attempt, so it is retried like
-     * any other, unless reading the blob itself fails: that error is thrown right away, with the transport error
-     * as its `cause` when that error does not already wrap it. Aborting `config.signal` ends the attempt in flight,
-     * skips the remaining retries and rejects the call with the signal's `reason`.
+     * are retried up to {@link maxRetries} times, and `config.retryStatusCodes` picks other statuses to retry. Any
+     * other error status is thrown as {@link ApifyApiError} right away, or returned when `config.throwOnErrorStatus`
+     * is `false`. A request whose body is a `Readable` or a web `ReadableStream` is never retried, since part of the
+     * stream has already been consumed by the time the failure shows. A `Blob` body is read again for every attempt,
+     * so it is retried like any other, unless reading the blob itself fails: that error is thrown right away, with
+     * the transport error as its `cause` when that error does not already wrap it. Aborting `config.signal` ends the
+     * attempt in flight, skips the remaining retries and rejects the call with the signal's `reason`.
      *
      * @template T - Type of the parsed response body.
      * @param config - The request to make.
-     * @returns The successful response.
-     * @throws {ApifyApiError} When the API responds with an error status the retries could not fix.
+     * @returns The successful response, or the error response when `config.throwOnErrorStatus` is `false`.
+     * @throws {ApifyApiError} When the API responds with an error status the retries could not fix, unless
+     * `config.throwOnErrorStatus` is `false`.
      */
     async call<T = any>(config: ApifyRequestConfig): Promise<ApifyResponse<T>> {
         config.signal?.throwIfAborted();
@@ -425,35 +492,47 @@ export abstract class HttpClient {
         const { headers, body } = await this.prepareRequest(config);
         const url = this.buildUrl(config.url, config.params);
 
-        return this.#retryWithExpBackoff(
-            async (stopRetrying, attempt) =>
-                this.#makeRequest<T>({ config, url, headers, body, attempt, stopRetrying }),
-            config.signal,
-        );
+        try {
+            return await this.#retryWithExpBackoff(
+                async (stopRetrying, attempt) =>
+                    this.#makeRequest<T>({ config, url, headers, body, attempt, stopRetrying }),
+                config.signal,
+            );
+        } catch (error) {
+            // A transport may leave the `Readable` opened over a web stream unread, and the stream locked for good.
+            if (isWebStream(config.data) && isStream(body)) body.destroy();
+            throw error;
+        }
     }
 
     /**
      * Prepares the headers and the body of a request.
      *
-     * Merges the client's default headers with the per-request ones, header names compared case-insensitively and
-     * the per-request values winning. Serializes an object body to JSON, setting `Content-Type: application/json`
-     * unless the caller supplied a content type. Runs the body through {@link httpCompressor} unless a
-     * `Content-Encoding` header is already set, the body is too small, or its content type says the payload is
-     * already compressed. A caller-supplied `Content-Encoding` is forwarded as it is, which is how a pre-encoded
-     * body is uploaded, and `Content-Encoding: identity` opts a single request out of compression.
+     * Merges the client's default headers with the per-request ones, header names compared case-insensitively and the
+     * per-request values winning, after moving the default `Authorization` header to `X-Apify-Authorization` when
+     * `config.authorizationHeader` asks for it. Serializes an object body to JSON, setting
+     * `Content-Type: application/json` unless the caller supplied a content type. Runs the body through
+     * {@link httpCompressor}, or the compressor in `config.compression`, unless `config.compression` is `false`, a
+     * `Content-Encoding` header is already set, the body is too small, or its content type says the payload is already
+     * compressed. A caller-supplied `Content-Encoding` is forwarded as it is, which is how a pre-encoded body is
+     * uploaded, and `Content-Encoding: identity` opts a single request out of compression.
      */
     protected async prepareRequest(
         config: ApifyRequestConfig,
     ): Promise<{ headers: Record<string, string>; body: HttpRequestBody | undefined }> {
-        let headers = mergeHeaders(this.defaultHeaders, config.headers);
+        let headers = mergeHeaders(
+            withAuthorizationHeader(this.defaultHeaders, config.authorizationHeader),
+            config.headers,
+        );
         let body = serializeBody(config.data, headers, config.stringifyFunctions);
 
-        const bytes = compressibleBytes(body, headers);
+        const compressor = config.compression ?? this.httpCompressor;
+        const bytes = compressor && compressibleBytes(body, headers);
         if (bytes) {
-            body = await this.httpCompressor.compress(Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength));
+            body = await compressor.compress(Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength));
             // Compressing changes the body length, so a `Content-Length` the caller set describes the wrong body
             // and would leave the server waiting for bytes that never arrive.
-            headers = mergeHeaders(headers, { 'Content-Encoding': this.httpCompressor.contentEncoding });
+            headers = mergeHeaders(headers, { 'Content-Encoding': compressor.contentEncoding });
             deleteHeader(headers, 'content-length');
         }
 
@@ -548,8 +627,8 @@ export abstract class HttpClient {
 
     /**
      * Executes one attempt: sends the request, decodes the body and turns an error status into {@link ApifyApiError}.
-     * Throws for anything that is not a success, and flags the failure as final through `stopRetrying()` when a
-     * retry could not fix it.
+     * Throws for anything that is not a success, unless `config.throwOnErrorStatus` is `false` and no retry follows,
+     * and flags the failure as final through `stopRetrying()` when a retry could not fix it.
      */
     async #makeRequest<T>(options: {
         config: ApifyRequestConfig;
@@ -562,7 +641,7 @@ export abstract class HttpClient {
         const { config, url, headers, body, attempt, stopRetrying } = options;
         this.stats.requests++;
 
-        const requestIsStream = isStream(config.data);
+        const requestIsStream = isAnyStream(config.data);
 
         // The transport reports a failure of the blob as an error of its own, which may pass as transient.
         let sourceFailure: { error: unknown } | undefined;
@@ -581,6 +660,7 @@ export abstract class HttpClient {
                 body: attemptBody,
                 timeoutMillis: this.computeTimeoutMillis(attempt, config.timeoutSecs),
                 stream: config.responseType === 'stream',
+                followRedirects: config.followRedirects ?? true,
                 signal: config.signal,
             });
         } catch (err) {
@@ -599,12 +679,25 @@ export abstract class HttpClient {
             if (attemptBody !== body && isStream(attemptBody)) attemptBody.destroy();
         }
 
+        const isError = response.status >= 300;
+        const isRetryable = isError && this.#isStatusCodeRetryable(response.status, config.retryStatusCodes);
+        // An error response goes back to the caller as it is once no retry follows, which a stream body rules out.
+        const shouldReturnError =
+            isError &&
+            config.throwOnErrorStatus === false &&
+            (!isRetryable || requestIsStream || attempt > this.maxRetries);
+
+        // Transports return whichever stream and binary type their HTTP library has, and callers get the web ones.
+        if (isStream(response.body)) response.body = runtime.streamToWeb(response.body);
+
         // A failed streaming request carries the API error body in the stream, so read it and let
         // `ApifyApiError` parse it like any other error body. A body that cannot be read leaves the error
         // without a message, which beats losing the status code to a stream error.
-        if (response.status >= 300 && isStream(response.body)) {
-            response.body = await concatStreamToBuffer(response.body).catch(() => undefined);
+        if (isError && !shouldReturnError && isWebStream(response.body)) {
+            response.body = await new Response(response.body).arrayBuffer().catch(() => undefined);
         }
+
+        if (isBuffer(response.body)) response.body = toResponseBytes(response.body);
 
         let data: unknown;
         try {
@@ -612,7 +705,7 @@ export abstract class HttpClient {
         } catch (err) {
             // The body of a success arrived in full, since a transfer cut short fails in `sendRequest()`, so a
             // retry would get the same body back.
-            if (response.status < 300) {
+            if (!isError) {
                 stopRetrying();
                 throw err;
             }
@@ -626,14 +719,17 @@ export abstract class HttpClient {
             data: data as T,
             config,
         };
-        if (response.status < 300) return apifyResponse;
+        if (!isError) return apifyResponse;
 
-        if (response.status === RATE_LIMIT_EXCEEDED_STATUS_CODE) {
+        // The statistics track the API's rate limits. Only API calls throw on an error status, so a call with
+        // `throwOnErrorStatus: false` is taken for a non-API one and its 429s stay out of the statistics.
+        if (response.status === RATE_LIMIT_EXCEEDED_STATUS_CODE && config.throwOnErrorStatus !== false) {
             this.stats.addRateLimitError(attempt);
         }
+        if (shouldReturnError) return apifyResponse;
 
         const apiError = ApifyApiError.fromResponse(apifyResponse, attempt);
-        if (!this.#isStatusCodeRetryable(response.status)) {
+        if (!isRetryable) {
             stopRetrying();
         } else if (requestIsStream) {
             this.#informAboutStreamNoRetry();
@@ -650,7 +746,7 @@ export abstract class HttpClient {
     #parseResponseBody(response: HttpResponse, config: ApifyRequestConfig): unknown {
         const { body } = response;
         if (config.responseType === 'stream' || config.responseType === 'buffer') return body;
-        if (body === undefined || isStream(body)) return body;
+        if (body === undefined || !isBuffer(body)) return body;
         if (body.byteLength === 0) return undefined;
 
         try {
@@ -661,8 +757,9 @@ export abstract class HttpClient {
     }
 
     /**
-     * Decides whether a transport error ends the call. Timeouts the request opted out of retrying and errors the
-     * transport does not classify as retryable are final, and so is any error on a request with a stream body.
+     * Decides whether a transport error ends the call. Timeouts the request opted out of retrying, any error on a
+     * request that retries no transport errors, errors the transport does not classify as retryable and any error on
+     * a request with a stream body are final.
      */
     #handleRequestError(err: unknown, config: ApifyRequestConfig, stopRetrying: () => void): void {
         if (config.doNotRetryTimeouts && this.isTimeoutError(err)) {
@@ -670,22 +767,24 @@ export abstract class HttpClient {
             return;
         }
 
-        if (!this.isRetryableTransportError(err)) {
+        if (config.retryTransportErrors === false || !this.isRetryableTransportError(err)) {
             stopRetrying();
             return;
         }
 
-        if (isStream(config.data)) {
+        if (isAnyStream(config.data)) {
             this.#informAboutStreamNoRetry();
             stopRetrying();
         }
     }
 
     /**
-     * Rate limits (429) and server errors (500+) are retried. Anything else in 300-499 is a redirect the client
-     * cannot follow or invalid input, which repeating the request cannot fix.
+     * Rate limits (429) and server errors (500+) are retried, unless the request lists its own `retryStatusCodes`.
+     * Anything else in 300-499 is a redirect the client cannot follow or invalid input, which repeating the request
+     * cannot fix.
      */
-    #isStatusCodeRetryable(statusCode: number): boolean {
+    #isStatusCodeRetryable(statusCode: number, retryStatusCodes?: readonly number[]): boolean {
+        if (retryStatusCodes) return retryStatusCodes.includes(statusCode);
         return statusCode === RATE_LIMIT_EXCEEDED_STATUS_CODE || statusCode >= 500;
     }
 
@@ -700,8 +799,11 @@ export abstract class HttpClient {
 
     #onRequestRetry(error: unknown, attempt: number): void {
         if (attempt === Math.round(this.maxRetries / 2)) {
+            // A failed `fetch` names the network error only in its `cause`, and Bun gives its errors no stack.
+            const { stack, cause } = error as Error;
+            const causedBy = cause instanceof Error ? `\nCaused by: ${cause.stack ?? cause}` : '';
             this.logger.warning(
-                `API request failed ${attempt} times. Max attempts: ${this.maxRetries + 1}.\nCause:${(error as Error).stack}`,
+                `API request failed ${attempt} times. Max attempts: ${this.maxRetries + 1}.\nCause:${stack ?? error}${causedBy}`,
             );
         }
     }
@@ -720,7 +822,7 @@ function getHeader(headers: Record<string, string>, name: string): string | unde
  * Merges two header records, header names compared case-insensitively. A header from `override` replaces a
  * same-named header in `base` whatever the casing of either, and keeps the casing it was passed with.
  */
-function mergeHeaders(base: Record<string, string>, override?: Record<string, string>): Record<string, string> {
+export function mergeHeaders(base: Record<string, string>, override?: Record<string, string>): Record<string, string> {
     const merged = { ...base };
     for (const [key, value] of Object.entries(override ?? {})) {
         for (const existing of Object.keys(merged)) {
@@ -729,6 +831,21 @@ function mergeHeaders(base: Record<string, string>, override?: Record<string, st
         merged[key] = value;
     }
     return merged;
+}
+
+/**
+ * Moves the `Authorization` header of `headers` to the header named `name`, or returns `headers` unchanged when
+ * `name` is `Authorization`.
+ */
+function withAuthorizationHeader(
+    headers: Record<string, string>,
+    name: ApifyRequestConfig['authorizationHeader'] = 'Authorization',
+): Record<string, string> {
+    const authorization = getHeader(headers, 'authorization');
+    if (name === 'Authorization' || authorization === undefined) return headers;
+    const moved = { ...headers };
+    deleteHeader(moved, 'authorization');
+    return mergeHeaders(moved, { [name]: authorization });
 }
 
 /**
@@ -770,6 +887,13 @@ function withCause(error: unknown, cause: unknown): unknown {
     return error;
 }
 
+/** Views response bytes as a `Uint8Array` without copying them: a `Buffer` in Node.js, which v2 callers rely on. */
+function toResponseBytes(body: Uint8Array | ArrayBuffer): Uint8Array {
+    if (runtime.isNode && Buffer.isBuffer(body)) return body;
+    const bytes = toBytes(body)!;
+    return runtime.isNode ? Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength) : bytes;
+}
+
 function headerValue(value: string | string[] | undefined): string | undefined {
     return Array.isArray(value) ? value[0] : value;
 }
@@ -793,6 +917,7 @@ function serializeBody(
 ): HttpRequestBody | undefined {
     if (data === undefined || data === null) return undefined;
     if (isStream(data)) return data;
+    if (isWebStream(data)) return runtime.openStreamBody(data);
 
     if (isBlob(data)) {
         if (getHeader(headers, 'content-type') === undefined && data.type) headers['Content-Type'] = data.type;

@@ -1,10 +1,13 @@
-import type http from 'node:http';
-import type { Socket } from 'node:net';
+import http from 'node:http';
+import https from 'node:https';
 import os from 'node:os';
 import { Readable } from 'node:stream';
-import { brotliCompress, constants, gzip } from 'node:zlib';
+import type { ReadableStream as NodeReadableStream } from 'node:stream/web';
+import { brotliCompress, constants, gzip, zstdCompress } from 'node:zlib';
 
 import type { Runtime } from './types.js';
+
+const isBunOrDeno = Boolean(process.versions.bun || process.versions.deno);
 
 /**
  * The Node.js implementation of {@link Runtime}. Deno and Bun resolve the `node` condition too and
@@ -13,26 +16,32 @@ import type { Runtime } from './types.js';
 export const runtime: Runtime = {
     isNode: true,
 
+    fetchFailsWithCause: !isBunOrDeno,
+
     platform: `${os.platform()}; Node/${process.version}`,
 
     async compress(data, { algorithm, quality }) {
         return new Promise((resolve, reject) => {
             const done = (error: Error | null, result: Buffer) => (error ? reject(error) : resolve(result));
-            if (algorithm === 'br') {
-                brotliCompress(data, { params: { [constants.BROTLI_PARAM_QUALITY]: quality } }, done);
-            } else {
-                gzip(data, { level: quality }, done);
+            switch (algorithm) {
+                case 'br':
+                    brotliCompress(data, { params: { [constants.BROTLI_PARAM_QUALITY]: quality } }, done);
+                    break;
+                case 'gzip':
+                    gzip(data, { level: quality }, done);
+                    break;
+                case 'zstd':
+                    zstdCompress(data, { params: { [constants.ZSTD_c_compressionLevel]: quality } }, done);
+                    break;
+                default:
+                    reject(new Error(`Unrecognized compression algorithm: ${String(algorithm)}`));
             }
         });
     },
 
     async createHttpAgents({ timeoutMillis }) {
-        // Loaded on the first request rather than with the client: the proxy support pulls in a sizeable
-        // dependency tree that a client which never sends a request should not pay for.
-        const { ProxyAgent } = await import('proxy-agent');
-
         // We want to keep sockets alive for better performance.
-        const agentOptions: http.AgentOptions & { scheduling?: 'lifo' | 'fifo' } = {
+        const agentOptions: http.AgentOptions & { noDelay: boolean } = {
             keepAlive: true,
             // Timeout for inactive sockets
             // Prevents socket leaks from idle connections
@@ -45,22 +54,47 @@ export const runtime: Runtime = {
             maxFreeSockets: 256,
             // LIFO scheduling - reuse most recently used sockets for better performance
             scheduling: 'lifo',
+            // Disable Nagle's algorithm for lower latency. The agent hands the option to `net.createConnection()`.
+            noDelay: true,
         };
 
-        // ProxyAgent picks the proxy up from the environment variables and supports CONNECT tunneling.
-        const agent = new ProxyAgent(agentOptions);
+        return { httpAgent: new http.Agent(agentOptions), httpsAgent: new https.Agent(agentOptions) };
+    },
 
-        // Disable Nagle's algorithm for lower latency
-        // This sends data immediately instead of buffering small packets
-        agent.on('socket', (socket: Socket) => {
-            socket.setNoDelay(true);
-        });
+    streamToWeb(stream) {
+        return Readable.toWeb(stream) as ReadableStream<Uint8Array>;
+    },
 
-        return { httpAgent: agent, httpsAgent: agent };
+    unusedProxyHint() {
+        const names = ['HTTP_PROXY', 'HTTPS_PROXY', 'http_proxy', 'https_proxy'].filter((name) => process.env[name]);
+        if (names.length === 0) return undefined;
+        // The `fetch` of Bun and Deno reads these variables on its own.
+        if (isBunOrDeno) return undefined;
+
+        const [major, minor] = process.versions.node.split('.').map(Number);
+        const supported = major >= 24 || (major === 22 && minor >= 21);
+        const flags = [...process.execArgv, ...(process.env.NODE_OPTIONS ?? '').split(/\s+/)];
+        const enabled = process.env.NODE_USE_ENV_PROXY === '1' || flags.includes('--use-env-proxy');
+        // An older Node.js ignores the switch, so the proxy stays unused there even with it set.
+        if (supported && enabled) return undefined;
+
+        const fix = supported
+            ? 'Start Node.js with NODE_USE_ENV_PROXY=1 to send the requests through it.'
+            : `Node.js ${process.versions.node} cannot route fetch() through it: upgrade to Node.js 22.21 or 24, ` +
+              'then start it with NODE_USE_ENV_PROXY=1.';
+        return (
+            `The request failed, and the proxy set in ${names[0]} was not used, since fetch() in Node.js ignores the ` +
+            `proxy environment variables by default. ${fix} ` +
+            'See https://docs.apify.com/api/client/js/docs/concepts/custom-http-clients#proxies for the other options.'
+        );
     },
 
     openBlobBody(blob, onSourceError) {
         return Readable.from(readBlob(blob, onSourceError), { objectMode: false });
+    },
+
+    openStreamBody(stream) {
+        return Readable.fromWeb(stream as NodeReadableStream<Uint8Array>);
     },
 };
 

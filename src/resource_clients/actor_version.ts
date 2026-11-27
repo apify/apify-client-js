@@ -78,13 +78,14 @@ export class ActorVersionClient extends ResourceClient {
      *
      * @param newFields - Fields to update.
      * @param options - Request options
-     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'long'`, since the version can carry
+     * its source files.
      * @returns The updated Actor version object.
      * @see https://docs.apify.com/api/v2/act-version-put
      */
     async update(newFields: ActorVersionUpdateData, options: TimeoutOptions = {}): Promise<FinalVersion> {
         parseArgument(newFields, anyObjectSchema);
-        const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'long', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         return this.updateResource(schemas.Version(), newFields, timeoutSecs, signal);
     }
@@ -137,5 +138,10 @@ export class ActorVersionClient extends ResourceClient {
  * All of them are optional, because the endpoint leaves untouched whatever the payload does not
  * mention. The version union enforces the pairing: a `sourceType` can only be sent next to the
  * source location it implies, never next to one of the other three.
+ *
+ * On a `SOURCE_FILES` or `TARBALL` version, `actorPath: null` removes the stored path. So does an
+ * update that sends `sourceType`, `sourceFiles`, or `tarballUrl` without `actorPath`, so send it
+ * again with every upload. The API rejects an `actorPath` on a version of any other source type,
+ * also when the update leaves out `sourceType`, because it then checks the stored source type.
  */
 export type ActorVersionUpdateData = Partial<Version>;

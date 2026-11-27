@@ -6,13 +6,22 @@ import type { ApifyRequestConfig, ApifyResponse, HttpRequest, HttpResponse } fro
 import {
     ApifyClient,
     ArgumentValidationError,
-    AxiosHttpClient,
+    FetchHttpClient,
     HttpClient,
     InvalidResponseBodyError,
     NotFoundError,
     ServerError,
 } from 'apify-client';
+import { AxiosHttpClient } from 'apify-client/axios';
 import { afterAll, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
+
+import { usesAxios } from './_helper.js';
+
+/** The built-in transports, for the tests that hold for both of them. */
+const builtInClients = [
+    { name: 'FetchHttpClient', Client: FetchHttpClient },
+    { name: 'AxiosHttpClient', Client: AxiosHttpClient },
+];
 
 /** A custom client that replaces `call()` entirely and records what the resource clients hand it. */
 class FakeHttpClient extends HttpClient {
@@ -207,10 +216,10 @@ describe('pluggable HTTP client', () => {
     });
 
     describe('ApifyClient default client', () => {
-        test('is an AxiosHttpClient created once, on first access', () => {
+        test.skipIf(usesAxios)('is a FetchHttpClient created once, on first access', () => {
             const client = new ApifyClient({ token: 'test_token' });
 
-            expect(client.httpClient).toBeInstanceOf(AxiosHttpClient);
+            expect(client.httpClient).toBeInstanceOf(FetchHttpClient);
             expect(client.httpClient).toBe(client.httpClient);
             expect(client.httpClient.stats).toBe(client.stats);
         });
@@ -274,8 +283,8 @@ describe('pluggable HTTP client', () => {
             ).toBe(false);
         });
 
-        test('AxiosHttpClient is an HttpClient', () => {
-            expect(new AxiosHttpClient()).toBeInstanceOf(HttpClient);
+        test.each(builtInClients)('$name is an HttpClient', ({ Client }) => {
+            expect(new Client()).toBeInstanceOf(HttpClient);
         });
 
         test.each([
@@ -317,6 +326,88 @@ describe('pluggable HTTP client', () => {
             await expect(call).rejects.toThrow(NotFoundError);
             await expect(call).rejects.toMatchObject({ statusCode: 404, type: 'record-not-found', httpMethod: 'GET' });
             expect(received).toHaveLength(1);
+        });
+
+        test('returns a non-retryable error response after a single attempt with throwOnErrorStatus false', async () => {
+            const httpClient = new NodeHttpClient();
+
+            const response = await httpClient.call({
+                url: `${baseUrl}/missing`,
+                method: 'GET',
+                throwOnErrorStatus: false,
+            });
+
+            expect(response.status).toBe(404);
+            expect(response.data).toEqual({ error: { type: 'record-not-found', message: 'Not there.' } });
+            expect(received).toHaveLength(1);
+        });
+
+        test('returns the last error response once the retries run out with throwOnErrorStatus false', async () => {
+            failuresLeft = 5;
+            const httpClient = new NodeHttpClient({ minDelayBetweenRetriesMillis: 1, maxRetries: 2 });
+
+            const response = await httpClient.call({
+                url: `${baseUrl}/flaky`,
+                method: 'GET',
+                throwOnErrorStatus: false,
+            });
+
+            expect(response.status).toBe(500);
+            expect(received).toHaveLength(3);
+        });
+
+        test('returns an error response to a stream request with the body unread', async () => {
+            const httpClient = new NodeHttpClient();
+            vi.spyOn(httpClient, 'sendRequest').mockResolvedValue({
+                status: 404,
+                headers: { 'content-type': 'text/plain' },
+                body: Readable.from([Buffer.from('Not here')]),
+            });
+
+            const response = await httpClient.call({
+                url: `${baseUrl}/echo`,
+                method: 'GET',
+                responseType: 'stream',
+                throwOnErrorStatus: false,
+            });
+
+            expect(response.data).toBeInstanceOf(ReadableStream);
+            expect(await new Response(response.data).text()).toBe('Not here');
+        });
+
+        test('retries only the statuses listed in retryStatusCodes', async () => {
+            const httpClient = new NodeHttpClient({ minDelayBetweenRetriesMillis: 1 });
+            const unavailable = { status: 503, headers: {}, body: Buffer.alloc(0) };
+            const sendRequest = vi
+                .spyOn(httpClient, 'sendRequest')
+                .mockResolvedValueOnce(unavailable)
+                .mockResolvedValueOnce(unavailable)
+                .mockResolvedValueOnce(okResponse())
+                .mockResolvedValueOnce({ status: 500, headers: {}, body: Buffer.alloc(0) });
+            const request = { url: `${baseUrl}/echo`, method: 'GET', retryStatusCodes: [503] } as const;
+
+            await expect(httpClient.call(request)).resolves.toMatchObject({ status: 200 });
+            expect(sendRequest).toHaveBeenCalledTimes(3);
+
+            await expect(httpClient.call(request)).rejects.toThrow(ServerError);
+            expect(sendRequest).toHaveBeenCalledTimes(4);
+        });
+
+        test('sends the client authorization in the header chosen by authorizationHeader', async () => {
+            const httpClient = new NodeHttpClient({ token: 'hook_token' });
+            const request = {
+                url: `${baseUrl}/echo`,
+                method: 'GET',
+                authorizationHeader: 'X-Apify-Authorization',
+            } as const;
+
+            await httpClient.call(request);
+            await httpClient.call({ ...request, headers: { Authorization: 'Basic own' } });
+
+            expect(received.map(({ headers }) => [headers['x-apify-authorization'], headers.authorization])).toEqual([
+                ['Bearer hook_token', undefined],
+                ['Bearer hook_token', 'Basic own'],
+            ]);
         });
 
         test('attributes the error to the resource client, not to the transport', async () => {
@@ -405,6 +496,18 @@ describe('pluggable HTTP client', () => {
             expect(sendRequest).toHaveBeenCalledTimes(1 + 3);
         });
 
+        test('stops retrying any transport error when the request opts out of it', async () => {
+            const httpClient = new RetryingHttpClient({ minDelayBetweenRetriesMillis: 1, maxRetries: 2 });
+            const sendRequest = vi.spyOn(httpClient, 'sendRequest').mockRejectedValue(new Error('reset'));
+            const request = { url: `${baseUrl}/echo`, method: 'POST' } as const;
+
+            await expect(httpClient.call({ ...request, retryTransportErrors: false })).rejects.toThrow('reset');
+            expect(sendRequest).toHaveBeenCalledTimes(1);
+
+            await expect(httpClient.call(request)).rejects.toThrow('reset');
+            expect(sendRequest).toHaveBeenCalledTimes(1 + 3);
+        });
+
         test('rejects a call whose signal is already aborted without sending it', async () => {
             const httpClient = new NodeHttpClient();
             const sendRequest = vi.spyOn(httpClient, 'sendRequest');
@@ -461,8 +564,8 @@ describe('pluggable HTTP client', () => {
             expect(sendRequest).toHaveBeenCalledTimes(1);
         });
 
-        test('AxiosHttpClient ends the request in flight when the signal aborts', async () => {
-            const httpClient = new AxiosHttpClient();
+        test.each(builtInClients)('$name ends the request in flight when the signal aborts', async ({ Client }) => {
+            const httpClient = new Client();
             const controller = new AbortController();
             onStalled = () => controller.abort();
 
@@ -581,18 +684,69 @@ describe('pluggable HTTP client', () => {
             expect(received[0].body).toBe('a=1&b=two+words');
         });
 
-        test.each([
-            { name: 'a FormData', data: new FormData() },
-            { name: 'a ReadableStream', data: new ReadableStream() },
-        ])('throws instead of sending $name as an empty JSON body', async ({ data }) => {
+        test('throws instead of sending a FormData as an empty JSON body', async () => {
             const httpClient = new NodeHttpClient();
+
+            const call = httpClient.call({ url: `${baseUrl}/echo`, method: 'POST', data: new FormData() });
+
+            await expect(call).rejects.toThrow(TypeError);
+            await expect(call).rejects.toThrow('Unsupported request body type: FormData');
+            expect(received).toHaveLength(0);
+        });
+
+        test('hands a web stream body to a Node.js transport as a Readable, untouched', async () => {
+            const httpClient = new RetryingHttpClient();
+            const requests: HttpRequest[] = [];
+            const bodies: string[] = [];
+            vi.spyOn(httpClient, 'sendRequest').mockImplementation(async (request) => {
+                requests.push(request);
+                bodies.push(Buffer.concat(await (request.body as Readable).toArray()).toString('utf8'));
+                return okResponse();
+            });
+            // Large enough to be compressed, if it were not a stream.
+            const text = 'streamed '.repeat(1000);
+
+            await httpClient.call({ url: `${baseUrl}/echo`, method: 'POST', data: new Response(text).body });
+
+            expect(requests[0].body).toBeInstanceOf(Readable);
+            expect(bodies).toEqual([text]);
+            expect(Object.keys(requests[0].headers).map((name) => name.toLowerCase())).not.toContain(
+                'content-encoding',
+            );
+        });
+
+        test('rejects a web stream body that is already being read', async () => {
+            const httpClient = new RetryingHttpClient();
+            const sendRequest = vi.spyOn(httpClient, 'sendRequest');
+            const data = new Response('locked').body!;
+            data.getReader();
 
             const call = httpClient.call({ url: `${baseUrl}/echo`, method: 'POST', data });
 
             await expect(call).rejects.toThrow(TypeError);
-            await expect(call).rejects.toThrow(`Unsupported request body type: ${data.constructor.name}`);
-            expect(received).toHaveLength(0);
+            expect(sendRequest).not.toHaveBeenCalled();
         });
+
+        test.each(builtInClients)(
+            '$name cancels a web stream body when the connection cannot be made',
+            async ({ Client }) => {
+                const closed = http.createServer();
+                await new Promise<void>((done) => closed.listen(0, '127.0.0.1', done));
+                const { port } = closed.address() as AddressInfo;
+                await new Promise((done) => closed.close(done));
+                const cancel = vi.fn();
+                const data = new ReadableStream<Uint8Array>({ cancel });
+
+                const call = new Client({ maxRetries: 0 }).call({
+                    url: `http://127.0.0.1:${port}`,
+                    method: 'PUT',
+                    data,
+                });
+
+                await expect(call).rejects.toThrow();
+                await vi.waitFor(() => expect(cancel).toHaveBeenCalled());
+            },
+        );
 
         test('lets per-request headers override the defaults regardless of casing', async () => {
             const httpClient = new NodeHttpClient({ token: 'default_token', headers: { 'X-Custom': 'default' } });
@@ -615,12 +769,73 @@ describe('pluggable HTTP client', () => {
             expect(response.data).toEqual(Buffer.from([1, 2, 3]));
         });
 
-        test('gives up on a request whose body is a stream, since part of it is already consumed', async () => {
+        test.each([
+            { name: 'an ArrayBuffer', body: new Uint8Array([1, 2, 3]).buffer },
+            { name: 'a view into a larger buffer', body: new Uint8Array([0, 1, 2, 3, 4]).subarray(1, 4) },
+        ])('hands back $name from the transport as a Buffer', async ({ body }) => {
+            const httpClient = new NodeHttpClient();
+            vi.spyOn(httpClient, 'sendRequest').mockResolvedValue({ status: 200, headers: {}, body });
+
+            const raw = await httpClient.call({ url: `${baseUrl}/binary`, method: 'GET', responseType: 'buffer' });
+            const parsed = await httpClient.call({ url: `${baseUrl}/binary`, method: 'GET' });
+
+            for (const { data } of [raw, parsed]) {
+                expect(Buffer.isBuffer(data)).toBe(true);
+                expect(data).toEqual(Buffer.from([1, 2, 3]));
+            }
+        });
+
+        test('reads the error body of a Readable into the ApifyApiError', async () => {
+            const httpClient = new NodeHttpClient();
+            const error = { error: { type: 'record-not-found', message: 'Not here' } };
+            vi.spyOn(httpClient, 'sendRequest').mockResolvedValue({
+                status: 404,
+                headers: { 'content-type': 'application/json' },
+                body: Readable.from([Buffer.from(JSON.stringify(error))]),
+            });
+
+            const call = httpClient.call({ url: `${baseUrl}/echo`, method: 'GET', responseType: 'stream' });
+
+            await expect(call).rejects.toMatchObject({ statusCode: 404, type: 'record-not-found' });
+        });
+
+        test('hands back a web stream from the transport unread for responseType stream', async () => {
+            const httpClient = new NodeHttpClient();
+            const { body } = new Response('streamed');
+            vi.spyOn(httpClient, 'sendRequest').mockResolvedValue({ status: 200, headers: {}, body: body! });
+
+            const response = await httpClient.call({ url: `${baseUrl}/echo`, method: 'GET', responseType: 'stream' });
+
+            expect(response.data).toBe(body);
+        });
+
+        test('reads the error body of a web stream into the ApifyApiError', async () => {
+            const httpClient = new NodeHttpClient();
+            const error = { error: { type: 'record-not-found', message: 'Not here' } };
+            vi.spyOn(httpClient, 'sendRequest').mockResolvedValue({
+                status: 404,
+                headers: { 'content-type': 'application/json' },
+                body: new Response(JSON.stringify(error)).body!,
+            });
+
+            const call = httpClient.call({ url: `${baseUrl}/echo`, method: 'GET', responseType: 'stream' });
+
+            await expect(call).rejects.toMatchObject({
+                statusCode: 404,
+                type: 'record-not-found',
+                message: 'Not here',
+            });
+        });
+
+        test.each([
+            { name: 'a Readable', data: () => Readable.from(['chunk']) },
+            { name: 'a web stream', data: () => new Response('chunk').body },
+        ])('gives up on a request whose body is $name, since part of it is already consumed', async ({ data }) => {
             const httpClient = new RetryingHttpClient({ minDelayBetweenRetriesMillis: 1 });
             const sendRequest = vi.spyOn(httpClient, 'sendRequest').mockRejectedValue(new Error('socket hang up'));
             const warningOnce = vi.spyOn(httpClient.logger, 'warningOnce');
 
-            const call = httpClient.call({ url: `${baseUrl}/echo`, method: 'POST', data: Readable.from(['chunk']) });
+            const call = httpClient.call({ url: `${baseUrl}/echo`, method: 'POST', data: data() });
 
             await expect(call).rejects.toThrow('socket hang up');
             expect(sendRequest).toHaveBeenCalledTimes(1);
@@ -682,14 +897,17 @@ describe('pluggable HTTP client', () => {
             expect(sendRequest).toHaveBeenCalledTimes(1);
         });
 
-        test('AxiosHttpClient throws the error of a failing Blob without a circular cause chain', async () => {
+        test.each(builtInClients)('$name throws the error of a failing Blob as it is', async ({ Client }) => {
             const sourceError = new Error('file changed on disk');
-            const httpClient = new AxiosHttpClient({ minDelayBetweenRetriesMillis: 1 });
+            const httpClient = new Client({ minDelayBetweenRetriesMillis: 1 });
 
             const call = httpClient.call({ url: `${baseUrl}/echo`, method: 'PUT', data: failingBlob(sourceError) });
 
             await expect(call).rejects.toBe(sourceError);
-            expect(sourceError.cause).toBeUndefined();
+            // The transport error is linked as the cause, unless it already wraps the error of the blob.
+            for (let link = sourceError.cause; link instanceof Error; link = link.cause) {
+                expect(link).not.toBe(sourceError);
+            }
             await httpClient.close();
         });
 
@@ -702,9 +920,9 @@ describe('pluggable HTTP client', () => {
             expect((sendRequest.mock.calls[0][0].body as Readable).destroyed).toBe(true);
         });
 
-        test('AxiosHttpClient sends a Blob body again after a server error', async () => {
+        test.each(builtInClients)('$name sends a Blob body again after a server error', async ({ Client }) => {
             failuresLeft = 2;
-            const httpClient = new AxiosHttpClient({ minDelayBetweenRetriesMillis: 1 });
+            const httpClient = new Client({ minDelayBetweenRetriesMillis: 1 });
 
             const response = await httpClient.call({
                 url: `${baseUrl}/flaky`,
@@ -722,16 +940,18 @@ describe('pluggable HTTP client', () => {
             await httpClient.close();
         });
 
-        test('hands back the body unread for responseType stream', async () => {
+        test('hands back a Readable from the transport unread, as a web stream, for responseType stream', async () => {
             const httpClient = new NodeHttpClient();
-            const body = Readable.from(['streamed']);
+            const body = Readable.from([Buffer.from('streamed')]);
             const sendRequest = vi
                 .spyOn(httpClient, 'sendRequest')
                 .mockResolvedValue({ status: 200, headers: {}, body });
 
             const response = await httpClient.call({ url: `${baseUrl}/echo`, method: 'GET', responseType: 'stream' });
 
-            expect(response.data).toBe(body);
+            expect(response.data).toBeInstanceOf(ReadableStream);
+            expect(body.readableDidRead).toBe(false);
+            expect(await new Response(response.data).text()).toBe('streamed');
             expect(sendRequest.mock.calls[0][0].stream).toBe(true);
         });
 

@@ -370,28 +370,24 @@ describe('Key-Value Store methods', () => {
 
             const res = await client.keyValueStore(storeId).getRecord(key, options);
 
-            expect(res?.value).toBeInstanceOf(Readable);
-            const chunks: Buffer[] = [];
-            for await (const chunk of res!.value as unknown as Readable) {
-                chunks.push(chunk);
-            }
-            res!.value = Buffer.concat(chunks).toString();
+            expect(res?.value).toBeInstanceOf(ReadableStream);
+            res!.value = await new Response(res!.value as unknown as ReadableStream).text();
             expect(res).toEqual(expectedResult);
             validateRequest({ query: { attachment: 'true' }, params: { storeId, key } });
 
-            try {
-                await page.evaluate(
-                    async (id, k, opts) => {
-                        return client.keyValueStore(id).getRecord(k, opts);
-                    },
-                    storeId,
-                    key,
-                    options,
-                );
-                throw new Error('wrong error');
-            } catch (err: any) {
-                expect(err.message).toMatch('The stream option can only be used in Node.js environment.');
-            }
+            const browserRes = await page.evaluate(
+                async (id, k, opts) => {
+                    const record = await client.keyValueStore(id).getRecord(k, opts);
+                    const stream = record!.value as unknown as ReadableStream;
+                    const isWebStream = stream instanceof ReadableStream;
+                    return { ...record, isWebStream, value: await new Response(stream).text() };
+                },
+                storeId,
+                key,
+                options,
+            );
+            expect(browserRes).toEqual({ ...expectedResult, isWebStream: true });
+            validateRequest({ query: { attachment: 'true' }, params: { storeId, key } });
         });
 
         test('getRecord() correctly passes signature', async () => {
@@ -589,6 +585,61 @@ describe('Key-Value Store methods', () => {
             validateRequest({ params: { storeId, key }, body: Buffer.from(data), additionalHeaders: expectedHeaders });
         });
 
+        test.each([undefined, 'application/json', 'text/plain'])(
+            'setRecord() works with a web stream and content type %s',
+            async (contentType) => {
+                const key = 'some-key';
+                const storeId = 'some-id';
+                const data = '{"special":"chars \u{1F916}\u2705"}';
+                const value = new Response(data).body!;
+
+                const res = await client.keyValueStore(storeId).setRecord({ key, value, contentType });
+                expect(res).toBeUndefined();
+                validateRequest({
+                    params: { storeId, key },
+                    body: contentType ? (contentType === 'text/plain' ? data : JSON.parse(data)) : Buffer.from(data),
+                    additionalHeaders: { 'content-type': contentType ?? 'application/octet-stream' },
+                });
+            },
+        );
+
+        test('setRecord() with a web stream fails in a browser over HTTP/1.1 without sending anything', async () => {
+            const requests = mockServer.requests.length;
+
+            // Chromium streams a request body over HTTP/2 or later only, and the mock server speaks HTTP/1.1.
+            const error = await page.evaluate(async () => {
+                const value = new Response('streamed').body!;
+                return client
+                    .keyValueStore('some-id')
+                    .setRecord({ key: 'some-key', value, contentType: 'text/plain' })
+                    .then(
+                        () => undefined,
+                        (err: Error) => err.name,
+                    );
+            });
+
+            expect(error).toBe('TypeError');
+            expect(mockServer.requests.length).toBe(requests);
+        });
+
+        test('setRecord() stores the stream that getRecord() returned', async () => {
+            const storeId = 'some-id';
+            const data = 'special chars \u{1F916}\u2705';
+            mockServer.setResponse({ headers: { 'content-type': 'text/plain; charset=utf-8' }, body: data });
+
+            const record = await client.keyValueStore(storeId).getRecord('source', { stream: true });
+            expect(record?.value).toBeInstanceOf(ReadableStream);
+            await client
+                .keyValueStore(storeId)
+                .setRecord({ key: 'copy', value: record!.value, contentType: record!.contentType });
+
+            validateRequest({
+                params: { storeId, key: 'copy' },
+                body: data,
+                additionalHeaders: { 'content-type': 'text/plain; charset=utf-8' },
+            });
+        });
+
         test('setRecord() sends a Blob under its own type', async () => {
             const key = 'some-key';
             const storeId = 'some-id';
@@ -753,6 +804,21 @@ describe('Key-Value Store methods', () => {
             const storeId = 'some-id';
             const data = 'special chars \u{1F916}\u2705';
             const value = Readable.from([gzipSync(data)]);
+
+            const res = await client.keyValueStore(storeId).setRecord({ key, value, contentEncoding: 'gzip' });
+            expect(res).toBeUndefined();
+            validateRequest({
+                params: { storeId, key },
+                body: Buffer.from(data),
+                additionalHeaders: { 'content-type': 'application/octet-stream', 'content-encoding': 'gzip' },
+            });
+        });
+
+        test('setRecord() forwards contentEncoding with a web stream', async () => {
+            const key = 'some-key';
+            const storeId = 'some-id';
+            const data = 'special chars \u{1F916}\u2705';
+            const value = new Response(gzipSync(data)).body!;
 
             const res = await client.keyValueStore(storeId).setRecord({ key, value, contentEncoding: 'gzip' });
             expect(res).toBeUndefined();
@@ -957,6 +1023,13 @@ describe('Key-Value Store methods', () => {
                 expect(keysPublicUrl.searchParams.get('prefix')).toBe('prefix');
                 expect(keysPublicUrl.searchParams.get('signature')).toBeDefined();
                 expect(keysPublicUrl.pathname).toBe(`/v2/key-value-stores/${storeId}/keys`);
+            });
+
+            it.each([0, -1])('rejects a non-positive expiresInSecs (%s)', async (expiresInSecs) => {
+                const res = client.keyValueStore('id-with-secret-key').createKeysPublicUrl({ expiresInSecs });
+
+                await expect(res).rejects.toThrow(ArgumentValidationError);
+                await expect(res).rejects.toThrow('at `expiresInSecs`');
             });
         });
     });

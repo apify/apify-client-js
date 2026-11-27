@@ -5,7 +5,8 @@ import type { AxiosInstance, AxiosInterceptorManager, InternalAxiosRequestConfig
 import axios, { AxiosError, AxiosHeaders } from 'axios';
 
 import { runtime } from '#runtime';
-import { isStream } from '../utils.js';
+import { ApifyClientError } from '../apify_client_error.js';
+import { isAnyStream, isWebStream } from '../utils.js';
 import type { HttpClientOptions, HttpRequest, HttpResponse, HttpResponseBody, HttpResponseHeaders } from './base.js';
 import { HttpClient } from './base.js';
 
@@ -22,28 +23,47 @@ export type RequestInterceptorFunction = Parameters<AxiosInterceptorManager<Inte
 export interface AxiosHttpClientOptions extends HttpClientOptions {
     /** @default [] */
     requestInterceptors?: RequestInterceptorFunction[];
+    /**
+     * Agent for plain HTTP requests in Node.js, in place of the built-in keep-alive one. A proxy agent goes here
+     * and in {@link httpsAgent}. The client does not destroy an agent it was given.
+     */
+    httpAgent?: http.Agent;
+    /** Agent for HTTPS requests in Node.js, in place of the built-in keep-alive one. Requests to the Apify API use it. */
+    httpsAgent?: https.Agent;
 }
 
 /**
- * The default HTTP client of {@link ApifyClient}, built on [axios](https://axios-http.com).
+ * An HTTP client for {@link ApifyClient} built on [axios](https://axios-http.com), which was the transport of the
+ * client before version 3. It is exported from `apify-client/axios` and needs the `axios` package installed
+ * next to the client.
  *
- * It inherits the request pipeline from {@link HttpClient} and adds the transport: in Node.js, keep-alive agents
- * that honor the `HTTP_PROXY`, `HTTPS_PROXY` and `NO_PROXY` environment variables; in the browser, the XHR
- * adapter of axios. Network errors are retried, timeouts included, and a stream body is sent without following
- * redirects, since the part of it already sent could not be replayed.
+ * It inherits the request pipeline from {@link HttpClient} and adds the transport: in Node.js, keep-alive agents;
+ * in the browser, the XHR adapter of axios, or its fetch adapter for a request that must not follow redirects or
+ * that asks for a streamed response.
+ * Network errors are retried, timeouts included, and a stream body is sent without following redirects, since the
+ * part of it already sent could not be replayed. The proxy environment variables are not read: pass a proxy agent
+ * in {@link AxiosHttpClientOptions.httpAgent} and {@link AxiosHttpClientOptions.httpsAgent} instead.
+ *
+ * @example
+ * ```javascript
+ * import { ApifyClient } from 'apify-client';
+ * import { AxiosHttpClient } from 'apify-client/axios';
+ *
+ * const client = ApifyClient.withCustomHttpClient({ token: 'my-token', httpClient: new AxiosHttpClient() });
+ * ```
  */
 export class AxiosHttpClient extends HttpClient {
     /** The axios instance the requests go through. */
     axios: AxiosInstance;
 
-    /**
-     * Keep-alive agent for plain HTTP, created with the first request in Node.js. It is the same `ProxyAgent` as
-     * {@link httpsAgent}, so the socket pool is shared across both schemes.
-     */
+    /** Agent for plain HTTP: the one from the options, or a keep-alive one created with the first request in Node.js. */
     httpAgent?: http.Agent;
 
-    /** Keep-alive agent for HTTPS. The same instance as {@link httpAgent}. */
+    /** Agent for HTTPS: the one from the options, or a keep-alive one created with the first request in Node.js. */
     httpsAgent?: https.Agent;
+
+    /** The built-in agents, which are the ones `close()` destroys. */
+    #ownAgents: (http.Agent | https.Agent)[] = [];
 
     #httpAgentsPromise?: Promise<void>;
 
@@ -51,7 +71,7 @@ export class AxiosHttpClient extends HttpClient {
         super(options);
 
         this.axios = axios.create({
-            // The agents handle the proxy environment variables.
+            // Axios cannot tunnel HTTPS through a proxy on its own, so a proxy is left to the agents.
             proxy: false,
             validateStatus: null,
             // The shared pipeline serializes and parses the bodies, so axios only moves bytes.
@@ -68,6 +88,9 @@ export class AxiosHttpClient extends HttpClient {
 
         // The pipeline merges every header the client sends, so the axios defaults would only get in the way.
         this.axios.defaults.headers = new AxiosHeaders() as any;
+
+        this.httpAgent = options.httpAgent;
+        this.httpsAgent = options.httpsAgent;
 
         for (const interceptor of options.requestInterceptors ?? []) {
             this.axios.interceptors.request.use(interceptor);
@@ -90,50 +113,82 @@ export class AxiosHttpClient extends HttpClient {
 
     /**
      * A network failure is an axios error that carries the request it was sending: a connection that could not be
-     * made, dropped mid-way or timed out. Errors raised before a request exists, such as an invalid URL, are not
-     * retried.
+     * made, dropped mid-way or timed out, or the `TimeoutError` this client ends a late streamed response outside
+     * Node.js with. Errors raised before a request exists, such as an invalid URL, are not retried.
      */
     override isRetryableTransportError(error: unknown): boolean {
+        if (super.isTimeoutError(error)) return true;
         if (!axios.isAxiosError(error)) return false;
         return typeof error.request === 'object' && error.request !== null && error.config != null;
     }
 
     /**
-     * Destroys the keep-alive agents, closing every pooled socket. A client that never sent a request in Node.js
-     * has nothing to close.
+     * Destroys the built-in keep-alive agents, closing every pooled socket. A client that never sent a request in
+     * Node.js has nothing to close, and agents passed in the options are left to their owner.
      */
     override async close(): Promise<void> {
         // A failed initialization left nothing to release, and its error belongs to the request that hit it.
         await this.#httpAgentsPromise?.catch(() => {});
-        this.httpAgent?.destroy();
-        this.httpsAgent?.destroy();
+        for (const agent of this.#ownAgents.splice(0)) agent.destroy();
     }
 
     /**
      * Sends the request through axios and hands the raw response back. A stream body is sent without following
-     * redirects, since the part of it already sent could not be replayed.
+     * redirects, since the part of it already sent could not be replayed, and so is a request with
+     * `followRedirects: false`. Outside Node.js, such a request goes through `fetch`, since the browser follows the
+     * redirects of an XHR itself, and a redirect response fails the request: `fetch` hides it from the page. A
+     * request for a streamed response goes through `fetch` there too, since an XHR cannot stream one, and its
+     * timeout covers the wait for the headers only.
      */
     override async sendRequest(request: HttpRequest): Promise<HttpResponse> {
         await this.#ensureHttpAgents();
 
-        const { method, url, headers, body, timeoutMillis, stream, signal } = request;
-        const response = await this.axios.request({
-            method,
-            url,
-            headers,
-            data: body,
-            // Axios reads 0 as no timeout.
-            timeout: timeoutMillis ?? 0,
-            signal,
-            responseType: stream ? 'stream' : 'arraybuffer',
-            // See axios/axios#1045 for why axios must not buffer a stream body to follow redirects.
-            ...(isStream(body) ? { maxRedirects: 0 } : {}),
-        });
+        const { method, url, headers, timeoutMillis, stream, followRedirects, signal } = request;
+        // The Node.js adapter of axios refuses a web stream, and an XHR cannot send one either.
+        const body = runtime.isNode && isWebStream(request.body) ? runtime.openStreamBody(request.body) : request.body;
+        const useFetch = (!followRedirects || stream || isWebStream(body)) && !runtime.isNode;
+
+        // The fetch adapter keeps the axios timeout running until a streamed response is read to its end.
+        const headersTimeout = useFetch && stream && timeoutMillis !== undefined ? new AbortController() : undefined;
+        const headersTimer =
+            headersTimeout &&
+            setTimeout(() => {
+                headersTimeout.abort(new DOMException(`timeout of ${timeoutMillis}ms exceeded`, 'TimeoutError'));
+            }, timeoutMillis);
+        const signals = [signal, headersTimeout?.signal].filter((item) => item !== undefined);
+
+        const response = await this.axios
+            .request({
+                method,
+                url,
+                // The fetch adapter adds a `User-Agent` of its own otherwise, which a browser lists in the CORS preflight.
+                headers: useFetch ? { 'User-Agent': null, ...headers } : headers,
+                data: body,
+                // Axios reads 0 as no timeout.
+                timeout: headersTimeout ? 0 : (timeoutMillis ?? 0),
+                signal: signals.length > 1 ? AbortSignal.any(signals) : signals[0],
+                responseType: stream ? 'stream' : 'arraybuffer',
+                // See axios/axios#1045 for why axios must not buffer a stream body to follow redirects. The fetch
+                // adapter turns this into `redirect: 'manual'`.
+                ...(isAnyStream(body) || !followRedirects ? { maxRedirects: 0 } : {}),
+                ...(useFetch ? { adapter: 'fetch' } : {}),
+            })
+            .catch((error) => {
+                // Axios reports any abort as a cancellation.
+                throw headersTimeout?.signal.aborted ? headersTimeout.signal.reason : error;
+            })
+            .finally(() => clearTimeout(headersTimer));
+
+        // `redirect: 'manual'` resolves to an opaque response with status 0 instead of the redirect.
+        if (useFetch && response.status === 0) {
+            throw new ApifyClientError(`${method} ${url} responded with a redirect, which the client does not follow.`);
+        }
 
         return {
             status: response.status,
             headers: AxiosHeaders.from(response.headers as Record<string, string>).toJSON() as HttpResponseHeaders,
-            body: response.data as HttpResponseBody,
+            // `fetch` has no body stream for a response without a body, such as a 204.
+            body: (response.data ?? (stream ? new Blob([]).stream() : undefined)) as HttpResponseBody,
         };
     }
 
@@ -145,11 +200,17 @@ export class AxiosHttpClient extends HttpClient {
 
     async #initHttpAgents(): Promise<void> {
         const agents = await runtime.createHttpAgents({ timeoutMillis: this.timeoutMaxMillis });
-        if (!agents) return;
+        if (agents) {
+            this.httpAgent ??= this.#own(agents.httpAgent);
+            this.httpsAgent ??= this.#own(agents.httpsAgent);
+        }
 
-        this.httpAgent = agents.httpAgent;
-        this.httpsAgent = agents.httpsAgent;
         this.axios.defaults.httpAgent = this.httpAgent;
         this.axios.defaults.httpsAgent = this.httpsAgent;
+    }
+
+    #own<T extends http.Agent>(agent: T): T {
+        this.#ownAgents.push(agent);
+        return agent;
     }
 }

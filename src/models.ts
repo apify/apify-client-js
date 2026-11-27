@@ -82,7 +82,6 @@ export type ErrorType = Schemas['ErrorType'];
  * TODO: Remove once the spec covers them.
  */
 export interface DatasetResourceSpecGaps {
-    title?: string;
     username?: string;
 }
 
@@ -193,15 +192,6 @@ export interface WebhookDispatchEventData extends GeneratedWebhookDispatchEventD
 type GeneratedKeyValueStoreStats = Schemas['KeyValueStoreStats'];
 type GeneratedKeyValueStoreKey = Schemas['KeyValueStoreKey'];
 
-/**
- * Fields the API returns on a key-value store that the OpenAPI spec does not describe yet.
- *
- * TODO: Remove once the spec covers them.
- */
-export interface KeyValueStoreResourceSpecGaps {
-    title?: string;
-}
-
 export interface KeyValueStoreResourceRePointed {
     stats?: KeyValueStoreStats;
     generalAccess?: STORAGE_GENERAL_ACCESS | null;
@@ -216,8 +206,7 @@ export interface KeyValueStoreResourceRePointed {
 export interface KeyValueStoreResource
     extends
         Omit<Schemas['KeyValueStoreResource'], keyof KeyValueStoreResourceRePointed>,
-        KeyValueStoreResourceRePointed,
-        KeyValueStoreResourceSpecGaps {}
+        KeyValueStoreResourceRePointed {}
 
 /** Statistics about Key-Value Store usage and storage. */
 export interface KeyValueStoreStats extends GeneratedKeyValueStoreStats {}
@@ -286,6 +275,9 @@ export interface VersionClientNarrowings {
     // union discriminated on exactly this field, and a version with no source type carries no usable
     // source location either, so accepting the `null` would only make every variant unreachable.
     sourceType: `${ActorSourceType}`;
+    // The spec's flat schema allows `actorPath` whatever the source type. The API accepts a path only
+    // when the `sourceType` is `SOURCE_FILES` or `TARBALL`, so only those two variants reinstate it.
+    actorPath?: GeneratedVersion['actorPath'];
 }
 
 /**
@@ -294,6 +286,7 @@ export interface VersionClientNarrowings {
  * The spec models a version as one flat object with all four source locations optional. This client
  * keeps a union discriminated on `sourceType` instead, because that narrows the source location down
  * to the single field which applies -- so the four are dropped here and reinstated per variant.
+ * `actorPath` is dropped as well, and only the `SOURCE_FILES` and `TARBALL` variants reinstate it.
  */
 export interface BaseVersion<SourceType extends `${ActorSourceType}`>
     extends
@@ -308,6 +301,12 @@ export interface BaseVersion<SourceType extends `${ActorSourceType}`>
  */
 export interface VersionSourceFiles extends BaseVersion<`${ActorSourceType.SourceFiles}`> {
     sourceFiles: (SourceCodeFile | SourceCodeFolder)[];
+    /**
+     * The Actor's folder inside the uploaded source, as a POSIX path relative to the upload root, such as
+     * `actors/typescript-actor`. When absent or `null`, the upload root is the Actor's folder. It has 1 to 255
+     * characters, with no leading, trailing, or repeated `/` and no `.` or `..` segment.
+     */
+    actorPath?: GeneratedVersion['actorPath'];
 }
 
 /** An Actor version built from a Git repository. */
@@ -318,6 +317,12 @@ export interface VersionGitRepo extends BaseVersion<`${ActorSourceType.GitRepo}`
 /** An Actor version built from a downloadable tarball or ZIP archive. */
 export interface VersionTarball extends BaseVersion<`${ActorSourceType.Tarball}`> {
     tarballUrl: NonNullable<GeneratedVersion['tarballUrl']>;
+    /**
+     * The Actor's folder inside the archive, as a POSIX path relative to the archive root, such as
+     * `actors/typescript-actor`. When absent or `null`, the archive root is the Actor's folder. It has 1 to 255
+     * characters, with no leading, trailing, or repeated `/` and no `.` or `..` segment.
+     */
+    actorPath?: GeneratedVersion['actorPath'];
 }
 
 /** An Actor version built from a GitHub Gist. */
@@ -625,20 +630,11 @@ export interface RunMetaRePointed {
 export interface RunMeta extends Omit<Schemas['RunMeta'], keyof RunMetaRePointed>, RunMetaRePointed {}
 
 /**
- * Fields the API returns in an Actor run's options that the OpenAPI spec does not describe yet.
- *
- * TODO: Remove once the spec covers it.
- */
-export interface RunOptionsSpecGaps {
-    restartOnError?: boolean;
-}
-
-/**
  * Configuration options used for an Actor run.
  *
  * These are the actual options that were applied to the run (may differ from requested options).
  */
-export interface RunOptions extends GeneratedRunOptions, RunOptionsSpecGaps {}
+export interface RunOptions extends GeneratedRunOptions {}
 
 export interface RunListItemRePointed {
     meta: RunMeta;
@@ -724,21 +720,9 @@ export interface TaskListItemRePointed {
     stats?: TaskStats | null;
 }
 
-/**
- * Fields the API returns on a listed task that the OpenAPI spec does not describe yet.
- *
- * `description` is deliberately not here, although the spec has it on the full `Task` resource: the
- * list endpoint publishes a smaller set of fields, and that is one of the fields it leaves out.
- *
- * TODO: Remove once the spec covers it.
- */
-export interface TaskListItemSpecGaps {
-    title?: string | null;
-}
-
 /** A task as it appears in a listing, which carries fewer fields than the full resource. */
 export interface TaskListItem
-    extends Omit<Schemas['TaskListItem'], keyof TaskListItemRePointed>, TaskListItemRePointed, TaskListItemSpecGaps {}
+    extends Omit<Schemas['TaskListItem'], keyof TaskListItemRePointed>, TaskListItemRePointed {}
 
 export interface StoreActorRePointed {
     stats: ActorStats;
@@ -809,18 +793,6 @@ export interface WebhookLastDispatchRePointed {
 export interface WebhookLastDispatch
     extends Omit<Schemas['WebhookLastDispatch'], keyof WebhookLastDispatchRePointed>, WebhookLastDispatchRePointed {}
 
-/**
- * Fields the API returns on a webhook that the OpenAPI spec does not describe yet.
- *
- * The spec does carry `isApifyIntegration` on `WebhookListItem`, the listing shape, and simply omits it
- * from the full `WebhookResource` schema.
- *
- * TODO: Remove once the spec covers it.
- */
-export interface WebhookResourceSpecGaps {
-    isApifyIntegration?: boolean;
-}
-
 export interface WebhookResourceRePointed {
     condition: WebhookCondition;
     stats?: WebhookStats | null;
@@ -835,10 +807,7 @@ export interface WebhookResourceRePointed {
  * (e.g., Actor run succeeds, fails, or times out).
  */
 export interface WebhookResource
-    extends
-        Omit<Schemas['WebhookResource'], keyof WebhookResourceRePointed>,
-        WebhookResourceRePointed,
-        WebhookResourceSpecGaps {}
+    extends Omit<Schemas['WebhookResource'], keyof WebhookResourceRePointed>, WebhookResourceRePointed {}
 
 type GeneratedScheduleActionRunInput = Schemas['ScheduleActionRunInput'];
 
@@ -898,6 +867,12 @@ export interface ScheduleClientNarrowings {
     timezone: Timezone;
 }
 
+export interface ScheduleSpecNarrowings {
+    // Spec types `uiState` as a non-nullable object, but the API returns `null` once an API update has
+    // changed `cronExpression` or `timezone` and the Console editor state was dropped.
+    uiState?: NonNullable<Schemas['Schedule']['uiState']> | null;
+}
+
 /**
  * Represents a schedule for automated Actor or Task runs.
  *
@@ -905,9 +880,13 @@ export interface ScheduleClientNarrowings {
  */
 export interface Schedule
     extends
-        Omit<Schemas['Schedule'], keyof ScheduleRePointed | keyof ScheduleClientNarrowings>,
+        Omit<
+            Schemas['Schedule'],
+            keyof ScheduleRePointed | keyof ScheduleClientNarrowings | keyof ScheduleSpecNarrowings
+        >,
         ScheduleRePointed,
-        ScheduleClientNarrowings {}
+        ScheduleClientNarrowings,
+        ScheduleSpecNarrowings {}
 
 type GeneratedUserProfile = Schemas['UserProfile'];
 type GeneratedProxyGroup = Schemas['ProxyGroup'];
@@ -1091,12 +1070,11 @@ export interface RequestQueueStats extends GeneratedRequestQueueStats {}
  * Fields the API returns on a request queue that the OpenAPI spec does not describe yet.
  *
  * The spec does carry `username` on `RequestQueueListItem`, the listing shape, and simply omits it from the
- * full `RequestQueueResource` schema. `title` is absent from either.
+ * full `RequestQueueResource` schema.
  *
- * TODO: Remove once the spec covers them.
+ * TODO: Remove once the spec covers it.
  */
 export interface RequestQueueResourceSpecGaps {
-    title?: string;
     username?: string;
 }
 

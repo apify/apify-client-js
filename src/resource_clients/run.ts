@@ -12,7 +12,7 @@ import * as schemas from '../schemas.js';
 import { optionalSignalSchema, optionalTimeoutSchema, timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
 import { runtime } from '#runtime';
 import type { PaginatedList, PaginationOptions } from '../utils.js';
-import { anyObjectSchema, paginationOptionsShape, parseArgument, parseResponse, SCANNED_COUNT } from '../utils.js';
+import { anyObjectSchema, paginationOptionsShape, parseArgument, parseResponse } from '../utils.js';
 import type { ActorInput, Run } from './actor.js';
 import { DatasetClient } from './dataset.js';
 import { KeyValueStoreClient } from './key_value_store.js';
@@ -182,6 +182,9 @@ export class RunClient extends ResourceClient {
      * and resource allocation. The run effectively becomes a run of the target Actor with new input.
      * This is useful for chaining Actor executions or implementing complex workflows.
      *
+     * Only the run itself can metamorph: the client must use the run's own API token, which the run gets
+     * in the `APIFY_TOKEN` environment variable. With any other token, the API rejects the request.
+     *
      * @param targetActorId - ID or username/name of the target Actor
      * @param input - Input for the target Actor: an object or array serialized to JSON, or raw bytes sent as they
      *                are. Omit it to metamorph without input.
@@ -193,8 +196,9 @@ export class RunClient extends ResourceClient {
      *
      * @example
      * ```javascript
-     * // Transform current run into another Actor
-     * const metamorphedRun = await client.run('original-run-id').metamorph(
+     * // Inside the run: transform it into another Actor
+     * const client = new ApifyClient({ token: process.env.APIFY_TOKEN });
+     * const metamorphedRun = await client.run(process.env.ACTOR_RUN_ID).metamorph(
      *   'target-actor-id',
      *   { url: 'https://example.com' }
      * );
@@ -628,7 +632,7 @@ export class RunClient extends ResourceClient {
             yield* page.items;
             // Only an empty page marks the end, as filters can shorten a full one. A page that `clean`, `skipEmpty` or
             // `unwind` emptied past a lagging `itemCount` reports no scanned rows either, so a plain read checks.
-            const isEmpty = page.items.length === 0 && !(page as { [SCANNED_COUNT]?: number })[SCANNED_COUNT];
+            const isEmpty = page.count === 0;
             if (
                 isEmpty &&
                 (!(clean || skipEmpty || unwind?.length) ||
@@ -752,6 +756,8 @@ export interface RunWaitForFinishOptions extends TimeoutOptions {
  * Options for iterating over the items of a run's default dataset while the run is still producing them.
  */
 export interface RunIterateDatasetItemsOptions extends PaginationOptions, TimeoutOptions {
+    /** Maximum number of dataset rows requested per API call. Default is 1000. */
+    chunkSize?: number;
     /** If `true`, returns only non-empty items and skips hidden fields. */
     clean?: boolean;
     /** Field names to include in the items. Omits all other fields. */

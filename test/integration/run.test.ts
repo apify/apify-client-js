@@ -1,11 +1,11 @@
-import { beforeAll, expect, test } from 'vitest';
+import { beforeAll, expect, onTestFinished, test } from 'vitest';
 
 import { Log, LogLevel } from '@apify/log';
 
 import type { ApifyClient, Run, RunClient, RunListItem } from 'apify-client';
-import { ActorSourceType, ApifyApiError } from 'apify-client';
+import { ApifyApiError } from 'apify-client';
 
-import { makeClient } from './_fixtures.js';
+import { createBuiltActor, makeClient } from './_fixtures.js';
 import { getRandomResourceName, LISTING_POLL_OPTIONS, NO_LOG_REDIRECT, pollUntilCondition } from './_utils.js';
 
 const HELLO_WORLD_ACTOR = 'apify/hello-world';
@@ -14,7 +14,7 @@ const LIVE_ITEM_COUNT = 10;
 
 /** Source of an Actor that pushes `LIVE_ITEM_COUNT` items tagged with its run ID to its dataset, one per second. */
 const LIVE_ITEMS_SOURCE_FILES = [
-    { name: 'Dockerfile', format: 'TEXT', content: 'FROM apify/actor-node:22\nCOPY . ./\nCMD ["node", "main.mjs"]\n' },
+    { name: 'Dockerfile', format: 'TEXT', content: 'FROM apify/actor-node:26\nCOPY . ./\nCMD ["node", "main.mjs"]\n' },
     {
         name: 'main.mjs',
         format: 'TEXT',
@@ -30,6 +30,22 @@ for (let index = 0; index < ${LIVE_ITEM_COUNT}; index++) {
     if (!response.ok) throw new Error(\`Pushing item \${index} failed with \${response.status}\`);
     await new Promise((resolve) => setTimeout(resolve, 1000));
 }
+`,
+    },
+] as const;
+
+/** Source of an Actor that stores its run token under `TOKEN` in its key-value store, then waits for 240 seconds. */
+const METAMORPH_SOURCE_FILES = [
+    { name: 'Dockerfile', format: 'TEXT', content: 'FROM apify/actor-node:26\nCOPY . ./\nCMD ["node", "main.js"]\n' },
+    {
+        name: 'main.js',
+        format: 'TEXT',
+        content: `
+const { Actor } = require('apify');
+Actor.main(async () => {
+    await Actor.setValue('TOKEN', process.env.APIFY_TOKEN, { contentType: 'text/plain' });
+    await new Promise((resolve) => setTimeout(resolve, 240_000));
+});
 `,
     },
 ] as const;
@@ -240,28 +256,49 @@ test('resurrect() restarts a finished run, which then succeeds again', async () 
 });
 
 test('metamorph() transforms a started run into another Actor, keeping the run id', async () => {
-    const run = await client.actor(HELLO_WORLD_ACTOR).start();
+    const actorId = await createBuiltActor(client, getRandomResourceName('actor'), [...METAMORPH_SOURCE_FILES]);
+    const actorClient = client.actor(actorId);
+    // Registered first, so it runs last, after the run cleanup below.
+    onTestFinished(async () => actorClient.delete());
+
+    const run = await actorClient.start(undefined, { memory: 256, runTimeoutSecs: 300 });
     const runClient = client.run(run.id);
-
-    try {
-        await waitUntilStarted(runClient);
-
-        try {
-            const metamorphedRun = await runClient.metamorph(HELLO_WORLD_ACTOR, {
-                message: 'Hello from metamorph!',
-            });
-            expect(metamorphedRun.id).toBe(run.id);
-
-            await runClient.waitForFinish();
-        } catch (err) {
-            // hello-world can finish before the metamorph lands; the API call was still exercised.
-            rethrowUnlessAlreadyFinished(err);
-        }
-    } finally {
+    onTestFinished(async () => {
+        // Aborting a finished run returns it unchanged.
+        await runClient.abort();
         await runClient.waitForFinish();
         await runClient.delete();
-    }
-});
+    });
+
+    // A metamorph needs the run's own token, which the Actor stores in its key-value store.
+    const getRunToken = async (): Promise<string | undefined> => {
+        const record = await client.keyValueStore(run.defaultKeyValueStoreId).getRecord('TOKEN');
+        if (record) return record.value as string;
+        const currentRun = await runClient.get();
+        expect(['READY', 'RUNNING'], `The run ended as ${currentRun?.status} without a token.`).toContain(
+            currentRun?.status,
+        );
+        return undefined;
+    };
+
+    // A fixed short interval, so the token is read well within the 240 seconds the Actor waits after storing it.
+    const runToken = await pollUntilCondition(getRunToken, (token) => token !== undefined, {
+        timeoutSecs: 120,
+        pollIntervalSecs: 2,
+    });
+    expect(runToken).toBeTruthy();
+
+    const metamorphedRun = await makeClient(runToken)
+        .run(run.id)
+        .metamorph(HELLO_WORLD_ACTOR, { message: 'Hello from metamorph!' });
+    expect(metamorphedRun.id).toBe(run.id);
+
+    // Hello-world replaces the waiting Actor, so the run finishes on its own.
+    const finalRun = await runClient.waitForFinish();
+    expect(finalRun.status).toBe('SUCCEEDED');
+    const helloWorld = await client.actor(HELLO_WORLD_ACTOR).get();
+    expect(finalRun.metamorphs).toEqual([expect.objectContaining({ actorId: helloWorld?.id })]);
+}, 600_000);
 
 test('reboot() restarts the container of a running Actor, keeping the run id', async () => {
     const run = await client.actor(HELLO_WORLD_ACTOR).start();
@@ -362,24 +399,11 @@ test('actor.runs().list() is async-iterable and yields only that Actor runs', as
 });
 
 test('iterateDatasetItems() on lastRun() reads the run it resolved to, even after a newer run starts', async () => {
-    const actor = await client.actors().create({
-        name: getRandomResourceName('actor'),
-        versions: [
-            {
-                versionNumber: '0.0',
-                sourceType: ActorSourceType.SourceFiles,
-                buildTag: 'latest',
-                sourceFiles: [...LIVE_ITEMS_SOURCE_FILES],
-            },
-        ],
-    });
-    const actorClient = client.actor(actor.id);
+    const actorId = await createBuiltActor(client, getRandomResourceName('actor'), [...LIVE_ITEMS_SOURCE_FILES]);
+    const actorClient = client.actor(actorId);
     const runIds: string[] = [];
 
     try {
-        const build = await client.build((await actorClient.build('0.0')).id).waitForFinish();
-        expect(build.status).toBe('SUCCEEDED');
-
         const runOptions = { memory: 256, runTimeoutSecs: 120 };
         const firstRun = await actorClient.start(undefined, runOptions);
         runIds.push(firstRun.id);

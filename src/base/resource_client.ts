@@ -132,7 +132,7 @@ export class ResourceClient extends ApiClient {
             return !hasJobEnded;
         };
 
-        do {
+        while (true) {
             const millisSinceStart = Date.now() - startedAt;
             const remainingWaitSeconds = Math.round((waitMillis - millisSinceStart) / 1000);
             const waitForFinish = Math.max(0, remainingWaitSeconds);
@@ -155,13 +155,13 @@ export class ResourceClient extends ApiClient {
                 notFoundError = err as NotFoundError;
             }
 
-            // It might take some time for database replicas to get up-to-date,
-            // so getRun() might return null. Wait a little bit and try it again.
-            if (!job) {
-                await sleep(250, signal);
-                signal?.throwIfAborted();
-            }
-        } while (shouldRepeat());
+            if (!shouldRepeat()) break;
+
+            // The API answers right away when the remaining wait rounds to 0 seconds, and database replicas may not see
+            // a new job for a short while, so pause before the next poll.
+            await sleep(250, signal);
+            signal?.throwIfAborted();
+        }
 
         if (!job) throw notFoundError;
 

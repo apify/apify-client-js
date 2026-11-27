@@ -15,11 +15,13 @@ automatic retries and convenience functions that improve the experience of using
 - [Features](#features)
     - [Automatic parsing and error handling](#automatic-parsing-and-error-handling)
     - [Retries with exponential backoff](#retries-with-exponential-backoff)
+    - [Server Actors](#server-actors)
     - [Convenience functions and options](#convenience-functions-and-options)
 - [Usage concepts](#usage-concepts)
     - [Nested clients](#nested-clients)
     - [Pagination](#pagination)
 - [API Reference](#api-reference)
+- [Supported versions](#supported-versions)
 
 <!-- tocstop -->
 
@@ -61,9 +63,16 @@ options of the `ApifyClient` constructor.
 
 ### Pluggable HTTP client
 
-The client ships with an axios-based HTTP client and accepts a custom one. Extend `HttpClient`, implement
+The client sends its requests through the `fetch` of the runtime and accepts a custom HTTP client. The axios-based
+client of version 2 is available from `apify-client/axios`, with `axios` installed next to the client. For a client
+of your own, extend `HttpClient`, implement
 `sendRequest()` over the HTTP library of your choice and plug it in with `ApifyClient.withCustomHttpClient()`. The
 custom client inherits the retries, timeouts, compression and error handling of the built-in one.
+
+### Server Actors
+
+`client.actor(id).server()` returns a client for a Server Actor (formerly Actor Standby). It sends HTTP requests to
+the Actor's web server with your token, and returns the server's URL and OpenAPI specification.
 
 ### Convenience functions and options
 
@@ -157,10 +166,14 @@ The package includes a pre-built browser bundle that bundlers targeting browsers
 import { ApifyClient } from 'apify-client/browser';
 ```
 
-Only two parts of the client need Node.js built-ins: the HTTP agents and request compression. The `node` condition selects the Node.js implementation of those, and every other target gets one built on Web APIs. Log streaming, proxy support, and request compression are only available in Node.js.
+Only two parts of the client need Node.js built-ins: Node.js streams and request compression. The `node` condition selects the Node.js implementation of those, and every other target gets one built on Web APIs. Log redirection and request compression are only available in Node.js.
 
 For details, see [Bundled environments](https://docs.apify.com/api/client/js/docs/concepts/bundled-environments).
 
 ## API Reference
 
 All public classes, methods and their parameters can be inspected in the [API reference](https://docs.apify.com/api/client/js/reference).
+
+## Supported versions
+
+New features and bug fixes land in the latest major version. The previous major version keeps receiving fixes for high and critical severity vulnerabilities for 12 months after the next major is released, and reaches end of life after that. See the [security policy](https://github.com/apify/apify-client-js/security/policy) for the current status of each version and for how to report a vulnerability.

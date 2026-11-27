@@ -1,10 +1,6 @@
-import type { Readable } from 'node:stream';
-
 import { beforeAll, expect, test } from 'vitest';
 
-import type { JsonValue } from 'type-fest';
-
-import type { ApifyClient, KeyValueStoreResource } from 'apify-client';
+import type { ApifyClient, JsonValue, KeyValueStoreResource } from 'apify-client';
 
 import { makeClient } from './_fixtures.js';
 import { collectUntilPresent, getRandomResourceName, pollUntilCondition } from './_utils.js';
@@ -32,14 +28,6 @@ async function waitForKeyCount(storeId: string, expectedCount: number): Promise<
         (result) => result.items.length === expectedCount,
     );
     expect(keys.items).toHaveLength(expectedCount);
-}
-
-async function readStream(stream: Readable): Promise<Buffer> {
-    const chunks: Buffer[] = [];
-    for await (const chunk of stream) {
-        chunks.push(Buffer.from(chunk));
-    }
-    return Buffer.concat(chunks);
 }
 
 test('keyValueStores().list() returns a page of the user stores', async () => {
@@ -194,7 +182,7 @@ test('setRecord() stores binary data that getRecord() returns byte-for-byte with
         const record = await storeClient.getRecord('image.png', { buffer: true });
         expect(record?.key).toBe('image.png');
         expect(Buffer.isBuffer(record?.value)).toBe(true);
-        expect(record!.value.equals(binaryValue)).toBe(true);
+        expect(record!.value).toEqual(binaryValue);
         expect(record?.contentType).toContain('image/png');
     } finally {
         await storeClient.delete();
@@ -212,8 +200,7 @@ test('getRecord() with the stream option yields the record body as a readable st
         const record = await storeClient.getRecord('stream-key', { stream: true });
         expect(record).toBeDefined();
 
-        const body = await readStream(record!.value);
-        expect(JSON.parse(body.toString('utf8'))).toEqual({ data: 'streamed' });
+        expect(await new Response(record!.value).json()).toEqual({ data: 'streamed' });
     } finally {
         await storeClient.delete();
     }

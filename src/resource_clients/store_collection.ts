@@ -87,6 +87,10 @@ export class StoreCollectionClient extends ResourceCollectionClient {
  */
 export interface StoreCollectionListOptions extends PaginationOptions, TimeoutOptions {
     search?: string;
+    /**
+     * @deprecated The API ignores this option. Results are ordered by relevance when `search` is used, and by Store
+     * position otherwise. Sort the results on the client if you need a different order.
+     */
     sortBy?: string;
     category?: string;
     username?: string;

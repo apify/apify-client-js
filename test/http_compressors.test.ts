@@ -1,8 +1,23 @@
 import type { AddressInfo } from 'node:net';
-import { brotliCompressSync, brotliDecompressSync, constants, gunzipSync, gzipSync } from 'node:zlib';
+import { promisify } from 'node:util';
+import {
+    brotliCompressSync,
+    brotliDecompressSync,
+    constants,
+    gunzipSync,
+    gzipSync,
+    zstdCompress,
+    zstdDecompressSync,
+} from 'node:zlib';
 
 import type { HttpCompressor } from 'apify-client';
-import { ApifyClient, ArgumentValidationError, BrotliHttpCompressor, GzipHttpCompressor } from 'apify-client';
+import {
+    ApifyClient,
+    ArgumentValidationError,
+    BrotliHttpCompressor,
+    GzipHttpCompressor,
+    ZstdHttpCompressor,
+} from 'apify-client';
 import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest';
 
 import { resolveCompressor } from '../src/http_compressors/resolve.js';
@@ -13,6 +28,11 @@ const payload = Buffer.from('hello world');
 
 /** Long and repetitive, so the compression quality changes the output bytes. */
 const repetitivePayload = Buffer.from('lorem ipsum dolor sit amet '.repeat(500));
+
+/** Long and varied, since zstd packs the repetitive payload into the same bytes at every quality. */
+const variedPayload = Buffer.from(
+    JSON.stringify(Array.from({ length: 2000 }, (_, index) => ({ index, url: `https://example.com/item/${index}` }))),
+);
 
 describe('GzipHttpCompressor', () => {
     test('reports gzip as its content encoding', () => {
@@ -87,6 +107,44 @@ describe('BrotliHttpCompressor', () => {
     });
 });
 
+describe('ZstdHttpCompressor', () => {
+    test('reports zstd as its content encoding', () => {
+        expect(new ZstdHttpCompressor().contentEncoding).toBe('zstd');
+    });
+
+    test.each([
+        { name: 'the fastest', quality: 1 },
+        { name: 'the best', quality: 19 },
+    ])('round-trips data at $name quality', async ({ quality }) => {
+        const compressed = await new ZstdHttpCompressor({ quality }).compress(payload);
+        expect(zstdDecompressSync(compressed)).toEqual(payload);
+    });
+
+    // The async `zstdCompress` leaves the content size out of the frame header, unlike `zstdCompressSync`, so
+    // only its output matches the compressor's byte for byte.
+    const zstd = (quality: number) =>
+        promisify(zstdCompress)(variedPayload, { params: { [constants.ZSTD_c_compressionLevel]: quality } });
+
+    test('passes the quality through to zlib', async () => {
+        expect(await new ZstdHttpCompressor({ quality: 1 }).compress(variedPayload)).toEqual(await zstd(1));
+        expect(await new ZstdHttpCompressor({ quality: 19 }).compress(variedPayload)).toEqual(await zstd(19));
+    });
+
+    test('defaults to level 3', async () => {
+        const compressed = await new ZstdHttpCompressor().compress(variedPayload);
+        expect(compressed).toEqual(await zstd(3));
+    });
+
+    test.each([
+        { name: 'below the minimum', quality: 0 },
+        { name: 'above the maximum', quality: 20 },
+        { name: 'negative', quality: -1 },
+        { name: 'fractional', quality: 5.5 },
+    ])('rejects a quality $name', ({ quality }) => {
+        expect(() => new ZstdHttpCompressor({ quality })).toThrow(ArgumentValidationError);
+    });
+});
+
 describe('resolveCompressor()', () => {
     test("resolves 'gzip' to a GzipHttpCompressor", () => {
         expect(resolveCompressor('gzip')).toBeInstanceOf(GzipHttpCompressor);
@@ -94,6 +152,10 @@ describe('resolveCompressor()', () => {
 
     test("resolves 'brotli' to a BrotliHttpCompressor", () => {
         expect(resolveCompressor('brotli')).toBeInstanceOf(BrotliHttpCompressor);
+    });
+
+    test("resolves 'zstd' to a ZstdHttpCompressor", () => {
+        expect(resolveCompressor('zstd')).toBeInstanceOf(ZstdHttpCompressor);
     });
 
     test('passes a compressor through unchanged', () => {
@@ -132,6 +194,7 @@ describe('ApifyClient compression option', () => {
     test.each([
         { compression: 'gzip', contentEncoding: 'gzip' },
         { compression: 'brotli', contentEncoding: 'br' },
+        { compression: 'zstd', contentEncoding: 'zstd' },
     ] as const)('sends a large body compressed with $compression', async ({ compression, contentEncoding }) => {
         const client = new ApifyClient({ baseUrl, compression, maxRetries: 0 });
 

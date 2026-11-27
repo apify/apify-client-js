@@ -3,6 +3,8 @@
     "compilerOptions": {
         "allowJs": true,
         "lib": ["ES2024", "DOM"],
+        // Nothing the sources import pulls in the Node.js types on its own.
+        "types": ["node"],
         "target": "ESNext",
         "module": "NodeNext",
         "moduleResolution": "NodeNext",

@@ -17,7 +17,7 @@ Most methods named `list()` or `listSomething()` in the Apify client resolve to 
 - `items` - The main results you're looking for.
 - `total` - The total number of items available.
 - `offset` - The starting point of the current page.
-- `count` - The number of items in the current page.
+- `count` - The number of items in the current page. On a page of dataset items, the number of dataset rows the API scanned for it, which filters can leave above the items returned.
 - `limit` - The maximum number of items per page.
 - `desc` - Whether the items are sorted in descending order.
 
@@ -33,7 +33,7 @@ A single call returns at most one page, and the API can cap how many items that 
 
 ## Async iteration
 
-The promise that a paginated method returns is also an async iterable. Iterating it with `for await` fetches as many pages as needed to yield every item matching the options, so you don't need to manage offsets, limits, or cursors yourself. The `limit` option caps the total, and `chunkSize` caps the number of items per API call. <ApiLink to="class/RequestQueueClient#paginateRequests">`paginateRequests()`</ApiLink> yields whole pages of requests.
+The promise that a paginated method returns is also an async iterable. Iterating it with `for await` fetches as many pages as needed to yield every item matching the options, so you don't need to manage offsets, limits, or cursors yourself. The `limit` option caps the total, and `chunkSize` caps the number of items per API call. Without `chunkSize`, each call gets the API's default page size, capped by `limit`. Dataset items have no default limit, so iterating `listItems()` without `chunkSize` loads the whole dataset, or all `limit` items, in one response. To iterate a large dataset, pass `chunkSize`. <ApiLink to="class/RequestQueueClient#paginateRequests">`paginateRequests()`</ApiLink> yields whole pages of requests.
 
 The following example iterates over every Actor owned by the current user with a collection client's `list()` method:
 

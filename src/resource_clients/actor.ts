@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import type { ValueOf } from '@apify/consts';
 import { ACTOR_JOB_STATUSES, ACTOR_PERMISSION_LEVEL, META_ORIGINS } from '@apify/consts';
 import { Log } from '@apify/log';
 
@@ -11,8 +12,9 @@ import type { TimeoutOptions } from '../timeouts.js';
 import type { Dictionary } from '../utils.js';
 import * as schemas from '../schemas.js';
 import { timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
-import { anyObjectSchema, isStream, parseArgument, parseResponse, stringifyWebhooksToBase64 } from '../utils.js';
+import { anyObjectSchema, isAnyStream, parseArgument, parseResponse, stringifyWebhooksToBase64 } from '../utils.js';
 import { startWaitingForResources } from '../wait_for_resources.js';
+import { ActorServerClient } from './actor_server.js';
 import { ActorVersionClient } from './actor_version.js';
 import { ActorVersionCollectionClient } from './actor_version_collection.js';
 import type { Build, BuildClientGetOptions } from './build.js';
@@ -22,7 +24,6 @@ import { RunClient } from './run.js';
 import { RunCollectionClient } from './run_collection.js';
 import type { WebhookUpdateData } from './webhook.js';
 import { WebhookCollectionClient } from './webhook_collection.js';
-import type { ValueOf } from 'type-fest';
 
 const startOptionsSchema = z.strictObject({
     build: z.string().optional(),
@@ -123,6 +124,8 @@ export type {
  * @see https://docs.apify.com/platform/actors
  */
 export class ActorClient extends ResourceClient {
+    #serverClient?: ActorServerClient;
+
     /**
      * @hidden
      */
@@ -259,10 +262,10 @@ export class ActorClient extends ResourceClient {
             };
         }
 
-        // A `Readable` input is consumed by the first attempt, so a retry would start the run with an empty input.
+        // A stream input is consumed by the first attempt, so a retry would start the run with an empty input.
         const response = await startWaitingForResources(
             async () => this.httpClient.call(request),
-            isStream(input) ? false : waitForResources,
+            isAnyStream(input) ? false : waitForResources,
             this.httpClient.logger,
             signal,
         );
@@ -578,6 +581,51 @@ export class ActorClient extends ResourceClient {
     webhooks(): WebhookCollectionClient {
         return new WebhookCollectionClient(this.subResourceOptions());
     }
+
+    /**
+     * Returns a client for the server interface of this Actor.
+     *
+     * A Server Actor runs a web server, its server interface, that is called over HTTP without starting a run for
+     * each call. Server Actors were formerly called Actor Standby, and {@link standby} is a deprecated alias of this
+     * method. Every call returns the same client, so the server URL it fetches is reused.
+     *
+     * @returns The client for the server interface of this Actor
+     * @see https://docs.apify.com/platform/actors/running/standby
+     *
+     * @example
+     * ```javascript
+     * const response = await client.actor('username/actor-name').server().request('/search', {
+     *     params: { q: 'apify' },
+     * });
+     * ```
+     */
+    server(): ActorServerClient {
+        this.#serverClient ??= new ActorServerClient({
+            baseUrl: this.baseUrl,
+            publicBaseUrl: this.publicBaseUrl,
+            apifyClient: this.apifyClient,
+            httpClient: this.httpClient,
+            id: this.id,
+            params: this.params,
+        });
+        return this.#serverClient;
+    }
+
+    /**
+     * Returns a client for the server interface of this Actor in Standby mode.
+     *
+     * Named after Actor Standby, the former name of Server Actors.
+     *
+     * @deprecated Use {@link server} instead. Will be removed in v4.
+     * @returns The client for the server interface of this Actor
+     * @see https://docs.apify.com/platform/actors/running/standby
+     */
+    standby(): ActorServerClient {
+        this.httpClient.logger.deprecated(
+            '`standby()` is deprecated and will be removed in v4. Use `server()` instead.',
+        );
+        return this.server();
+    }
 }
 
 /**
@@ -701,7 +749,8 @@ export interface ActorStartOptions extends TimeoutOptions {
      * A run that requests more memory than the whole memory limit of the account is rejected with
      * `actor-memory-limit-exceeded` as well and never starts, so `true` retries it forever.
      *
-     * A `Readable` input can't be sent twice, so its start is never retried and the first rejection is thrown.
+     * A stream input (`Readable` or web `ReadableStream`) can't be sent twice, so its start is never retried and the
+     * first rejection is thrown.
      */
     waitForResources?: boolean | number;
 }

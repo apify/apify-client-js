@@ -25,7 +25,9 @@ The bundle is self-contained and needs no polyfill configuration.
 
 ## Bundling the ES module build yourself
 
-The client's own code runs on Web APIs. The parts that need Node.js built-ins, the keep-alive HTTP agents with proxy support and request body compression, live in a single module that the `#runtime` entry of the package's `imports` field selects at bundle time. The `node` condition gets the Node.js implementation, every other target gets the Web API one. A bundler targeting a browser, Cloudflare Workers, or another edge runtime therefore never sees `node:zlib`, `node:os`, or `proxy-agent`.
+The client's own code runs on Web APIs. The parts that need Node.js built-ins, such as request body compression and Node.js streams, live in a single module that the `#runtime` entry of the package's `imports` field selects at bundle time. The `node` condition gets the Node.js implementation, every other target gets the Web API one. A bundler targeting a browser, Cloudflare Workers, or another edge runtime therefore gets no `node:zlib`, `node:os`, or `node:stream` import from the client itself.
+
+The client's dependencies still import a few Node.js built-ins: `node:events`, `node:crypto` and `node:stream`. In Cloudflare Workers, turn on the [`nodejs_compat`](https://developers.cloudflare.com/workers/runtime-apis/nodejs/) compatibility flag to provide them.
 
 Reaching the ES module build takes a bundler that doesn't set the `browser` condition, which resolves `apify-client` to the pre-built bundle. esbuild's `neutral` platform sets no conditions, and webpack and Vite let you list them through `resolve.conditionNames` and `resolve.conditions`.
 
@@ -33,7 +35,8 @@ Reaching the ES module build takes a bundler that doesn't set the `browser` cond
 
 These features rely on Node.js APIs and aren't available in the browser bundle or in the Web API runtime:
 
-- Log streaming with <ApiLink to="class/LogClient#stream">`LogClient.stream()`</ApiLink> and <ApiLink to="class/RunClient#getStreamedLog">`RunClient.getStreamedLog()`</ApiLink>, and the `stream` option of <ApiLink to="class/DatasetClient#downloadItems">`DatasetClient.downloadItems()`</ApiLink> and <ApiLink to="class/KeyValueStoreClient#getRecord">`KeyValueStoreClient.getRecord()`</ApiLink>, which all return a Node.js `Readable` stream.
-- Proxy support through the `HTTP_PROXY`, `HTTPS_PROXY`, and `NO_PROXY` environment variables.
+- Log redirection with <ApiLink to="class/RunClient#getStreamedLog">`RunClient.getStreamedLog()`</ApiLink>.
 - Request body compression.
 - The `User-Agent` header, which browsers don't let a page set.
+
+Streamed responses and raw bytes use Web APIs, so they work the same way in every runtime: <ApiLink to="class/LogClient#stream">`LogClient.stream()`</ApiLink> and the `stream` option of <ApiLink to="class/DatasetClient#downloadItems">`DatasetClient.downloadItems()`</ApiLink> and <ApiLink to="class/KeyValueStoreClient#getRecord">`KeyValueStoreClient.getRecord()`</ApiLink> return a web [`ReadableStream`](https://developer.mozilla.org/docs/Web/API/ReadableStream), and raw bytes are a `Uint8Array`.

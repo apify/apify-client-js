@@ -1,5 +1,3 @@
-import type { Readable } from 'node:stream';
-
 import { z } from 'zod';
 
 import type { STORAGE_GENERAL_ACCESS } from '@apify/consts';
@@ -13,7 +11,6 @@ import type { TimeoutOptions } from '../timeouts.js';
 import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../utils.js';
 import * as schemas from '../schemas.js';
 import { timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
-import { runtime } from '#runtime';
 import {
     anyObjectSchema,
     applyQueryParamsToUrl,
@@ -22,7 +19,6 @@ import {
     paginationOptionsShape,
     parseArgument,
     parseResponse,
-    SCANNED_COUNT,
 } from '../utils.js';
 
 /**
@@ -97,7 +93,7 @@ const createItemsPublicUrlOptionsSchema = z.strictObject({
     skipHidden: z.boolean().optional(),
     unwind: z.array(z.string()).optional(),
     view: z.string().optional(),
-    expiresInSecs: z.number().optional(),
+    expiresInSecs: z.number().positive().optional(),
     ...timeoutOptionsShape,
 });
 
@@ -198,6 +194,7 @@ export class DatasetClient<
      * @param options - Options for listing items
      * @param options.limit - Maximum number of items to return. Default is all items.
      * @param options.chunkSize - Maximum number of items returned in one API response. Relevant in the context of asyncIterator.
+     *   Without it, iteration loads the whole dataset, or all `limit` items, in one response.
      * @param options.offset - Number of items to skip from the beginning. Default is 0.
      * @param options.desc - If `true`, items are returned in descending order (newest first). Default is `false`.
      * @param options.fields - Array of field names to include in the results. Omits all other fields.
@@ -262,12 +259,12 @@ export class DatasetClient<
      *
      * Unlike {@link listItems} which returns a {@link PaginatedList} with an array of individual
      * dataset items, this method returns the items serialized to the provided format
-     * (JSON, CSV, Excel, etc.) as a Buffer. Useful for exporting data for further processing.
+     * (JSON, CSV, Excel, etc.) as a Uint8Array. Useful for exporting data for further processing.
      *
-     * In Node.js you can use the `stream` option to get a Readable stream, so a large export is processed in chunks
-     * without holding all of it in memory. The stream holds its connection open until you consume it to the end or
-     * destroy it. Iterating it with `for await` or passing it to `pipeline()` from `node:stream/promises` does either
-     * one for you.
+     * You can use the `stream` option to get a web ReadableStream, so a large export is processed in chunks without
+     * holding all of it in memory. The stream holds its connection open until you consume it to the end or cancel
+     * it. Iterating it with `for await` or piping it with `pipeTo()` does either one for you. In Node.js,
+     * `Readable.fromWeb()` turns it into a Readable.
      *
      * @param format - Output format: `'json'`, `'jsonl'`, `'csv'`, `'xlsx'`, `'xml'`, `'rss'`, or `'html'`
      * @param options - Download and formatting options (extends all options from {@link listItems})
@@ -279,12 +276,12 @@ export class DatasetClient<
      * @param options.xmlRow - Name of the XML element for each item. Default is `'item'`.
      * @param options.fields - Array of field names to include in the export.
      * @param options.omit - Array of field names to exclude from the export.
-     * @param options.stream - If `true`, the items are returned as a Readable stream. Node.js only.
+     * @param options.stream - If `true`, the items are returned as a web ReadableStream.
      * @param options.timeoutSecs - Timeout for the API request. Default is `'long'`. With `stream`, it bounds the
-     * wait for the API to start responding; once the stream is returned, it only limits inactivity: the stream errors
-     * if no data arrives for that long. To stop the download early or cap its total duration, destroy the stream or
-     * abort `signal`.
-     * @returns Buffer containing the serialized data in the specified format, or a Readable stream of it with `stream`
+     * wait for the API to start responding. To stop the download early or cap its total duration, cancel the stream
+     * or abort `signal`.
+     * @returns Uint8Array containing the serialized data in the specified format, or a web ReadableStream of it with
+     * `stream`
      * @see https://docs.apify.com/api/v2/dataset-items-get
      *
      * @example
@@ -316,22 +313,22 @@ export class DatasetClient<
     async downloadItems(
         format: `${DownloadItemsFormat}`,
         options?: DatasetClientDownloadItemsOptions & { stream?: false },
-    ): Promise<Buffer>;
+    ): Promise<Uint8Array>;
 
     async downloadItems(
         format: `${DownloadItemsFormat}`,
         options: DatasetClientDownloadItemsOptions & { stream: true },
-    ): Promise<Readable>;
+    ): Promise<ReadableStream<Uint8Array>>;
 
     async downloadItems(
         format: `${DownloadItemsFormat}`,
         options?: DatasetClientDownloadItemsOptions,
-    ): Promise<Buffer | Readable>;
+    ): Promise<Uint8Array | ReadableStream<Uint8Array>>;
 
     async downloadItems(
         format: `${DownloadItemsFormat}`,
         options: DatasetClientDownloadItemsOptions = {},
-    ): Promise<Buffer | Readable> {
+    ): Promise<Uint8Array | ReadableStream<Uint8Array>> {
         parseArgument(format, itemFormatSchema);
         const {
             timeoutSecs = 'long',
@@ -339,10 +336,6 @@ export class DatasetClient<
             stream,
             ...query
         } = parseArgument(options, downloadItemsOptionsSchema, 'DatasetClientDownloadItemsOptions');
-
-        if (stream && !runtime.isNode) {
-            throw new Error('The stream option can only be used in Node.js environment.');
-        }
 
         const { data } = await this.httpClient.call({
             url: this.buildUrl('items'),
@@ -442,7 +435,8 @@ export class DatasetClient<
      * This is useful for sharing dataset results with external services or users.
      *
      * @param options - URL generation options (extends all options from {@link listItems})
-     * @param options.expiresInSecs - Number of seconds until the signed URL expires. If omitted, the URL never expires.
+     * @param options.expiresInSecs - Number of seconds until the signed URL expires. Must be positive. If omitted, the URL
+     * never expires.
      * @param options.fields - Array of field names to include in the response.
      * @param options.format - Format of the items served by the URL. Defaults to `json`.
      * @param options.limit - Maximum number of items to return.
@@ -496,23 +490,18 @@ export class DatasetClient<
 
     #createPaginationList(response: ApifyResponse, userProvidedDesc: boolean): PaginatedList<Data> {
         const descHeader = response.headers['x-apify-pagination-desc'];
-        const page: PaginatedList<Data> = {
+        return {
             items: response.data,
             total: Number(response.headers['x-apify-pagination-total']),
             offset: Number(response.headers['x-apify-pagination-offset']),
             // `x-apify-pagination-count` reports the rows scanned, which filters and `unwind` can leave above or below
-            // the items returned.
-            count: response.data.length,
+            // the items returned. It is derived from the dataset's item count, which lags a fresh push, so it can also
+            // fall below the items returned on an unfiltered page.
+            count: Math.max(Number(response.headers['x-apify-pagination-count'] ?? 0), response.data.length),
             limit: Number(response.headers['x-apify-pagination-limit']), // API returns 999999999999 when no limit is used
             // TODO: Replace this once https://github.com/apify/apify-core/issues/3503 is solved
             desc: typeof descHeader === 'string' ? JSON.parse(descHeader) : userProvidedDesc,
         };
-
-        const scannedCount = response.headers['x-apify-pagination-count'];
-        if (scannedCount === undefined) return page;
-
-        // The offset iterator paginates by the scanned number, so it travels with the page outside its public shape.
-        return Object.defineProperty(page, SCANNED_COUNT, { value: Number(scannedCount) });
     }
 }
 
@@ -592,7 +581,7 @@ export interface DatasetClientDownloadItemsOptions extends Omit<DatasetClientLis
     xmlRoot?: string;
     xmlRow?: string;
     /**
-     * If `true`, the items are returned as a Readable stream. Node.js only.
+     * If `true`, the items are returned as a web ReadableStream.
      * @default false
      */
     stream?: boolean;

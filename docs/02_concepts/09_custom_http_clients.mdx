@@ -2,27 +2,28 @@
 id: custom-http-clients
 title: HTTP clients
 sidebar_label: HTTP clients
-description: 'Understand the built-in axios HTTP client of the Apify API client for JavaScript and the interface a custom one implements.'
+description: 'Understand the built-in fetch HTTP client of the Apify API client for JavaScript, the opt-in axios one and the interface a custom one implements.'
 ---
 
 import CodeBlock from '@theme/CodeBlock';
 import ApiLink from '@theme/ApiLink';
 
 import DefaultHttpClientExample from '!!raw-loader!./code/09_default_http_client.ts';
-import AxiosInterceptorsExample from '!!raw-loader!./code/09_axios_interceptors.ts';
+import CustomFetchExample from '!!raw-loader!./code/09_custom_fetch.ts';
+import AxiosHttpClientExample from '!!raw-loader!./code/09_axios_http_client.ts';
 import ArchitectureImportsExample from '!!raw-loader!./code/09_architecture_imports.ts';
 import PluggingInExample from '!!raw-loader!./code/09_plugging_in.ts';
 
-The Apify API client uses a pluggable HTTP layer. It ships with an [axios](https://axios-http.com)-based default and accepts custom implementations.
+The Apify API client uses a pluggable HTTP layer. It ships with a default built on the `fetch` of the runtime and an opt-in client built on [axios](https://axios-http.com), and it accepts custom implementations.
 
 ## Default HTTP client
 
-When you create an <ApiLink to="class/ApifyClient">`ApifyClient`</ApiLink>, it sends its requests through the built-in <ApiLink to="class/AxiosHttpClient">`AxiosHttpClient`</ApiLink>. This default client provides:
+When you create an <ApiLink to="class/ApifyClient">`ApifyClient`</ApiLink>, it sends its requests through the built-in <ApiLink to="class/FetchHttpClient">`FetchHttpClient`</ApiLink>. It uses the global `fetch`, so it works the same way in Node.js, browsers and edge runtimes and adds no dependency. This default client provides:
 
 - Automatic retries with exponential backoff for network errors, HTTP 429 and HTTP 5xx responses.
 - Configurable [timeout tiers](./10_timeouts.mdx) that grow with every retry.
 - Request compression and preparation of API-compatible bodies, query parameters and headers, including authentication.
-- Keep-alive connections and proxy support through the `HTTP_PROXY`, `HTTPS_PROXY` and `NO_PROXY` environment variables in Node.js.
+- Keep-alive connections, which `fetch` manages on its own.
 - API error handling and request statistics.
 
 You configure the default client through the <ApiLink to="class/ApifyClient">`ApifyClient`</ApiLink> constructor:
@@ -31,22 +32,66 @@ You configure the default client through the <ApiLink to="class/ApifyClient">`Ap
     {DefaultHttpClientExample}
 </CodeBlock>
 
-Anything beyond those options, such as [axios request interceptors](https://axios-http.com/docs/interceptors) for a header computed per request, is configured on an <ApiLink to="class/AxiosHttpClient">`AxiosHttpClient`</ApiLink> instance that you plug in yourself. Retries, timeouts and compression then live on the HTTP client too:
+Anything beyond those options is configured on a <ApiLink to="class/FetchHttpClient">`FetchHttpClient`</ApiLink> instance that you plug in yourself. Its `fetch` option takes the function the requests go through: a wrapper around the global `fetch` for a header computed per request, or the `fetch` of another library. A stream body reaches that function as an async iterable of byte chunks, or in a browser or an edge runtime as a web `ReadableStream` when it was passed as one. Retries, timeouts and compression then live on the HTTP client too:
 
 <CodeBlock className="language-ts">
-    {AxiosInterceptorsExample}
+    {CustomFetchExample}
 </CodeBlock>
+
+The timeout of a request runs until the response headers arrive and starts over with every chunk of the response body, so a large download doesn't time out while it makes progress. In Node.js, the same goes for an upload whose body is a stream or a `Blob`. Any other body has to be sent within the timeout.
+
+## Axios HTTP client
+
+Up to version 2, the client sent its requests through axios. That transport is still available as `AxiosHttpClient`, for code that depends on axios behavior such as [request interceptors](https://axios-http.com/docs/interceptors) or `http.Agent` instances. It has an entry point of its own, `apify-client/axios`, and `axios` is an optional peer dependency, so install it next to the client:
+
+```bash
+npm install axios
+```
+
+<CodeBlock className="language-ts">
+    {AxiosHttpClientExample}
+</CodeBlock>
+
+In Node.js, it creates keep-alive agents with its first request, or uses the ones you pass in the `httpAgent` and `httpsAgent` options. The entry point isn't part of the pre-built browser bundle. In a browser, use it with a bundler that resolves `apify-client` to the ES module build, as described in [Bundled environments](./13_bundled_environments.mdx).
+
+## Proxies
+
+The client doesn't route requests through a proxy on its own. How to set one up depends on the HTTP client and the runtime:
+
+- **Default client on Node.js 22.21 or 24 and newer** - Start Node.js with `NODE_USE_ENV_PROXY=1`. The `--use-env-proxy` flag does the same on Node.js 22.21 and on 24.5 and newer. Its `fetch` then reads the `HTTP_PROXY`, `HTTPS_PROXY` and `NO_PROXY` environment variables.
+- **Default client on Node.js 24.14 and newer, from inside the application** - Call [`http.setGlobalProxyFromEnv()`](https://nodejs.org/api/http.html#httpsetglobalproxyfromenvproxyenv) before the first request. It has the same effect as the switch, for a tool that can't control how Node.js is started.
+- **Default client on an older Node.js, or a proxy for this client only** - Pass a `fetch` that goes through a proxy, such as the one of [undici](https://undici.nodejs.org) with a dispatcher.
+- **Axios client** - Pass a proxy agent, such as one from [`proxy-agent`](https://www.npmjs.com/package/proxy-agent), in the `httpAgent` and `httpsAgent` options.
+- **Browsers, Bun and Deno** - The runtime applies its own proxy settings, so there is nothing to configure.
+
+```bash
+NODE_USE_ENV_PROXY=1 HTTPS_PROXY=http://proxy.example.com:3128 node main.js
+```
+
+```js
+import { ApifyClient, FetchHttpClient } from 'apify-client';
+import { EnvHttpProxyAgent, fetch as undiciFetch } from 'undici';
+
+const dispatcher = new EnvHttpProxyAgent();
+const httpClient = new FetchHttpClient({
+    fetch: (input, init) => undiciFetch(input, { ...init, dispatcher }),
+});
+
+const client = ApifyClient.withCustomHttpClient({ token: 'MY-APIFY-TOKEN', httpClient });
+```
+
+When a request of the default client fails to connect while a proxy variable is set and Node.js isn't reading it, the client logs a warning that names the variable and the switch to turn on. On a Node.js version that can't route `fetch` through a proxy, the warning says so.
 
 ## Architecture
 
 The HTTP client hierarchy has two layers:
 
 - <ApiLink to="class/HttpClient">`HttpClient`</ApiLink> is the abstract base. It holds the shared request pipeline: header merging, body serialization and compression, query encoding, the retry loop, timeout growth, response body parsing, statistics and the conversion of error statuses to <ApiLink to="class/ApifyApiError">`ApifyApiError`</ApiLink>. It declares the transport hooks a concrete client implements.
-- <ApiLink to="class/AxiosHttpClient">`AxiosHttpClient`</ApiLink> extends it and adapts axios as the transport.
+- <ApiLink to="class/FetchHttpClient">`FetchHttpClient`</ApiLink> and `AxiosHttpClient` extend it and adapt `fetch` and axios as the transport.
 
 A custom client extends <ApiLink to="class/HttpClient">`HttpClient`</ApiLink> the same way. It implements the transport hook and inherits everything else, so its requests get the same retries, timeouts, compression and error handling as the built-in client.
 
-The HTTP clients and the request and response types are exported from the package root:
+The HTTP clients and the request and response types are exported from the package root, except for the axios-based client:
 
 <CodeBlock className="language-ts">
     {ArchitectureImportsExample}
@@ -63,7 +108,7 @@ The public `call()` method provides the shared request pipeline. A concrete tran
 - `isTimeoutError(error)` identifies the transport's timeout errors. The default recognizes errors named `TimeoutError`, which is what `AbortSignal.timeout()` produces. Timeout classification is independent of retryability, so a timeout the retry loop should retry has to be covered by `isRetryableTransportError()` too.
 - `close()` releases resources owned by the transport, such as a connection pool. The default does nothing.
 
-Mark your implementations with the `override` keyword, as the built-in axios client does, so the TypeScript compiler catches a misspelled hook.
+Mark your implementations with the `override` keyword, as the built-in clients do, so the TypeScript compiler catches a misspelled hook.
 
 ### Request and response shapes
 
@@ -74,9 +119,10 @@ Mark your implementations with the `override` keyword, as the built-in axios cli
 | `method: HttpMethod` | HTTP method, for example `GET` or `POST` |
 | `url: string` | Full URL, query string included |
 | `headers: Record<string, string>` | Final request headers |
-| `body?: string \| Buffer \| ArrayBuffer \| ArrayBufferView \| Readable \| Blob` | Serialized and compressed body, or `undefined`. A `Blob` body arrives in Node.js as a new `Readable` for every attempt |
+| `body?: string \| Buffer \| ArrayBuffer \| ArrayBufferView \| Readable \| ReadableStream \| Blob` | Serialized and compressed body, or `undefined`. A `Blob` body arrives in Node.js as a new `Readable` for every attempt. A web `ReadableStream` body arrives in Node.js as a `Readable` too, and as the stream itself elsewhere |
 | `timeoutMillis?: number` | Timeout of this attempt, or `undefined` for a request that runs without one |
-| `stream: boolean` | Whether to return the body unread, as a `Readable` |
+| `stream: boolean` | Whether to return the body unread, as a stream. The caller always gets a web `ReadableStream` |
+| `followRedirects: boolean` | Whether to follow redirects. When it's `false`, return a redirect response as it is, since the request carries the API token |
 | `signal?: AbortSignal` | The caller's abort signal, to end the request in flight with. The pipeline stops retrying once it aborts |
 
 It returns an <ApiLink to="interface/HttpResponse">`HttpResponse`</ApiLink>. It is an interface, not a class, so any object of this shape will do:
@@ -85,9 +131,9 @@ It returns an <ApiLink to="interface/HttpResponse">`HttpResponse`</ApiLink>. It 
 | --- | --- |
 | `status: number` | HTTP status code |
 | `headers: Record<string, string \| string[] \| undefined>` | Response headers keyed by lowercase name |
-| `body: Buffer \| ArrayBuffer \| Readable \| undefined` | Raw body, a `Readable` for a streamed response, or `undefined` |
+| `body: Uint8Array \| ArrayBuffer \| Readable \| ReadableStream \| undefined` | Raw body, a stream for a streamed response, or `undefined`. A `Readable` is accepted too and converted to a web `ReadableStream` |
 
-The pipeline decodes the body by its content type for the resource clients, so the transport returns raw bytes. For a streamed response, return the body unread and let the caller consume it.
+The pipeline decodes the body by its content type for the resource clients, so the transport returns raw bytes. They can be a `Buffer`, any other `Uint8Array` or an `ArrayBuffer`, and the pipeline hands them on as a `Uint8Array`. For a streamed response, return the body unread and let the caller consume it. The callers get a web `ReadableStream`, so the pipeline converts a `Readable` that a Node.js transport returns.
 
 ### Plugging it in
 
@@ -100,18 +146,18 @@ Use <ApiLink to="class/ApifyClient#withCustomHttpClient">`ApifyClient.withCustom
 After that, all API calls made through the client go through your HTTP client.
 
 :::warning
-If you override `call()` itself, your implementation becomes responsible for request preparation, retries, timeouts, API error conversion and statistics. It also has to send the client's default headers with every request, otherwise the `Authorization` header never reaches the API. Implementing the transport hooks and inheriting `call()` keeps the shared behavior.
+If you override `call()` itself, your implementation becomes responsible for request preparation, retries, timeouts, API error conversion and statistics. It also has to send the client's default headers with every request, otherwise the `Authorization` header never reaches the API, and to honor the per-request `compression`, `authorizationHeader`, `throwOnErrorStatus`, `retryStatusCodes`, `retryTransportErrors` and `followRedirects` options of <ApiLink to="interface/ApifyRequestConfig">`ApifyRequestConfig`</ApiLink>. <ApiLink to="class/ActorServerClient#request">`ActorServerClient.request()`</ApiLink> relies on them to keep the API token away from the Actor's code, to return the server's error responses and to avoid sending a request to the Actor twice. Implementing the transport hooks and inheriting `call()` keeps the shared behavior.
 :::
 
 ## Use cases
 
-Custom HTTP clients might be useful when the built-in axios client doesn't cover your requirements, for example when you need to:
+Custom HTTP clients might be useful when the built-in clients don't cover your requirements, for example when you need to:
 
-- **Use a different HTTP library** - Integrate `fetch`, [undici](https://undici.nodejs.org), or another transport.
-- **Route through a proxy** - Add proxy support or request routing the environment variables can't express.
+- **Use a different HTTP library** - Integrate [undici](https://undici.nodejs.org), [got](https://github.com/sindresorhus/got), or another transport.
+- **Route through a proxy** - Add request routing that the options under [Proxies](#proxies) can't express.
 - **Implement custom retry logic** - Use different backoff strategies or retry conditions.
 - **Log requests and responses** - Track API calls for debugging or auditing.
 - **Modify requests** - Add custom fields, modify the body, or change headers.
 - **Collect custom metrics** - Measure request latency, track error rates, or count API calls.
 
-For a complete implementation over `fetch`, see [Build a custom HTTP client](../03_guides/05_custom_http_client.mdx). The <ApiLink to="class/HttpClient">`HttpClient`</ApiLink> API reference documents the full contract.
+For a complete implementation, a compact version of the built-in one, see [Build a custom HTTP client](../03_guides/05_custom_http_client.mdx). The <ApiLink to="class/HttpClient">`HttpClient`</ApiLink> API reference documents the full contract.

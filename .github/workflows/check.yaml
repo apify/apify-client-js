@@ -35,12 +35,13 @@ jobs:
 
         steps:
             - name: Checkout repository
-              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              uses: actions/checkout@v7.0.1
 
             - name: Use Node.js ${{ matrix.node-version }}
-              uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+              uses: actions/setup-node@v7.1.0
               with:
                   node-version: ${{ matrix.node-version }}
+                  check-latest: true
 
             - name: Install pnpm and dependencies
               uses: apify/actions/pnpm-install@v1.6.2
@@ -50,6 +51,10 @@ jobs:
 
             - name: Run Tests
               run: pnpm test
+
+            # The same suite with the opt-in axios client as the default one, so the two keep behaving alike.
+            - name: Run Tests with the axios HTTP client
+              run: pnpm exec vitest run --project unit-axios
 
     integration_tests:
         name: Integration tests (Node ${{ matrix.node-version }})
@@ -79,12 +84,13 @@ jobs:
 
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v7
+              uses: actions/checkout@v7.0.1
 
             - name: Use Node.js ${{ matrix.node-version }}
-              uses: actions/setup-node@v7
+              uses: actions/setup-node@v7.1.0
               with:
                   node-version: ${{ matrix.node-version }}
+                  check-latest: true
 
             - name: Install pnpm and dependencies
               uses: apify/actions/pnpm-install@v1.6.2
@@ -105,12 +111,13 @@ jobs:
         runs-on: ubuntu-latest
 
         steps:
-            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+            - uses: actions/checkout@v7.0.1
 
             - name: Use Node.js
-              uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+              uses: actions/setup-node@v7.1.0
               with:
-                  node-version: 24
+                  node-version: 26
+                  check-latest: true
 
             - name: Install pnpm and dependencies
               uses: apify/actions/pnpm-install@v1.6.2
@@ -118,16 +125,62 @@ jobs:
             - name: Run Tests
               run: pnpm test:bundling
 
+    test_runtimes:
+        name: Smoke test (${{ matrix.runtime }})
+        runs-on: ubuntu-latest
+
+        # The unit tests only run in Node.js, while Bun, Deno and Cloudflare Workers each ship a `fetch` of their own.
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - runtime: Bun
+                      command: bun test/runtimes/smoke.mjs
+                    - runtime: Deno
+                      command: deno run --allow-all --node-modules-dir=manual test/runtimes/smoke.mjs
+                    # Node.js only drives the test here: the client runs in `workerd`, through Miniflare.
+                    - runtime: Cloudflare Workers
+                      command: node test/runtimes/workers.mjs
+
+        steps:
+            - uses: actions/checkout@v7.0.1
+
+            - name: Use Node.js
+              uses: actions/setup-node@v7.1.0
+              with:
+                  node-version: 26
+                  check-latest: true
+
+            - name: Install pnpm and dependencies
+              uses: apify/actions/pnpm-install@v1.6.2
+
+            - name: Install Bun
+              if: ${{ matrix.runtime == 'Bun' }}
+              uses: oven-sh/setup-bun@v2.2.0
+
+            - name: Install Deno
+              if: ${{ matrix.runtime == 'Deno' }}
+              uses: denoland/setup-deno@v2.0.5
+              with:
+                  deno-version: v2.x
+
+            - name: Build
+              run: pnpm build:node
+
+            - name: Run the smoke test
+              run: ${{ matrix.command }}
+
     lint:
         name: Lint
         runs-on: ubuntu-latest
 
         steps:
-            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+            - uses: actions/checkout@v7.0.1
             - name: Use Node.js
-              uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+              uses: actions/setup-node@v7.1.0
               with:
-                  node-version: 24
+                  node-version: 26
+                  check-latest: true
             - name: Install pnpm and dependencies
               uses: apify/actions/pnpm-install@v1.6.2
             - run: pnpm lint
@@ -145,11 +198,12 @@ jobs:
         runs-on: ubuntu-latest
 
         steps:
-            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+            - uses: actions/checkout@v7.0.1
             - name: Use Node.js
-              uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+              uses: actions/setup-node@v7.1.0
               with:
-                  node-version: 24
+                  node-version: 26
+                  check-latest: true
             - name: Install pnpm and dependencies
               uses: apify/actions/pnpm-install@v1.6.2
             - name: Build
@@ -163,12 +217,13 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout Source code
-              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              uses: actions/checkout@v7.0.1
 
             - name: Use Node.js
-              uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+              uses: actions/setup-node@v7.1.0
               with:
-                  node-version: 24
+                  node-version: 26
+                  check-latest: true
             - name: Install pnpm and dependencies
               uses: apify/actions/pnpm-install@v1.6.2
 
@@ -181,7 +236,7 @@ jobs:
             - name: Run Lychee Link Checker
               id: lychee
               if: github.event_name == 'pull_request'
-              uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
+              uses: lycheeverse/lychee-action@v2.9.0
               with:
                   fail: false
                   args: >
@@ -200,7 +255,7 @@ jobs:
 
             - name: Find Comment
               if: github.event_name == 'pull_request'
-              uses: peter-evans/find-comment@b30e6a3c0ed37e7c023ccd3f1db5c6c0b0c23aad # v4.0.0
+              uses: peter-evans/find-comment@v4.0.0
               id: find-comment
               with:
                   issue-number: ${{ github.event.pull_request.number }}
@@ -208,7 +263,7 @@ jobs:
 
             - name: Links are passing
               if: github.event_name == 'pull_request' && steps.lychee.outputs.exit_code == 0 && steps.find-comment.outputs.comment-id
-              uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
+              uses: peter-evans/create-or-update-comment@v5.0.0
               with:
                   comment-id: ${{ steps.find-comment.outputs.comment-id }}
                   issue-number: ${{ github.event.pull_request.number }}
@@ -220,7 +275,7 @@ jobs:
 
             - name: Links are failing
               if: github.event_name == 'pull_request' && steps.lychee.outputs.exit_code != 0
-              uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
+              uses: peter-evans/create-or-update-comment@v5.0.0
               with:
                   comment-id: ${{ steps.find-comment.outputs.comment-id }}
                   issue-number: ${{ github.event.pull_request.number }}
