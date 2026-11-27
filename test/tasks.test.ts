@@ -303,6 +303,7 @@ describe('Task methods', () => {
                 runTimeoutSecs,
                 build,
                 waitSecs,
+                log: null,
             });
             expect(res).toMatchObject({ id: runId, actId, status: 'SUCCEEDED' });
             validateRequest({ query: { waitForFinish: waitSecs }, params: { runId } });
@@ -333,6 +334,7 @@ describe('Task methods', () => {
             mockServer.setResponse({ body });
             const res = await client.task(taskId).call(undefined, {
                 waitSecs,
+                log: null,
                 maxItems,
             });
             expect(res).toMatchObject({ id: runId, actId, status: 'SUCCEEDED' });

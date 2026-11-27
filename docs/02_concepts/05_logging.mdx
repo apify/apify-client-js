@@ -45,7 +45,7 @@ An HTTP client you plug in with <ApiLink to="class/ApifyClient#withCustomHttpCli
 
 ## Redirecting Actor run logs
 
-In Node.js, <ApiLink to="class/ActorClient#call">`ActorClient.call()`</ApiLink> redirects the log of the run it starts to your process while it waits for the run to finish. The redirected lines carry a prefix with the Actor name and the run ID. The `log` option of `call()` changes where they go:
+In Node.js, <ApiLink to="class/ActorClient#call">`ActorClient.call()`</ApiLink> and <ApiLink to="class/TaskClient#call">`TaskClient.call()`</ApiLink> redirect the log of the run they start to your process while it waits for the run to finish. The redirected lines carry a prefix with the Actor name and the run ID. The `log` option of `call()` changes where they go:
 
 - A `Log` instance of `@apify/log` receives the redirected lines.
 - `null` turns the redirection off.

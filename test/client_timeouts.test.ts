@@ -206,7 +206,7 @@ const TIMEOUT_CASES: TimeoutCase[] = [
     { client: 'TaskClient', method: 'unpublish', tier: 'short' },
     { client: 'TaskClient', method: 'delete', tier: 'short' },
     { client: 'TaskClient', method: 'start', tier: 'medium', args: [undefined] },
-    { client: 'TaskClient', method: 'call', tier: 'noTimeout', args: [undefined] },
+    { client: 'TaskClient', method: 'call', tier: 'noTimeout', args: [undefined], options: { log: null } },
     { client: 'TaskClient', method: 'getInput', tier: 'short' },
     { client: 'TaskClient', method: 'updateInput', tier: 'short', args: [{ x: 1 }] },
     { client: 'TaskCollectionClient', method: 'list', tier: 'medium' },

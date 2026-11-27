@@ -104,6 +104,9 @@ export function createDefaultApp(v2Router = express.Router()) {
     v2Router.post('/actors/redirect-actor-id/runs', async (_, res) => {
         res.json({ data: { ...fixtures.run, id: 'redirect-run-id', actId: 'redirect-actor-id' } });
     });
+    v2Router.post('/actor-tasks/redirect-task-id/runs', async (_, res) => {
+        res.json({ data: { ...fixtures.run, id: 'redirect-run-id', actId: 'redirect-actor-id' } });
+    });
     v2Router.use('/actors', actors);
     v2Router.use('/actor-builds', builds);
     v2Router.use('/actor-runs/redirect-run-id/log', streamLogChunks);

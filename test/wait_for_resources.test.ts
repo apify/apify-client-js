@@ -54,7 +54,7 @@ const STARTERS: { name: string; start: Starter; startPath: string }[] = [
     },
     {
         name: 'TaskClient.call()',
-        start: async (c, options) => c.task('task-id').call(undefined, options),
+        start: async (c, options) => c.task('task-id').call(undefined, { log: null, ...options }),
         startPath: 'POST /v2/actor-tasks/task-id/runs',
     },
 ];
