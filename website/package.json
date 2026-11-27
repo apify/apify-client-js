@@ -19,7 +19,7 @@
     },
     "devDependencies": {
         "@apify/tsconfig": "^0.2.0",
-        "@types/react": "^19.3.0",
+        "@types/react": "^19.3.3",
         "markdownlint": "^0.42.2",
         "markdownlint-cli": "^0.50.1",
         "path-browserify": "^1.0.1",
