@@ -67,7 +67,7 @@ jobs:
                   check-latest: true
 
             - name: Install pnpm and dependencies
-              uses: apify/actions/pnpm-install@v1.6.2
+              uses: apify/actions/pnpm-install@v1.9.0
 
             # Read before regeneration overwrites it, so the pull request can say whether the specification moved.
             - name: Read the recorded specification version
@@ -174,7 +174,7 @@ jobs:
             - name: Commit the regenerated models
               id: commit
               if: steps.changes.outputs.has-changes == 'true' && steps.review.outputs.is-new == 'true'
-              uses: apify/actions/signed-commit@v1.6.2
+              uses: apify/actions/signed-commit@v1.9.0
               with:
                   message: ${{ env.PR_TITLE }}
                   add: >-
@@ -263,7 +263,7 @@ jobs:
                       }' > slack-payload.json
 
             - name: Send Slack notification
-              uses: slackapi/slack-github-action@v4.0.0
+              uses: slackapi/slack-github-action@v4.1.0
               with:
                   webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
                   webhook-type: incoming-webhook
