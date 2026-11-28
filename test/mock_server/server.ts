@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import type { Server } from 'node:http';
 import http from 'node:http';
 import path from 'node:path';
@@ -7,6 +8,8 @@ import bodyParser from 'body-parser';
 import compression from 'compression';
 import express from 'express';
 
+import { createJsonlSink } from '../../tools/openapi-request-validator/report.mts';
+import { createRequestValidator } from '../../tools/openapi-request-validator/validator.mts';
 import * as fixtures from './fixtures.js';
 // Routers
 import { actors } from './routes/actors.js';
@@ -93,6 +96,16 @@ export function createDefaultApp(v2Router = express.Router()) {
         mockServer.requests.push(req);
         next();
     });
+    // With `OPENAPI_SPEC_PATH` set, every request the client sends is also checked against the OpenAPI
+    // specification. Findings are appended to `OPENAPI_REPORT_FILE`, see `tools/openapi-request-validator`.
+    if (process.env.OPENAPI_SPEC_PATH) {
+        const { OPENAPI_SPEC_PATH: specPath, OPENAPI_REPORT_FILE: reportFile } = process.env;
+        const validator = createRequestValidator({
+            spec: JSON.parse(readFileSync(specPath, 'utf8')),
+            onFinding: reportFile ? createJsonlSink(reportFile) : undefined,
+        });
+        app.use(validator.middleware);
+    }
     app.use('/v2', v2Router);
     app.use('/external', external);
 

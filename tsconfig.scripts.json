@@ -27,5 +27,5 @@
         "types": ["node"],
         "allowImportingTsExtensions": true
     },
-    "include": ["scripts/**/*"]
+    "include": ["scripts/**/*", "tools/**/*"]
 }

@@ -82,6 +82,8 @@
         "build:node": "tsc",
         "build:browser": "rsbuild build",
         "spec:fetch": "node scripts/openapi_spec.mts fetch",
+        "openapi:proxy": "node tools/openapi-request-validator/proxy.mts",
+        "openapi:report": "node tools/openapi-request-validator/report.mts",
         "generate:models": "node scripts/openapi_spec.mts fetch && node scripts/generate_types.mts && node scripts/generate_schemas.mts && node scripts/openapi_spec.mts record-version"
     },
     "apify": {
@@ -124,6 +126,7 @@
         "compression": "^1.8.2",
         "esbuild": "0.28.2",
         "express": "^5.3.0",
+        "express-openapi-validator": "5.6.2",
         "miniflare": "4.20260730.0",
         "oxfmt": "0.80.0",
         "oxlint": "1.93.0",
